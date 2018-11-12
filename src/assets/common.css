@@ -1,0 +1,398 @@
+/* .clearfix {
+    display: block;
+}
+
+.clearfix:before {
+    display: table;
+    content: "";
+    line-height: 0;
+} */
+
+.clearfix:after {
+    display: block;
+    clear: both;
+    content: "";
+    visibility: hidden;
+    height: 0;
+}
+
+.clearfix {
+    zoom: 1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.clear-float {
+    clear: both;
+}
+
+
+/*侧边栏展开闭合样式*/
+
+
+/*
+.menu-icon{
+	transition: all .3s;
+}
+.rotate-icon{
+	transform: rotate(-90deg);
+}
+.menu-item span{
+	display: inline-block;
+	overflow: hidden;
+	width: 100px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: bottom;
+	transition: width .2s ease .2s;
+}
+.menu-item i{
+	transform: translateX(0px);
+	transition: font-size .2s ease, transform .2s ease;
+	vertical-align: middle;
+	font-size: 16px;
+}
+.collapsed-menu span{
+	width: 0px;
+	transition: width .2s ease;
+}
+.collapsed-menu i{
+	transform: translateX(5px);
+	transition: font-size .2s ease .2s, transform .2s ease .2s;
+	vertical-align: middle;
+	font-size: 22px;
+}
+*/
+h3 span {
+    padding-right:26px;
+    padding-top: 8px;
+    padding-bottom:8px;
+    background: #01babc ;
+    border-radius: 0 38px 38px 0;
+    color:#fff;
+    padding-left:26px
+}
+h3.Title {
+    margin-left: 0;
+    text-align: left;
+    color:#fff;
+    font-weight: 400;
+    position: relative;
+    padding-left: 0;
+    font-size: 14px;
+    padding-bottom:8px;
+    border-bottom: 2px solid #01babc;
+    margin-top: 30px;
+    margin-bottom: 20px;
+   
+}
+h3.Title:before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 1px;
+    width: 4px;
+    height: 60%;
+    background: #fff;
+    border-radius: 2px;
+
+}
+
+
+/* qhc */
+
+
+/* 迭代所属项目信息 */
+
+.showInfo {
+    font-size: 14px;
+    overflow: hidden;
+    line-height: 30px
+}
+
+.showTitle {
+    float: left;
+    text-align: right;
+}
+
+.showCon {
+    float: left;
+}
+
+
+/* 迭代所属项目信息end */
+
+.curPosition {
+    margin: 10px 0;
+    font-size: 14px;
+    padding-left: 10px;
+}
+
+.curPosition span {
+    margin-left: 6px;
+}
+
+.cursor {
+    cursor: pointer;
+}
+
+.w80 {
+    margin: 0 16px;
+}
+
+.pageContent {
+    background: #edf6fb;
+    position: relative;
+    border-radius: 4px;
+    /*overflow: hidden;*/
+    border: 1px solid #d7dde4;
+    margin-top: 10px;
+}
+
+.pageCon {
+    background: #fff;
+    overflow: hidden;
+}
+
+.pageConTitle {
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.ivu-breadcrumb {
+    padding-left: 10px;
+}
+
+
+/* 弹出框添加内容 */
+
+.taskrow {
+    width: 100%;
+    min-height: 40px;
+    line-height: 30px;
+}
+
+.addTaskTableTitle {
+    float: left;
+    width: 100px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.addTaskTableCon {
+    float: left;
+    padding-left: 6px;
+    width: 200px;
+    border-bottom: 1px solid #ccc;
+}
+
+.ivu-modal {
+    text-align: left;
+}
+
+
+/* orange迭代管理 */
+
+.ivu-transfer-list {
+    width: 45%;
+    height: auto;
+}
+
+.ivu-transfer-list-content {
+    overflow: visible;
+}
+
+.ivu-transfer-list-body {
+    overflow: visible;
+    border: none;
+}
+
+.ivu-transfer-operation {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    width: 5 opx;
+    height: 300px;
+    border-radius: 10px;
+    background-color: #f2f2f2;
+}
+
+.ivu-transfer-operation .ivu-btn {
+    margin: auto 8px;
+}
+
+.transtion-items {
+    position: relative;
+    padding: 10px;
+    background-color: #eee;
+}
+
+.transtion-items-btn {
+    position: absolute;
+    top: -25px;
+    right: 10px;
+    display: block;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+}
+
+
+/* .trans-top-search {
+    position: relative;
+}
+.trans-top-search i {
+    position: absolute;
+    right: 5px;
+    top: 0;
+} */
+
+.ivu-transfer {
+    display: flex;
+}
+
+.newTop {
+    margin: 16px
+}
+
+
+/* .SerchBox {
+    padding-bottom: 10px;
+} */
+
+.serchBtnBox {
+    padding-left: 20px;
+}
+
+.searchName {
+    text-align: center;
+    line-height: 34px;
+}
+
+.formValidateMoreBtnBox {
+    text-align: center;
+    height: 16px;
+    background: #01babc;
+    position: relative;
+    width: 8%;
+    margin: 0 auto;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.formValidateMoreBtnBox .ivu-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -30%);
+    -ms-transform: translate(-50%, -30%);
+    -webkit-transform: translate(-50%, -30%);
+}
+
+.formValidateMoreBtnBox .ivu-icon:first-of-type {
+    transform: translate(-50%, -60%);
+    -ms-transform: translate(-50%, -60%);
+    -webkit-transform: translate(-50%, -60%);
+}
+
+.formValidateMoreBtnBox .ivu-icon:last-of-type {
+    transform: translate(-50%, -20%);
+    -ms-transform: translate(-50%, -20%);
+    -webkit-transform: translate(-50%, -20%);
+}
+/* 默认iview的css修改 */
+.ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab{
+    margin-right: -1px;
+    border-radius: 0;
+    font-size: 14px;
+    border-bottom:1px #aae5d1 solid;
+    background: #01babc;
+    color: white;
+    border-bottom: none;
+}
+.ivu-tabs.ivu-tabs-card>.ivu-tabs-bar .ivu-tabs-tab-active {
+    position: relative;
+    z-index: 10;
+    /*border-color: #aae5d1;*/
+    border-top:#01babc solid 2px;
+    color: #01babc;
+    background: white;
+    border-bottom-width: 0;
+    border-color:#01babc
+}
+.ivu-tabs-bar{
+    border-bottom: 1px solid #aae5d1;
+    margin-bottom:36px; 
+}
+
+/* 详情表格 */
+.baseInfoTable td, .baseInfoTable th{
+    box-sizing: border-box;
+    
+    border: 1px solid #e9eaec;
+    height: 48px;
+    
+
+    vertical-align:middle;
+    box-sizing: border-box;
+    /*
+    border: 1px solid white;
+    */
+}
+.baseInfoTable td{
+    padding-left:0.5em;
+    padding-top:0.5em;
+    padding-bottom:0.5em;
+    color:#495060;
+    font-size:12px;
+    line-height: 1.5em;
+}
+.baseInfoTable td pre{
+    line-height:1.5em;
+    color:#495060;
+    font-size:12px;
+    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","\5FAE\8F6F\96C5\9ED1",Arial,sans-serif;
+}
+.baseInfoTable th{
+    font-weight: normal;
+    
+    
+    font-size:14px;
+    background-color: #2db7f5;
+    color: #fff;
+    
+    
+    text-align: right;
+    padding-right: 18px;
+    
+    /*
+    color: #353336;
+    background-color:#edf6fb;
+    font-size: 12px;
+    height: 32px;
+    min-height: 32px;
+    */
+}
+
+/* .showMoreBtnBox{margin: 0 auto; width: 95px;height: 31px; cursor: pointer; }*/
+.showMoreBtnBox{margin: 0 auto; width: 24px;height: 24px; cursor: pointer; position: relative;
+z-index: 2}
+.showMoreBtnBox.arrUp{background: url(../images/up.png) no-repeat top center #fff;}
+.showMoreBtnBox.arrDown{background: url(../images/down.png) no-repeat top center #fff;}
+.showMoreBtnBoxWrap{position: relative; height: 20px; width: 100%}
+.throughLine{height: 1px; background:#edf6fb; position: absolute; width: 100%;
+top:10px; }
+
+/* add by q for apts */
+.ivu-card:hover{
+    box-shadow: 0px 0px 0px;
+  }
