@@ -102,7 +102,7 @@
 
 
             <!-- /* add by xin */ -->
-            <!--新建任务时弹出的对话框-->
+            <!--===================================新建任务时弹出的对话框===============-->
             <Modal v-model="Deletips" width="1000">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
@@ -129,14 +129,20 @@
                             </i-col>
                     </Row>
                         <Row>
-                            <i-col span="10">
-                                    <Form-item label="任务开始时间" prop="dateStart">
+                            <i-col span="8">
+                                    <Form-item label="投产日期" prop="dateStart">
+                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateStart"></Date-picker>
+                                </Form-item>
+                            </i-col>
+                            
+                            <i-col span="8">
+                                    <Form-item label="任务开始日期" prop="dateStart">
                                     <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateStart"></Date-picker>
                                 </Form-item>
                             </i-col>
                             
-                            <i-col span="10">
-                                <Form-item label="任务结束时间" prop="dateEnd">
+                            <i-col span="8">
+                                <Form-item label="任务结束日期" prop="dateEnd">
                                     <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateEnd"></Date-picker>
                                 </Form-item>
                             </i-col>
@@ -169,7 +175,7 @@ export default {
             sTaskName:'',
             startTime:'',
             endTime:'',
-            createUser:'',
+            createUser:'',     
             columns: [
             	{
                     type: 'selection',
@@ -488,6 +494,8 @@ export default {
             this.tableData.splice(index,1);
             console.log("这是删除一条数据",row);
         },
+
+
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
             console.log(this.addValidate);
@@ -495,6 +503,7 @@ export default {
                 if (valid) {
                     this.$Message.success('提交成功!');
                      this.Deletips = false;
+                   console.log( this..$refs)
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
