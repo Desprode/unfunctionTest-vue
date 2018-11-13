@@ -112,8 +112,8 @@
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
                         <Row>
                             <i-col span="24">
-                                <Form-item label="物理子系统" prop="pyOrg">
-                                    <i-select v-model="addValidate.pyOrg" placeholder="请选择所在地">
+                                <Form-item label="物理子系统" prop="component_name">
+                                    <i-select v-model="addValidate.component_name" placeholder="请选择所在地">
                                         <i-option value="card1">(N-CIS)贷记卡发卡</i-option>
                                         <i-option value="card2">(N-CIS)贷记卡发卡</i-option>
                                         <i-option value="card3">(N-CIS)贷记卡发卡</i-option>
@@ -123,27 +123,27 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="任务名称" prop="taskName">
-                                    <i-input v-model="addValidate.taskName"></i-input>
+                                <Form-item label="任务名称" prop="perftask_name">
+                                    <i-input v-model="addValidate.perftask_name"></i-input>
                                 </Form-item>
                             </i-col>
                     </Row>
                         <Row>
                             <i-col span="8">
-                                    <Form-item label="投产日期" prop="dateStart">
-                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateStart"></Date-picker>
+                                    <Form-item label="投产日期" prop="start_time">
+                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
                                 </Form-item>
                             </i-col>
                             
                             <i-col span="8">
-                                    <Form-item label="任务开始日期" prop="dateStart">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateStart"></Date-picker>
+                                    <Form-item label="任务开始日期" prop="start_time">
+                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
                                 </Form-item>
                             </i-col>
                             
                             <i-col span="8">
-                                <Form-item label="任务结束日期" prop="dateEnd">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.dateEnd"></Date-picker>
+                                <Form-item label="任务结束日期" prop="finish_time">
+                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.finish_time"></Date-picker>
                                 </Form-item>
                             </i-col>
                         </Row>
@@ -294,24 +294,25 @@ export default {
             selectedData:[],
 
             /* add by xin */
+            /**===================================模态框表单验证数据 =========================*/
             Deletips:false, 
             addValidate: {
-                    taskName: '',
-                    pyOrg: '',
-                    dateStart: '',
-                    dateEnd: '',
+                   component_name: '',
+                    task_name: '',
+                    start_time: '',
+                    finish_time: '',
                 },
             ruleValidate: {
-                taskName: [
+                task_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                pyOrg: [
+                component_name: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
                 ],
-                dateStart: [
+                start_time: [
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
-                dateEnd: [
+                finish_time: [
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ]
             },
@@ -503,7 +504,8 @@ export default {
                 if (valid) {
                     this.$Message.success('提交成功!');
                      this.Deletips = false;
-                   console.log( this..$refs)
+                     //this.$refs.addValidate.$el.input.value = ''
+                   console.log("确认按钮之后", this.$refs.addValidate.$el)
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
