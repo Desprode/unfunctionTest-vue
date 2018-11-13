@@ -74,7 +74,8 @@ export default {
             })
         },
         backMockCollocation () {//返回挡板控制页
-            this.$router.push('/baffleConfiguration')
+            // this.$router.push('/baffleConfiguration')
+            this.$router.push('/InterfaceCase')
         },
         addMock(){//添加挡板
             let id = (this.formValidate.details.length + 1).toString();

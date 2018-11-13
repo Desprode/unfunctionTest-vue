@@ -14,7 +14,7 @@ import Script from '@/views/Script/Script.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
 
 //合并挡板配置
-const BaffleConfiguration = resolve => require(['@/views/BaffleConfiguration/BaffleConfigurationIndex/BaffleConfiguration'],resolve);
+// const BaffleConfiguration = resolve => require(['@/views/BaffleConfiguration/BaffleConfigurationIndex/BaffleConfiguration'],resolve);
 
 //挡板新增
 import AddMock from '@/views/BaffleConfiguration/AddMock/AddMock.vue'
@@ -65,11 +65,11 @@ export default new Router({
           name:'AddGlobalConfig',
           component:AddGlobalConfig
         },
-        {
-          path:'baffleConfiguration',
-          name:'BaffleConfiguration',
-          component:BaffleConfiguration,
-        },
+        // {
+        //   path:'baffleConfiguration',
+        //   name:'BaffleConfiguration',
+        //   component:BaffleConfiguration,
+        // },
         {
           path:'/addMock',
           name:'addMock',
