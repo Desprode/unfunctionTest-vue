@@ -100,7 +100,7 @@ export default {
         expandRow
     },
     computed: {
-        mapGetters(['bafflelistdata']), //这是数组['A’,’B’,...]
+        ...mapGetters(['bafflelistdata']), //这是数组['A’,’B’,...]
         queryParam(){
             return {
                 projectId : '',
