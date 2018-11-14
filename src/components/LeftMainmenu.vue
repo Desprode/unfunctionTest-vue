@@ -13,20 +13,6 @@
           <div class="container">
             <Form ref="proForm" :model="proForm">
               <div class="pageContent">
-                <!-- <div class="curPosition">
-                  <FormItem prop="pro">
-                    <Row>
-                      <Col span="15" align="left" >
-                        <Icon type="navicon-round" style="color: rgb(1,186,188); font-size:16px" />
-                        <span>选择项目</span>
-                        <Select v-model="proForm.pro" style="width:300px" @on-change="changePro">
-                          <Option value="project1">项目1</Option>
-                          <Option value="project2">项目2</Option>
-                        </Select>
-                      </Col>
-                    </Row>
-                  </FormItem>
-                </div> -->
                 <!-- <div class="detailContBox ivu-card ivu-card-bordered">
                   <Card > -->
                 <div style="padding: 16px">

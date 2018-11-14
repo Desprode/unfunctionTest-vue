@@ -12,6 +12,9 @@ import AddGlobalConfig from '@/views/AddGlobalConfig/AddGlobalConfig'
 import PerfTask from '@/views/PerfTask/PerfTask.vue'
 import Script from '@/views/Script/Script.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
+import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
+import ExeResult from '@/views/ExeResult/ExeResult.vue'
+import Machine from '@/views/Machine/Machine.vue'
 
 //合并挡板配置
 // const BaffleConfiguration = resolve => require(['@/views/BaffleConfiguration/BaffleConfigurationIndex/BaffleConfiguration'],resolve);
@@ -41,6 +44,21 @@ export default new Router({
           path: '/senario',
           name: 'Senario',
           component: Senario
+        },
+        {
+          path: '/exequeue',
+          name: 'ExeQueue',
+          component: ExeQueue
+        },
+        {
+          path: '/exeresult',
+          name: 'ExeResult',
+          component: ExeResult
+        },
+        {
+          path: '/machine',
+          name: 'Machine',
+          component: Machine
         },
 
 

@@ -18,26 +18,26 @@
           <Icon type="ios-settings"></Icon>
           <span>场景管理</span>
         </MenuItem>
-        <!-- <MenuItem name="1-4">
-          <router-link to="/perftask" />
+        <MenuItem name="1-4">
+          <router-link to="/exequeue" />
           <Icon type="ios-barcode-outline" />
           <span>执行队列</span>
         </MenuItem>
         <MenuItem name="1-5">
-          <router-link to="/senario" />
+          <router-link to="/exeresult" />
           <Icon type="ios-analytics" />
          <span>执行结果</span>
         </MenuItem>
-        <MenuItem name="1-6">
+        <!-- <MenuItem name="1-6">
           <router-link to="/perftask" />
           <Icon type="ios-cog" />
          <span>插件管理</span>
-        </MenuItem>
+        </MenuItem> -->
         <MenuItem name="1-7">
-          <router-link to="/senario" />
+          <router-link to="/machine" />
           <Icon type="ios-keypad" />
          <span>机器管理</span>
-        </MenuItem> -->
+        </MenuItem>
 
         
         <!-- <MenuItem name="1-6" >
