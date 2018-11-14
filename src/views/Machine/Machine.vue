@@ -22,9 +22,9 @@
                                     <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
                                 </Select>
                             </Col>
-                            <Col span="2" class="searchLable">任务名称</Col>
+                            <Col span="2" class="searchLable">机器名称</Col>
                             <Col span="5">
-                                <Input clearable v-model="sTaskName" placeholder="输入任务名称"></Input>
+                                <Input clearable v-model="sTaskName" placeholder="输入机器名称"></Input>
                             </Col>
                             <Col span="2" class="searchLable">任务状态</Col>
                             <Col span="5">
