@@ -5,7 +5,7 @@ Vue.use(Router);
 import LeftMainmenu from '@/components/LeftMainmenu.vue'
 import InterfaceCase from '@/views/InterfaceCase/InterfaseCaseIndex/InterfaceCase'
 import AddCase from '@/views/InterfaceCase/AddCase/AddCase'
-import EnvironmentManage from '@/views/EnvironmentManagement/EnvironmentManageIndex/EnvironmentManage'
+// import EnvironmentManage from '@/views/EnvironmentManagement/EnvironmentManageIndex/EnvironmentManage'
 import AddGlobalConfig from '@/views/AddGlobalConfig/AddGlobalConfig'
 
 
@@ -73,11 +73,11 @@ export default new Router({
           component:AddCase,
           props:true
         },
-        {
-          path:'/environmentManage',
-          name:'EnvironmentManage',
-          component:EnvironmentManage
-        },
+        // {
+        //   path:'/environmentManage',
+        //   name:'EnvironmentManage',
+        //   component:EnvironmentManage
+        // },
         {
           path:'/addGlobalConfig',
           name:'AddGlobalConfig',
