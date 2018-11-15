@@ -8,7 +8,7 @@
             <Form ref="formValidate" class="formValidate" :label-width="80" v-if="isbouterAlive">
                     <div class="rowbox">
                             <Row class="caseBoxRow">
-                                <Col span="5">
+                                <Col span="8">
                                     <FormItem label="场景类型:">
                                         <Select v-model="senario_type">
                                             <Option  value="1">单交易基准</Option>
@@ -17,19 +17,30 @@
                                         </Select>
                                     </FormItem>
                                 </Col>
-                                <Col span="6">
+                                <Col span="8">
                                     <FormItem label="场景名称:">
                                         <Input v-model="senario_name" placeholder="输入场景名称"></Input>
                                     </FormItem>
                                 </Col>
-                                <Col span="6">
+                                <Col span="8">
                                     <FormItem label="创建人:">
-                                        <Input v-model="senario_creator" placeholder="输入创建人"></Input>
+                                        <Col>
+                                            <Select
+                                                clearable
+                                                v-model="senario_creator"
+                                                placeholder="输入创建人"
+                                                filterable
+                                                remote
+                                                :remote-method="srchComponent"
+                                                :loading="srchCmploading">
+                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
+                                            </Select>
+                                        </Col>
                                     </FormItem>
                                 </Col>
                             </Row>
                             <Row class="caseBoxRow">
-                                <Col span="5">
+                                <Col span="8">
                                     <FormItem label="显示已删除:">
                                         <Select v-model="interfaceId">
                                             <Option  value="1">否</Option>
@@ -37,14 +48,36 @@
                                         </Select>
                                     </FormItem>
                                 </Col>
-                                <Col span="6">
+                                <Col span="8">
                                     <FormItem label="关联任务:">
-                                        <Input v-model="ref_task_name" placeholder="输入关联任务"></Input>
+                                        <Col>
+                                            <Select
+                                                clearable
+                                                v-model="ref_task_name"
+                                                placeholder="输入关联任务"
+                                                filterable
+                                                remote
+                                                :remote-method="srchComponent"
+                                                :loading="srchCmploading">
+                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
+                                            </Select>
+                                        </Col>
                                     </FormItem>
                                 </Col>
-                                <Col span="6">
+                                <Col span="8">
                                     <FormItem label="关联脚本:">
-                                        <Input v-model="ref_script_name" placeholder="输入关联脚本"></Input>
+                                        <Col>
+                                            <Select
+                                                clearable
+                                                v-model="ref_script_name"
+                                                placeholder="输入关联脚本"
+                                                filterable
+                                                remote
+                                                :remote-method="srchComponent"
+                                                :loading="srchCmploading">
+                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
+                                            </Select>
+                                        </Col>
                                     </FormItem>
                                 </Col>
                             </Row>
@@ -57,10 +90,6 @@
                 <div align="left">
                     <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
                     <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
-                    <!--<Button @click="deleteCase" type="default" class="actionBtn">删除</Button>
-                    <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
-                    <Button @click="deleteCase" type="default" class="actionBtn">清空条件</Button>
-                    <Button @click="setCiFlag" type="default" class="actionBtn">加入持续集成</Button>-->
                 </div>
             </Form>
             <div class="tableBox">
@@ -71,7 +100,6 @@
                 </div>
             </div>
         </div>
-
         <Modal v-model="Deletips" width="1000">
             <p slot="header" style="color:#f60;text-align:center" >
                 <Icon type="ios-information-circle"></Icon>
@@ -90,9 +118,9 @@
                    <i-input v-model="addValidate.senario_name" placeholder="请输入场景名称"></i-input>
                 </Form-item>
                     <div>
-                              <Form-item label="场景描述:" prop="fie">
-                                <textarea class="form-control"  placeholder="请填写场景描述"  v-model="addValidate.fie" data_type="text" id="field_senario_desc" name="senario_desc" rows="5" cols="125"></textarea>
-                              </Form-item>
+                        <Form-item label="场景描述:" prop="fie">
+                        <textarea class="form-control"  placeholder="请填写场景描述"  v-model="addValidate.fie" data_type="text" id="field_senario_desc" name="senario_desc" rows="5" cols="125"></textarea>
+                        </Form-item>
                     </div>
                 <Form-item label="关联任务:" prop="ref_task_name">
                    <i-select v-model="addValidate.ref_task_name" placeholder="请选择任务">
@@ -132,7 +160,7 @@
                 <Button type="primary" @click="cancel()">取消</Button>
             </div>
         </Modal>
-
+        <!--创建场景模态框-->
         <Modal v-model="Deletipsss" width="500">
             <p slot="header" style="color:#f60;text-align:center" >
                 <Icon type="ios-information-circle"></Icon>
@@ -194,18 +222,12 @@ export default {
             senario_name:'',
             script:'',
             senario_type:'',
-            threads_total:'',
             duration:'',
             ref_task_name:'',
             ref_script_name:'',
             update_time:'',
             senario_creator:'',
             interfaceId:'',
-            version:'',
-            startTime:'',
-            endTime:'',
-            createUser:'',
-            selectedData:[], //选中项的数组
             columns: [
             	{
                     type: 'selection',
@@ -213,8 +235,13 @@ export default {
                     align: 'center'
                 },
                 {
+                    title: 'ID',
+                    key: 'id',
+                    width: 60,
+                },
+                {
                     title: '关联任务',
-                    key: 'perf_task',
+                    key: 'ref_task_name',
                     align: 'center',
                 },
                 {
@@ -223,7 +250,7 @@ export default {
                 },
                 {
                     title: '关联脚本',
-                    key: 'script'
+                    key: 'ref_script_name'
                 },
                 {
                     title: '场景类型',
@@ -234,7 +261,7 @@ export default {
                     key: 'duration',
                 },
                 {
-                    title: '总线程数',
+                    title: '线程组并发数',
                     key: 'threads_total',
                 },
                 {
@@ -303,38 +330,8 @@ export default {
                     }
                 }
             ],
-            tableData: [{
-                         "id": 73,
-                         "update_time":"2018-10-30 10:38:53",
-                         "script":"代收代付P8_脚本_201806112",
-                         "perf_task":"代收代付P8系统0623版本组件组装非功能测试",
-                         "senario_name":"P8代收代付混合场景测试",
-                         "duration":3,
-                         "threads_total":13,
-                         "senario_type":"混合场景"
-                        },
-                        {
-                         "id": 74,
-                         "update_time":"2018-10-08 16:08:50",
-                         "script":"代收代付P8_脚本_201806112",
-                         "perf_task":"代收代付P8系统0623版本组件组装非功能测试",
-                         "senario_name":"zyhtest",
-                         "duration":36,
-                         "threads_total":1,
-                         "senario_type":"单交易基准"
-                        },
-                        {
-                         "id": 75,
-                         "update_time":"2018-07-04 14:46:06",
-                         "script":"代收付测试脚本",
-                         "perf_task":"代收代付P8系统0623版本组件组装非功能测试",
-                         "senario_name":"代收代付P8系统单交易负载测试",
-                         "duration":10,
-                         "threads_total":5,
-                         "senario_type":"单交易负载"
-                        }
-                        ],
-            tableDAtaTatol:3,
+            tableData: [],
+            tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],
             //选中的项的数组
@@ -379,7 +376,14 @@ export default {
                     }
                 });
             },
-
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            console.log(data)
+        },
+        //
+        onRowDblClick: function(row) {
+            this.$router.push({path:'/addCase',query:{id:row.id}});
+        },
         deleteDataCase (index){      
             console.log("删除单条按钮");
             let tableData = this.tableData;
@@ -387,29 +391,20 @@ export default {
         },
 
         listCase: function() {
-            let _this = this
-            console.log('条件查询按钮')
+            let _this = this;
+            console.log('listPerfTask');
+            console.log('component_name:', _this.sComponent);
             this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'listCase',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
+            this.$http.post('/myapi/senario/list', {
                 data: {
-
-                    interfaceId: this.interfaceId,
-                    version: this.version,
-                    startTime: '',
-                    endTime: '',
-                    createUser: this.createUser
+                    component_name: _this.sComponent,
+                   
                 }
             }).then(function (response) {
-                console.log('response')
-                _this.tableData = response.data.data.cases
+                console.log('response:');
+                console.log(response);
+                console.log('response.data: ', response.data);
+                _this.tableData = response.data.resultList;
             })
         },
 
@@ -439,7 +434,7 @@ export default {
         /**模态框弹出取消事件 */
         cancel:function () {
              this.reload();
-             this.$Message.info('点击了取消');
+             //this.$Message.info('点击了取消');
             this.Deletips = false;
         },
         /**添加新数据弹出模态框 */

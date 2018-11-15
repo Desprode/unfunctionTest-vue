@@ -26,6 +26,7 @@ Vue.config.productionTip = false
 // axios.defaults.baseURL = 'http://128.192.206.16:8080/'
 // axios.defaults.baseURL = 'http://128.196.96.111:8000/'
 // axios.defaults.baseURL = 'http://128.192.206.53:8000/'
+//axios.defaults.baseURL = 'http://128.195.0.12:8080/'
 // 配置axios
 Vue.prototype.$http = axios;
 
