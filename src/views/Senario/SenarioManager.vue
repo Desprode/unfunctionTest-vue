@@ -92,7 +92,7 @@
                 <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
-                    <p>总共{{totalCount}}条记录</p>
+                    <p>总共{{totalPage}}页</p>
                 </div>
             </div>
         </div>
@@ -344,6 +344,7 @@ export default {
             totalCount:0,                         //共多少条数据
             pageNo:1,                            //当前页
             pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
             Deletips:false,
             Deletipss:false,
             Deletipsss:false
@@ -409,6 +410,7 @@ export default {
                 console.log('请求回来的表格数据: ', response.data);
                 _this.tableData = response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
                 console.log(response.headers.totalcount);
                 console.log(_this.totalCount);  
             })
