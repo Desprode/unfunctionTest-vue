@@ -5,7 +5,7 @@
                 <span>场景管理</span>
             </h3>
            <!--==================================form 表单============================================-->
-            <Form ref="formValidate" class="formValidate" :label-width="80" v-if="isbouterAlive">
+            <Form ref="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
                 <div class="rowbox">
                     <Row class="caseBoxRow">
                         <Col span="7">
@@ -71,54 +71,113 @@
         </div>
 
 
-        <!--========================================创建场景模态框===============================-->
-        <Modal v-model="Deletips" width="1000">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
+        <!--========================================创建场景模态框：===============================-->
+        <Modal v-model="showAddModal" width="800">
+            <p slot="header" style="color:#f60" >
                 <span>新增</span>
             </p>
             <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-                <Form-item label="场景类型:" prop="senario_type">
-                   <i-select v-model="addValidate.senario_type" placeholder="请选择场景类型">
-                            <i-option value="01">单交易基准</i-option>
-                            <i-option value="02">单交易负载</i-option>
-                            <i-option value="03">混合场景</i-option>                      
-                    </i-select>
-                </Form-item>
-                <Form-item label="场景名称:" prop="senario_name">                      
-                   <i-input v-model="addValidate.senario_name" placeholder="请输入场景名称"></i-input>
-                </Form-item>
-                    <div>
-                        <Form-item label="场景描述:" prop="fie">
-                        <textarea class="form-control"  placeholder="请填写场景描述"  v-model="addValidate.fie" data_type="text" id="field_senario_desc" name="senario_desc" rows="5" cols="125"></textarea>
-                        </Form-item>
-                    </div>
-                <Form-item label="关联任务:" prop="ref_task_name">
-                   <i-select v-model="addValidate.ref_task_name" placeholder="请选择任务">
-                            <i-option value="1">关联1</i-option>
-                            <i-option value="2">关联2</i-option>
-                            <i-option value="3">关联3</i-option>                      
-                    </i-select>
-                </Form-item>
-                <Form-item label="关联脚本:" prop="ref_script_name">
-                   <i-select v-model="addValidate.ref_script_name" placeholder="请选择脚本">
-                            <i-option value="1">脚本1</i-option>
-                            <i-option value="2">脚本2</i-option>
-                            <i-option value="3">脚本3</i-option>                      
-                    </i-select>
-                </Form-item>
-            </i-form>
+            <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
+                <FormItem label="场景类型:" prop="senario_type">
+                   <Select v-model="addValidate.senario_type" placeholder="请选择场景类型">
+                            <Option value="01">单交易基准</Option>
+                            <Option value="02">单交易负载</Option>
+                            <Option value="03">混合场景</Option>                      
+                    </Select>
+                </FormItem>
+                <FormItem label="场景名称:" prop="senario_name">                      
+                   <Input v-model="addValidate.senario_name" placeholder="请输入场景名称"></Input>
+                </FormItem>
+                <FormItem label="场景描述:" prop="fie">
+                    <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
+                </FormItem>
+                <FormItem label="关联任务:" prop="ref_task_name">
+                   <Select v-model="addValidate.ref_task_name" placeholder="请选择任务">
+                            <Option value="1">关联1</Option>
+                            <Option value="2">关联2</Option>
+                            <Option value="3">关联3</Option>                      
+                    </Select>
+                </FormItem>
+                <FormItem label="关联脚本:" prop="ref_script_name">
+                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本">
+                            <Option value="1">脚本1</Option>
+                            <Option value="2">脚本2</Option>
+                            <Option value="3">脚本3</Option>                      
+                    </Select>
+                </FormItem>
+            </Form>
             </div>
             <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
+                <Button color="#1c2438" @click="setOk('setValidate')">确认</Button>
+                <Button type="primary" @click="setCancel()">取消</Button>
+            </div>
+        </Modal>
+
+        <!--==================================执行操作模态框：===============================-->
+        <Modal v-model="showExeModal" width="800">
+            <p slot="header" style="color:#f60" >
+                <span>执行时间设置</span>
+            </p>
+            <Form ref="eveValidate" :model="eveValidate" :rules="eveRuleValidate" :label-width="100" label-position="left">
+                <FormItem label="执行类型" prop="exeType">
+                    <RadioGroup v-model="eveValidate.exeType" vertical >
+                        <Radio label="00" checked>立即执行</Radio>
+                        <Radio label="01">定时执行</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem label="预设启动时间" v-show="eveValidate.exeType=='01'?true:false">
+                    <DatePicker type="datetime" placeholder="选择日期" v-model="eveValidate.exeDateTime"></DatePicker>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button color="#1c2438" @click="exeOk()">确认</Button>
+                <Button type="primary" @click="exeCancel()">取消</Button>
+            </div>
+        </Modal>
+
+        <!--=============================场景设置模态框============================-->
+        <Modal v-model="showSetModal" width="800">
+            <p slot="header" style="color:#f60" >
+                <span>编辑场景</span>
+            </p>
+            <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="100">
+                <h3>基本属性</h3>
+                <FormItem label="场景名称:" prop="senario_name">                      
+                   <Input v-model="setValidate.senario_name"></Input>
+                </FormItem>
+                <FormItem label="场景描述:" prop="fie">
+                    <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
+                </FormItem>
+                <h3>压力机配置</h3> 
+                <FormItem label="每台压力机最大并发用户数：">
+                    <Input v-model="setValidate.maxNum"></Input>
+                </FormItem>
+                <h3>运行设置</h3>
+                <FormItem label="持续时长（分钟）：">
+                    <Input v-model="setValidate.duration"></Input>
+                </FormItem>
+                <h3>线程组配置</h3>
+                <FormItem label="持续时长（分钟）：">
+                    <CheckboxGroup v-model="setValidate.xianchengzu" vertical>
+                        <Checkbox label="SA0100900线程组">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </Checkbox>
+                        <Checkbox label="A00210042线程组">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </Checkbox>
+                    </CheckboxGroup>
+                </FormItem>
+                <h3>高级配置</h3>
+            </Form>
+            <div slot="footer">
+                <Button color="#1c2438" @click="handleSubmit('setValidate')">确认</Button>
+                <Button type="primary" @click="Addcancel()">取消</Button>
             </div>
         </Modal>
     </div>
 
-
-        <!-- <AddItemPop :isShow="isShowAddPop" :isAdd="isAdd" :addLoading="true" @popClose="popCloseFn"  @tableDataAdd="tableDataAddFn" :tabDataRow="tableDataRow" /> -->
 
 </template>
 <script>
@@ -135,7 +194,9 @@ export default {
             perftask_name:'',                                    //关联任务
             script_name:'',                                      //脚本名称
             isShowMore:false,                                   //是否显示更多查询条件
-            addValidate: {
+            /**============新增模态框数据=========== */
+            showAddModal:false,                  //新建窗口
+            addValidate: {                                     
                     senario_type: '',                 
                     senario_name: '',   
                     fie: '',
@@ -159,8 +220,8 @@ export default {
                     { required: true, message: '请选择脚本', trigger: 'change' }            
                 ]         
             },
-            
-            columns: [
+            /*=================================表格数据========================*/
+            columns: [                                                
             	{
                     type: 'selection',
                     width: 40,
@@ -246,7 +307,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.upadtezx(item.index)
+                                        this.showExeModal = true;
                                     }
                                 }
                             }, '执行'),
@@ -257,7 +318,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.setCiFlag(item.index)
+                                        this.showSetModal = true;
                                     }
                                 }
                             }, '设置'),
@@ -284,7 +345,43 @@ export default {
             pageNo:1,                            //当前页
             pageSize:10,                           //每页显示多少条数据
             totalPage:0,                           //共多少页
-            Deletips:false,
+            /**====================执行模态框数据=================== */
+            showExeModal:false,                  //执行窗口
+            eveValidate: {        
+                exeType:'00',                             //执行类型
+                exeDateTime:new Date(),                         //执行时间
+                xianchengzu:'',
+                bingFaShu1:'',
+                haoMiaoShu1:''
+
+            },
+            eveRuleValidate:{
+                exeType:[
+                    {required:true,message:"",trigger:"change"}
+                ],
+            },
+            /**======================设置模态框数据========================== */
+            showSetModal:false,
+            setValidate:{
+                senario_name:'',
+                senario_desc:'',
+                maxNum:'',
+                duration:'',
+            },
+            setRuleValidate:{
+                senario_name:[
+                    {required:true,message:"这是必输字段",trigger:'blur'}
+                ],
+                senario_desc:[
+                    {required:false,message:'',trigger:'blur'}
+                ],
+                maxNum:[
+                    {required:false,message:'',trigger:'blur'}
+                ],
+                duration:[
+                    {required:true,message:'',trigger:'blur'}
+                ],
+            },
         }
     },
     mounted:function () {
@@ -316,8 +413,6 @@ export default {
                 _this.tableData = response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
-                console.log(response.headers.totalcount);
-                console.log(_this.totalCount);  
             })
         },
         /**切换页码 */
@@ -394,40 +489,68 @@ export default {
             
         },
 
-
-        /**===================设置功能=========================== */
-        setCiFlag: function() {
-                       
-        },
-
        
         /**添加新数据弹出模态框 */
         addCase:function(){
-            this.Deletips = true;
+            this.showAddModal = true;
             //console.log("显示模态框");
         },
-        /***模态框弹出时确定事件: 验证表单提交 */
+        /***================================新增模态框事件===========================================*/
         handleSubmit:function (name) {
             console.log(this.addValidate.senario_type);
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.$Message.success('提交成功!');
-                     this.Deletips = false;
+                     this.showAddModal = false;
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
-                console.log(this);                 //undefined  周一解决
+                console.log(this);                 //方法接口写好时再清空之前输入的
                  //this.$refs[name].resetFields();
             });
             
         },
-         /**模态框弹出取消事件 */
-        cancel:function () {
+         /**新增模态框弹出取消事件 */
+        Addcancel:function () {
              //this.$Message.info('点击了取消');
-            this.Deletips = false;
+            this.showAddModal = false;
         },
-        /**修改新数据弹出模态框 */
-        upadtezx:function(){
+
+        /**=========================================执行模态框事件==================================== */
+        /**确认事件 */
+        exeOk:function(){
+            
+            if(this.eveValidate.exeType == '00'){
+                console.log(new Date());
+            }else{
+                console.log(this.eveValidate.exeDateTime);
+            }
+            this.showExeModal = false;
+        },
+        /**取消事件 */
+        exeCancel:function(){
+            this.showExeModal = false;
+        },
+
+
+
+
+
+        /**================================设置模态框事件================================ */
+        setOk:function(){
+            this.$refs[name].validate((valid) => {
+                if (valid) {
+                    this.$Message.success('提交成功!');
+                    this.showSetModal = false;
+                } else {
+                    this.$Message.error('表单验证失败!');
+                }
+                console.log(this);                 //方法接口写好时再清空之前输入的
+                 //this.$refs[name].resetFields();
+            });
+        },
+        setCancel:function(){
+            this.showSetModal = false;
         },
     }
 }
