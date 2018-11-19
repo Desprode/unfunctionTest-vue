@@ -10,10 +10,10 @@
                     <Row class="caseBoxRow">
                         <Col span="7">
                             <FormItem label="场景类型:">
-                                <Select v-model="senario_type">
-                                    <Option  value="1">单交易基准</Option>
-                                    <Option  value="2">单交易负载</Option>
-                                    <Option  value="3">混合场景</Option>
+                                <Select v-model="senario_type" clearable>
+                                    <Option  value="01">单交易基准</Option>
+                                    <Option  value="02">单交易负载</Option>
+                                    <Option  value="03">混合场景</Option>
                                 </Select>
                             </FormItem>
                         </Col>
@@ -24,16 +24,7 @@
                         </Col>
                         <Col span="7">
                             <FormItem label="创建人:">
-                                <Select
-                                    clearable
-                                    v-model="senario_creator"
-                                    placeholder="输入创建人"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select>
+                               <Input v-model="senario_creator" placeholder="输入场景创建人"></Input>
                             </FormItem>
                         </Col>
                         <Col span="3">
@@ -43,38 +34,20 @@
                     <Row class="caseBoxRow" v-show="isShowMore">
                         <Col span="8">
                             <FormItem label="显示已删除:">
-                                <Select v-model="interfaceId">
-                                    <Option  value="1">否</Option>
-                                    <Option  value="2">是</Option>
+                                <Select v-model="is_deleted" clearable>
+                                    <Option  value="false">否</Option>
+                                    <Option  value="true">是</Option>
                                 </Select>
                             </FormItem>
                         </Col>
                         <Col span="8">
                             <FormItem label="关联任务:">
-                                <Select
-                                    clearable
-                                    v-model="ref_task_name"
-                                    placeholder="输入关联任务"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select>
+                                <Input v-model="perftask_name" placeholder="输入关联任务"></Input>
                             </FormItem>
                         </Col>
                         <Col span="8">
                             <FormItem label="关联脚本:">
-                                <Select
-                                    clearable
-                                    v-model="ref_script_name"
-                                    placeholder="输入关联脚本"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select>
+                                <Input v-model="script_name" placeholder="输入脚本名称"></Input>
                             </FormItem>
                         </Col>
                     </Row>  
@@ -89,13 +62,16 @@
                 <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
             </div>
             <div class="tableBox">
-                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
                 </div>
             </div>
         </div>
+
+
+        <!--========================================创建场景模态框===============================-->
         <Modal v-model="Deletips" width="1000">
             <p slot="header" style="color:#f60;text-align:center" >
                 <Icon type="ios-information-circle"></Icon>
@@ -105,9 +81,9 @@
             <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
                 <Form-item label="场景类型:" prop="senario_type">
                    <i-select v-model="addValidate.senario_type" placeholder="请选择场景类型">
-                            <i-option value="1">单交易基准</i-option>
-                            <i-option value="2">单交易负载</i-option>
-                            <i-option value="3">混合场景</i-option>                      
+                            <i-option value="01">单交易基准</i-option>
+                            <i-option value="02">单交易负载</i-option>
+                            <i-option value="03">混合场景</i-option>                      
                     </i-select>
                 </Form-item>
                 <Form-item label="场景名称:" prop="senario_name">                      
@@ -139,42 +115,6 @@
                 <Button type="primary" @click="cancel()">取消</Button>
             </div>
         </Modal>
-
-
-        <Modal v-model="Deletipss" width="500">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
-                <span>设置</span>
-            </p>
-            <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-               设置
-            </i-form>
-            </div>
-            <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
-            </div>
-        </Modal>
-        <!--创建场景模态框-->
-        <Modal v-model="Deletipsss" width="500">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
-                <span>执行</span>
-            </p>
-            <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-               执行类型:
-            </i-form>
-            </div>
-            <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
-            </div>
-        </Modal>
-
-
-        
     </div>
 
 
@@ -186,42 +126,40 @@ export default {
     name: 'TestCase',
     data () { 
         return {
-            cmpOpts:'',
-            srchCmploading:true,
+            
             isbouterAlive: true,
-            isShowMore:false,
+            senario_name:'',                                      //场景名称             
+            senario_type:'',                                      //场景类型
+            senario_creator:'',                                  //创建人
+            is_deleted:'',                                       //是否删除
+            perftask_name:'',                                    //关联任务
+            script_name:'',                                      //脚本名称
+            isShowMore:false,                                   //是否显示更多查询条件
             addValidate: {
                     senario_type: '',                 
                     senario_name: '',   
                     fie: '',
                     ref_task_name: '',
                     ref_script_name: '',
-                    },
-                    ruleValidate: {        
-                        senario_name: [                
-                            { required: true, message: '场景名称不能为空', trigger: 'blur' }              
-                        ],        
-                        senario_type: [                 
-                            { required: true, message: '请选择场景类型', trigger: 'change' }            
-                        ],
-                        fie: [                 
-                            { required: true, message: '描述不能为空', trigger: 'change' }            
-                        ],
-                        ref_task_name: [                 
-                            { required: true, message: '请选择任务', trigger: 'change' }            
-                        ],
-                        ref_script_name: [                 
-                            { required: true, message: '请选择脚本', trigger: 'change' }            
-                        ]         
-                    },
+            },
+            ruleValidate: {        
+                senario_name: [                
+                    { required: true, message: '场景名称不能为空', trigger: 'blur' }              
+                ],        
+                senario_type: [                 
+                    { required: true, message: '请选择场景类型', trigger: 'change' }            
+                ],
+                fie: [                 
+                    { required: false, message: '描述不能为空', trigger: 'change' }            
+                ],
+                ref_task_name: [                 
+                    { required: true, message: '请选择任务', trigger: 'change' }            
+                ],
+                ref_script_name: [                 
+                    { required: true, message: '请选择脚本', trigger: 'change' }            
+                ]         
+            },
             
-            ref_task_name:'',
-            senario_name:'',         
-            ref_script_name:'',
-            senario_type:'',
-            duration:'',
-            senario_creator:'',
-            interfaceId:'',
             columns: [
             	{
                     type: 'selection',
@@ -236,19 +174,21 @@ export default {
                 {
                     title: '关联任务',
                     key: 'perftask_name',
-                    width:100,
-                    align: 'center',
+                    ellipsis: true, 
+                    width:110,
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
                     width:180,
+                    ellipsis: true, 
                 },
                 {
                     title: '关联脚本',
                     key: 'script_name',
                     width:100,
                     align: 'center',
+                    ellipsis: true, 
                 },
                 {
                     title: '场景类型',
@@ -259,19 +199,19 @@ export default {
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
-                    width:130,
+                    width:120,
                     align: 'center',
                 },
                 {
                     title: '线程组并发数',
                     key: 'threads_total',
-                    width:120,
+                    width:110,
                     align: 'center',
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:140,
+                    width:145,
                     align: 'center',
                 },
                 {
@@ -323,15 +263,14 @@ export default {
                             }, '设置'),
                             h('Button', {
                                 props: {
-                                    type: 'error',
-                                    size: 'small'
+                                    icon:'ios-trash',
                                 },
                                 on: {
                                     click: () => {
                                         this.deleteDataCase(item.index)
                                     }
                                 }
-                            }, '删除'),
+                            } ),
                         ])
 
                     }
@@ -346,8 +285,6 @@ export default {
             pageSize:10,                           //每页显示多少条数据
             totalPage:0,                           //共多少页
             Deletips:false,
-            Deletipss:false,
-            Deletipsss:false
         }
     },
     mounted:function () {
@@ -357,7 +294,46 @@ export default {
     },
     methods: {
         
-        srchComponent:function(){},
+        /**========================================加载列表中的数据======================================= */
+        listCase: function() {
+            let _this = this;
+            console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/senario/list', {
+                data: {
+                    senario_type: _this.senario_type, 
+                    senario_name:_this.senario_name,
+                    senario_creator:_this.senario_creator,
+                    is_deleted:_this.is_deleted,
+                    perftask_name:_this.perftask_name,
+                    script_name:_this.script_name,
+                    pageno:_this.pageNo,
+                    pagesize:_this.pageSize,
+                }
+            }).then(function (response) {
+                console.log(response);
+                console.log('请求回来的表格数据: ', response.data);
+                _this.tableData = response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
+                console.log(response.headers.totalcount);
+                console.log(_this.totalCount);  
+            })
+        },
+        /**切换页码 */
+        pageChange:function(pageNo){
+            console.log(pageNo);
+            this.pageNo = pageNo;
+            this.listCase();
+        },
+        /**切换页面大小 */
+        pageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.pageSize = pageSize;
+            this.listCase();
+        },
+        
+        /**============================删除多条数据========================= */
         deleteCase: function () {
             //console.log("删除多条按钮");
             let selectedData = this.selectedData;      //选中要删除的数据
@@ -374,92 +350,84 @@ export default {
                 this.$Message.error("请选择要删除的数据")
             }
         }, 
-            deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
-                let tableData = this.tableData;          //原有的数据
-                tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                    if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                        tableData.splice(index, 1);        //即删除该数据
+        deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
+            let tableData = this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    this.$Modal.confirm({
+                    title:'确认',
+                    content: '是否删除该数据',
+                    onOk: () => {
+                        tableData.splice(index, 1);        //即删除该数据上
+                        this.$Message.info('删除成功');
+                    },
+                    onCancel: () => {
+                        this.$Message.info('删除失败');
                     }
-                });
-            },
+                }); 
+                   
+                }
+            });
+        },
+            /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
             //console.log(data)
         },
-        //
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
-        },
-        deleteDataCase (index){      
+        
+        /**================================删除一条数据================================ */
+        deleteDataCase:function (index){      
             //console.log("删除单条按钮");
             let tableData = this.tableData;
-            tableData.splice(index, 1);
+            console.log(tableData[index]);
+            this.$Modal.confirm({
+                title:'确认',
+                content: `是否删除该数据`,
+                onOk: () => {
+                    tableData.splice(index, 1);
+                    this.$Message.info('删除成功');
+                },
+                onCancel: () => {
+                    this.$Message.info('删除失败');
+                }
+            });       
+            
         },
 
-        listCase: function() {
-            let _this = this;
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/senario/list', {
-                data: {
-                    component_name: _this.sComponent,
-                    pageno:_this.pageNo,
-                    pagesize:_this.pageSize,
-                }
-            }).then(function (response) {
-                console.log(response);
-                console.log('请求回来的表格数据: ', response.data);
-                _this.tableData = response.data.resultList;
-                _this.totalCount = response.headers.totalcount;
-                _this.totalPage = response.headers.totalpage;
-                console.log(response.headers.totalcount);
-                console.log(_this.totalCount);  
-            })
-        },
-        pageChange:function(pageNo){
-            console.log(pageNo);
-            this.pageNo = pageNo;
-            this.listCase();
-        },
-        pageSizeChange:function(pageSize){
-            console.log(pageSize);
-            this.pageSize = pageSize;
-            this.listCase();
-        },
+
+        /**===================设置功能=========================== */
         setCiFlag: function() {
                        
         },
 
-        /**模态框弹出取消事件 */
-        cancel:function () {
-             //this.$Message.info('点击了取消');
-            this.Deletips = false;
-        },
+       
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.Deletips = true;
             //console.log("显示模态框");
         },
-/***模态框弹出时确定事件: 验证表单提交 */
-        handleSubmit (name) {
+        /***模态框弹出时确定事件: 验证表单提交 */
+        handleSubmit:function (name) {
+            console.log(this.addValidate.senario_type);
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.$Message.success('提交成功!');
+                     this.Deletips = false;
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
+                console.log(this);                 //undefined  周一解决
+                 //this.$refs[name].resetFields();
             });
-            this.Deletips = false;
+            
         },
-
-         /**修改新数据弹出模态框 */
-         setCiFlag:function(){
-            this.Deletipss = true;
-            //console.log("显示模态框");
+         /**模态框弹出取消事件 */
+        cancel:function () {
+             //this.$Message.info('点击了取消');
+            this.Deletips = false;
         },
         /**修改新数据弹出模态框 */
         upadtezx:function(){
-            this.Deletipsss = true;
-            //console.log("显示模态框");
         },
     }
 }
