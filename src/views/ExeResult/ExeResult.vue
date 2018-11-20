@@ -5,30 +5,20 @@
                 <h3 class="Title">
                     <span>执行结果</span>
                 </h3>
-            
                 <Form ref="formValidate" class="formValidate">
                     <div class="rowbox">
                         <Row :gutter="16">
-                            <Col span="2" class="searchLable">物理子系统</Col>
-                            <Col span="5">
-                                <Select
-                                    clearable
-                                    v-model="sComponent"
-                                    placeholder="输入物理子系统中文名称或英文简称"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select>
-                            </Col>
                             <Col span="2" class="searchLable">任务名称</Col>
                             <Col span="5">
-                                <Input clearable v-model="sTaskName" placeholder="输入任务名称"></Input>
+                                <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
                             </Col>
-                            <Col span="2" class="searchLable">任务状态</Col>
+                            <Col span="2" class="searchLable">场景名称</Col>
                             <Col span="5">
-                                    <Select v-model="sTaskStatus" style="">
+                                <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
+                            </Col>
+                            <Col span="2" class="searchLable">场景类型</Col>
+                            <Col span="5">
+                                    <Select v-model="type_name" style="">
                                     <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </Col>
@@ -36,48 +26,51 @@
                                 <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
                             </Col>
                         </Row>
-                        <Row :gutter="16" v-if="isShowMoreShow">
-                            <Col span="2" class="searchLable">任务开始时间</Col>
-                            <Col span="9">
+                        <Row :gutter="16" v-show="isShowMoreShow">
+                            <Col span="2" class="searchLable">执行状态</Col>
+                            <Col span="5">
+                                    <Select v-model="exe_status" style="">
+                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                </Select>
+                            </Col>
+                            <Col span="2" class="searchLable">执行人</Col>
+                            <Col span="5">
+                                <Select
+                                    clearable
+                                    v-model="execution_name"
+                                    placeholder="输入执行人名称"
+                                    filterable
+                                    remote
+                                    :remote-method="srchComponent"
+                                    :loading="srchCmploading">
+                                    <Option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</Option>
+                                </Select>
+                            </Col>
+                        </Row>
+                        <Row :gutter="17" v-show="isShowMoreShow">
+                            <Col span="2" class="searchLable">开始日期</Col>
+                            <Col span="5">
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time"></DatePicker>
                                 </Col>
                                 <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time"></DatePicker>
                                 </Col>
                                 <Col span="1"></Col>
                             </Col>
-                            <Col span="2" class="searchLable">任务结束时间</Col>
-                            <Col span="9">
+                            <Col span="2" class="searchLable">结束日期</Col>
+                            <Col span="5">
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time"></DatePicker>
                                 </Col>
                                 <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time"></DatePicker>
                                 </Col>
-                                <Col span="1"></Col>
                             </Col>
                             <Col span="2"></Col>
                         </Row>
-                        <Row :gutter="16" v-if="isShowMoreShow">
-                            <Col span="2" class="searchLable">显示已删除</Col>
-                            <Col span="10">
-                                <Input v-model="createUser" placeholder="是否显示已删除任务"></Input>
-                            </Col>
-                            <Col span="2" class="searchLable">创建时间</Col>
-                            <Col span="10">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1"></Col>
-                            </Col>
-                        </Row>   
                     </div>
                     <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
                         <Icon type="chevron-down" color="#fff" ></Icon>
@@ -87,10 +80,8 @@
                 
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <Button type="success" @click="addCase" >新建任务</Button>
-                        <Button type="warning" @click="deleteCase">测试需求</Button>
-                        <Button type="primary" @click="listCase">测试指标</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button type="success" @click="addCase" >聚合报告</Button>
+                        <Button @click="deleteCase" type="error">删除结果</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -103,7 +94,7 @@
 
             <!-- /* add by xin */ -->
             <!--===================================新建任务时弹出的对话框===============-->
-            <Modal v-model="Deletips" width="1000">
+            <!--<Modal v-model="Deletips" width="1000">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加任务</span>
@@ -154,7 +145,7 @@
                     <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
                     <Button type="primary" @click="cancel()">取消</Button>
                 </div>
-            </Modal>
+            </Modal>-->
         </Card>
     </div>
 </template>
@@ -164,18 +155,22 @@ export default {
 	name: 'TestCase',
     data () {
         return {
-            isShowMoreShow:false,
+            isShowMoreShow:false,               //是否显示更多查询条件
             sComponent:'',
             srchCmploading: false,
             cmpOpts: [],
             list: [], 
-            sTaskStatus:'',
             taskStatusList: this.$Global.taskStatusList,  
-            interfaceId:'',
-            sTaskName:'',
-            startTime:'',
-            endTime:'',
-            createUser:'',     
+            
+            executor_id:'',                     //执行编号
+            component_name:'',                  //物理子系统
+            task_name:'',                       //关联任务
+            senario_name:'',                    //场景名称
+            type_name:'',                       //场景类型
+            execution_name:'',                  //执行人
+            exe_status:'',                      //执行状态
+            start_time:'',                      //开始日期
+            end_time:'',                        //结束日期
             columns: [
             	{
                     type: 'selection',
@@ -183,115 +178,69 @@ export default {
                     align: 'center'
                 },
                 {
-                    title: 'id',
-                    key: 'id',
-                    width: 60,
+                    title: '执行编号',
+                    key: 'executor_id',
+                    tooltip: true, 
+                    width: 130,
                 },
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    width: 220,
-                    // ellipsis: true, 
                     tooltip: true, 
                 },
                 {
-                    title: '任务名称',
-                    width: 220,
-                    key: 'perftask_name'
+                    title: '关联任务',
+                    key: 'task_name'
                 },
                 {
-                    title: '投产日期',
-                    key: 'online_date',
-                    width: 100,
+                    title: '场景名称',
+                    key: 'senario_name',
                 },
                 {
-                    title: '任务状态',
-                    key: 'perftask_status',
+                    title:'场景类型',
+                    key:'type_name',
                     width: 90,
-                    render : (h, params)=>{
-                        let _this = this
-                        console.log('$Global.taskStatusList: ', _this.$Global.taskStatusList);
-                        console.log('$Global.taskStatusMap: ', _this.$Global.taskStatusMap);
-                        console.log('00-------', _this.$Global.taskStatusMap['00']);
-                        console.log('params:', params);
-                        return h('span', _this.$Global.taskStatusMap[params.row.perftask_status]);
-                    }
                 },
                 {
-                    title: '任务开始日期',
-                    key: 'perftask_begin_date',
-                    width: 110,
+                    title: '执行人',
+                    key: 'execution_name',
+                    width: 80,
                 },
                 {
-                    title: '任务结束日期',
-                    key: 'perftask_end_date',
-                    width: 110,
+                    title: '执行状态',
+                    key: 'exe_status',
+                    width: 90,
                 },
-                // {
-                //     title: '创建时间',
-                //     key: 'created_date',
-                //     width: 150,
-                //     align: 'center',
-                // },
+                {
+                    title: '开始日期',
+                    key: 'start_time',
+                },
+                {
+                    title: '结束日期',
+                    key: 'end_time',
+                },
                 {
                     title: '操作',
                     key: 'opration',
-                    width:130,
+                    width: 80,
                     render: (h, params) => {
                         return h('div', [
                         h('Button', {
                                         props: {
-                                            type: 'primary',
-                                            size: 'small'
-                                        },
-                                        style: {
-                                            marginRight: '5px'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                    if (params.row.$isEdit) {
-                                                        this.handleSave(params.row);
-                                                    } else {
-                                                        this.handleEdit(params.row);
-                                                    }
-                                            }
-                                        }
-                                    },params.row.$isEdit ? '保存' : '编辑'),
-                        // h('Button', {
-                        //                 props: {
-                        //                     type: 'error',
-                        //                     size: 'small'
-                        //                 },
-                        //                 style: {
-                        //                     marginRight: '5px'
-                        //                 },
-                        //                 on: {
-                        //                     click: () => {
-                        //                         this.remove(params.index);
-                        //                         console.log(params)
-                        //                     }
-                        //                 }
-                        //             }, '删除'),
-                        h('Button', {
-                                        props: {
-                                            type: 'default',
+                                            type:"primary",
                                             size: 'small'
                                         },
                                         on: {
                                             click: () => {
-                                                console.log("文档")
+                                                console.log("详情")
                                             }
                                         }
-                                    }, '文档')
+                                    }, '详情')
                         ])
                                             
                     }
                 }
             ],
-            tableData: [],
-            tableDAtaTatol:0,
-            tableDAtaPageLine:3,
-            selectedData:[],
 
             /* add by xin */
             /**===================================模态框表单验证数据 =========================*/
@@ -316,6 +265,16 @@ export default {
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ]
             },
+
+            tableData: [],
+            tableDAtaTatol:0,
+            tableDAtaPageLine:3,
+            selectedData:[],                    //选中的项的数组
+            totalCount:0,                         //共多少条数据
+            pageNo:1,                            //当前页
+            pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
+            Deletips:false,
         }
     },
     created(){
@@ -335,7 +294,7 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/search', 
+                    this.$http.post('/myapi/component/list', 
                     {
                         headers: {
                         },
@@ -365,7 +324,6 @@ export default {
             }
         },
 
-        /* add by xin */
         /*删除按钮功能*/
         deleteCase: function() {
             console.log("删除多条按钮");
@@ -374,8 +332,7 @@ export default {
             let deleteId = [];                       //选中数据的id
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                   
+                    deleteId.push(selectedData[i].executor_id);  //将选中的而数据的id放入要删除的集合中
                     console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
@@ -383,88 +340,63 @@ export default {
                     this.$Message.error("请选择要删除的数据")
             }
         }, 
-        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
+        deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
             let tableData = this.tableData;          //原有的数据
-            tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   tableData.splice(index,1);        //即删除该数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.executor_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    this.$Modal.confirm({
+                    title:'确认',
+                    content: '是否删除该数据',
+                    onOk: () => {
+                        tableData.splice(index, 1);        //即删除该数据上
+                        this.$Message.info('删除成功');
+                    },
+                    onCancel: () => {
+                        this.$Message.info('删除失败');
+                    }
+                }); 
+                   
                 }
             });
         },
-
+        //页面展示
         listCase: function() {
             let _this = this;
-            console.log('listPerfTask');
-            console.log('component_name:', _this.sComponent);
+            console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/perftask/list', {
-                // header: {
-                //     // txCode:'listCase',
-                //     // sysTransId:'20181010153628000165432',
-                //     // projectId:'1001',
-                //     // projectName:'res',
-                //     reqTime:'153628001',
-                //     // userId:'admin',
-                // },
+            this.$http.post('/myapi/testresult/list', {
                 data: {
-                    component_name: _this.sComponent,
-                    // startTime: '',
-                    // endTime: '',
-                    // createUser: this.createUser
+                    component_name: _this.component_name,
+                    task_name:_this.task_name,
+                    senario_name:_this.senario_name,
+                    execution_name:_this.execution_name,
+                    pageNo:_this.pageNo,
+                    pageSize:_this.pageSize,
                 }
             }).then(function (response) {
-                console.log('response:');
                 console.log(response);
-                console.log('response.data: ', response.data);
+                console.log('请求回来的表格数据: ', response.data);
+                _this.tableData = response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
+                console.log(response.headers.totalcount);
+                console.log(_this.totalCount);  
                 _this.tableData = response.data.resultList;
             })
         },
-
-        findCase: function(id) {
-            let _this = this
-            console.log('findCase')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    id: id
-                }
-            }).then(function (response) {
-                console.log('response')
-                console.log(response.data.data)
-            })
+        /**切换页码 */
+        pageChange:function(pageNo){
+            console.log(pageNo);
+            this.pageNo = pageNo;
+            this.listCase();
         },
-        
-        setCiFlag: function() {
-            let _this = this
-            let ids = []
-            this.selectedData.forEach(e => {
-                ids.push(e.id)
-            });
-            console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    ids: ids
-                }
-            })           
+        /**切换页面大小 */
+        pageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.pageSize = pageSize;
+            this.listCase();
         },
-
+        /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
             console.log(data)
@@ -474,22 +406,19 @@ export default {
             this.$router.push({path:'/addCase',query:{id:row.id}});
         },
 
-        // addCase: function() {
-            // this.$router.push('addCase')
-        // }
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.Deletips = true;
             console.log("显示模态框");
         },
-        /**点击保存之后的事件 */
+        /**点击保存之后的事件 
         handleSave(row){
             console.log("这是保存",row)
         },
-        /**点击编辑之后的事件 */
+        /**点击编辑之后的事件 
         handleEdit(row){
             console.log("这是编辑",row)
-        },
+        },*/
         /**删除一条数据 */
         remove(index){
             this.tableData.splice(index,1);
@@ -502,12 +431,12 @@ export default {
             console.log(this.addValidate);
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
+                    this.$Message.success('聚合成功!');
                      this.Deletips = false;
                      //this.$refs.addValidate.$el.input.value = ''
                    console.log("确认按钮之后", this.$refs.addValidate.$el)
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    this.$Message.error('报告聚合失败!');
                 }
             });
         },     
@@ -571,9 +500,7 @@ export default {
 .serchBtnBox{
     position: relative;
 }
-// .actionBtn{
-//     width: 16%;
-// }
+
 .caseBoxRow{
     padding-bottom:10px;
 }
@@ -686,3 +613,4 @@ display: flex;
     margin-right: 10px;
 }
 </style>
+
