@@ -140,7 +140,7 @@
             <p slot="header" style="color:#f60" >
                 <span>编辑场景</span>
             </p>
-            <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="100">
+            <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
                 <h3>基本属性</h3>
                 <FormItem label="场景名称:" prop="senario_name">                      
                    <Input v-model="setValidate.senario_name"></Input>
@@ -157,15 +157,15 @@
                     <Input v-model="setValidate.duration"></Input>
                 </FormItem>
                 <h3>线程组配置</h3>
-                <FormItem label="持续时长（分钟）：">
+                <FormItem label="线程组配置：">
                     <CheckboxGroup v-model="setValidate.xianchengzu" vertical>
                         <Checkbox label="SA0100900线程组">
-                            <Input v-model="setValidate.bingFaShu1"></Input>
-                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                            <!-- <Input v-model="setValidate.bingFaShu1"></Input>
+                            <Input v-model="setValidate.haoMiaoShu1"></Input> -->
                         </Checkbox>
                         <Checkbox label="A00210042线程组">
-                            <Input v-model="setValidate.bingFaShu1"></Input>
-                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                            <!-- <Input v-model="setValidate.bingFaShu1"></Input>
+                            <Input v-model="setValidate.haoMiaoShu1"></Input> -->
                         </Checkbox>
                     </CheckboxGroup>
                 </FormItem>
