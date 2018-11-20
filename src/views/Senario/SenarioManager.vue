@@ -108,8 +108,8 @@
             </Form>
             </div>
             <div slot="footer">
-                <Button color="#1c2438" @click="setOk('setValidate')">确认</Button>
-                <Button type="primary" @click="setCancel()">取消</Button>
+                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
+                <Button type="primary" @click="Addcancel()">取消</Button>
             </div>
         </Modal>
 
@@ -141,39 +141,87 @@
                 <span>编辑场景</span>
             </p>
             <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                <h3>基本属性</h3>
+                <h2>基本属性</h2>
                 <FormItem label="场景名称:" prop="senario_name">                      
                    <Input v-model="setValidate.senario_name"></Input>
                 </FormItem>
-                <FormItem label="场景描述:" prop="fie">
+                <FormItem label="场景描述:" prop="senario_desc">
                     <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
                 </FormItem>
-                <h3>压力机配置</h3> 
-                <FormItem label="每台压力机最大并发用户数：">
+                <h2>压力机配置</h2> 
+                <FormItem label="每台压力机最大并发用户数：" prop="maxNum">
                     <Input v-model="setValidate.maxNum"></Input>
                 </FormItem>
-                <h3>运行设置</h3>
-                <FormItem label="持续时长（分钟）：">
+                <h2>运行设置</h2>
+                <FormItem label="持续时长（分钟）：" prop="duration" v-show="showSetType=='03'?true:false">
                     <Input v-model="setValidate.duration"></Input>
                 </FormItem>
-                <h3>线程组配置</h3>
-                <FormItem label="线程组配置：">
-                    <CheckboxGroup v-model="setValidate.xianchengzu" vertical>
-                        <Checkbox label="SA0100900线程组">
-                            <!-- <Input v-model="setValidate.bingFaShu1"></Input>
-                            <Input v-model="setValidate.haoMiaoShu1"></Input> -->
-                        </Checkbox>
-                        <Checkbox label="A00210042线程组">
-                            <!-- <Input v-model="setValidate.bingFaShu1"></Input>
-                            <Input v-model="setValidate.haoMiaoShu1"></Input> -->
-                        </Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <h3>高级配置</h3>
+                <Row v-show="showSetType !='03'?true:false">
+                    <Col span="10">
+                        <FormItem label="每个线程组运行时常：" prop="yunxingshichang">
+                            <Input v-model="setValidate.yunxingshichang"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="10">
+                        <FormItem label="间隔(毫秒)" prop="haomiao">
+                            <Input v-model="setValidate.haomiao"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
+                <Row v-show="showSetType !='03'?true:false">
+                    <Col span="10" offset="2">
+                        <span>线程组个数：</span>
+                        <span>2</span>
+                    </Col>
+                    <Col span="10">
+                        <span>运行时长:</span>
+                        <span>36</span>
+                    </Col>
+                </Row>
+                <h2 v-show="showSetType=='03'?true:false">线程组配置</h2>
+                <br>
+                 <Row v-show="showSetType=='03'?true:false">
+                    <Col span="8">
+                        <FormItem label-width=10 prop="xianchengzu1">
+                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="组件并发数:" prop="bingFaShu1">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
+                <Row v-show="showSetType=='03'?true:false">
+                    <Col span="8">
+                        <FormItem label-width=10 prop="xianchengzu1">
+                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="组件并发数:" prop="bingFaShu1">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
             </Form>
             <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('setValidate')">确认</Button>
-                <Button type="primary" @click="Addcancel()">取消</Button>
+                <Button color="#1c2438" @click="setOk('setValidate')">确认</Button>
+                <Button type="primary" @click="setCancel()">取消</Button>
             </div>
         </Modal>
     </div>
@@ -218,7 +266,7 @@ export default {
                 ],
                 ref_script_name: [                 
                     { required: true, message: '请选择脚本', trigger: 'change' }            
-                ]         
+                ],        
             },
             /*=================================表格数据========================*/
             columns: [                                                
@@ -319,6 +367,9 @@ export default {
                                 on: {
                                     click: () => {
                                         this.showSetModal = true;
+                                        console.log(item.row.senario_type);
+                                        this.showSetType = item.row.senario_type;
+                                        console.log(this.showSetType);
                                     }
                                 }
                             }, '设置'),
@@ -350,9 +401,7 @@ export default {
             eveValidate: {        
                 exeType:'00',                             //执行类型
                 exeDateTime:new Date(),                         //执行时间
-                xianchengzu:'',
-                bingFaShu1:'',
-                haoMiaoShu1:''
+               
 
             },
             eveRuleValidate:{
@@ -362,11 +411,17 @@ export default {
             },
             /**======================设置模态框数据========================== */
             showSetModal:false,
+            showSetType:'',
             setValidate:{
                 senario_name:'',
                 senario_desc:'',
                 maxNum:'',
                 duration:'',
+                xianchengzu1:'',
+                bingFaShu1:'',
+                haoMiaoShu1:'',
+                yunxingshichang:'',
+                haomiao:'',
             },
             setRuleValidate:{
                 senario_name:[
@@ -379,7 +434,19 @@ export default {
                     {required:false,message:'',trigger:'blur'}
                 ],
                 duration:[
-                    {required:true,message:'',trigger:'blur'}
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                bingFaShu1:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                haomiao:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                yunxingshichang:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ], 
+                haomiao:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
             },
         }
@@ -537,7 +604,7 @@ export default {
 
 
         /**================================设置模态框事件================================ */
-        setOk:function(){
+        setOk:function(name){
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.$Message.success('提交成功!');
@@ -546,6 +613,7 @@ export default {
                     this.$Message.error('表单验证失败!');
                 }
                 console.log(this);                 //方法接口写好时再清空之前输入的
+                console.log(this.setValidate);
                  //this.$refs[name].resetFields();
             });
         },
