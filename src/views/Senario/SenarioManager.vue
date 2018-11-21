@@ -79,10 +79,10 @@
             <div style="text-align:center">
             <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
                 <FormItem label="场景类型:" prop="senario_type">
-                   <Select v-model="addValidate.senario_type" placeholder="请选择场景类型">
-                            <Option value="01">单交易基准</Option>
-                            <Option value="02">单交易负载</Option>
-                            <Option value="03">混合场景</Option>                      
+                   <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable>
+                        <Option value="01">单交易基准</Option>
+                        <Option value="02">单交易负载</Option>
+                        <Option value="03">混合场景</Option>                      
                     </Select>
                 </FormItem>
                 <FormItem label="场景名称:" prop="senario_name">                      
@@ -92,17 +92,13 @@
                     <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
                 </FormItem>
                 <FormItem label="关联任务:" prop="ref_task_name">
-                   <Select v-model="addValidate.ref_task_name" placeholder="请选择任务">
-                            <Option value="1">关联1</Option>
-                            <Option value="2">关联2</Option>
-                            <Option value="3">关联3</Option>                      
+                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" >
+                        <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
                     </Select>
                 </FormItem>
                 <FormItem label="关联脚本:" prop="ref_script_name">
-                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本">
-                            <Option value="1">脚本1</Option>
-                            <Option value="2">脚本2</Option>
-                            <Option value="3">脚本3</Option>                      
+                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable>
+                        <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
                     </Select>
                 </FormItem>
             </Form>
@@ -182,7 +178,7 @@
                 <br>
                  <Row v-show="showSetType=='03'?true:false">
                     <Col span="8">
-                        <FormItem label-width=10 prop="xianchengzu1">
+                        <FormItem :label-width="10" prop="xianchengzu1">
                             <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
@@ -201,7 +197,7 @@
                 </Row>
                 <Row v-show="showSetType=='03'?true:false">
                     <Col span="8">
-                        <FormItem label-width=10 prop="xianchengzu1">
+                        <FormItem :label-width="10" prop="xianchengzu1">
                             <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
@@ -244,6 +240,11 @@ export default {
             isShowMore:false,                                   //是否显示更多查询条件
             /**============新增模态框数据=========== */
             showAddModal:false,                  //新建窗口
+            perftaskOpts:[],                     //关联任务下拉选项
+            perftaskList:[],
+            scriptOpts:[],
+            perftaskLoading:false,
+            id:'',
             addValidate: {                                     
                     senario_type: '',                 
                     senario_name: '',   
@@ -277,7 +278,7 @@ export default {
                 },
                 {
                     title: 'ID',
-                    key: 'id',
+                    key: 'senario_id',
                     width: 60,
                 },
                 {
@@ -455,6 +456,7 @@ export default {
       },
     created(){
         this.listCase();
+        this.perftask();
     },
     methods: {
         
@@ -476,7 +478,7 @@ export default {
                 }
             }).then(function (response) {
                 console.log(response);
-                console.log('请求回来的表格数据: ', response.data);
+                console.log('请求回来的表格数据: ', response.data.resultList);
                 _this.tableData = response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
@@ -564,15 +566,30 @@ export default {
         },
         /***================================新增模态框事件===========================================*/
         handleSubmit:function (name) {
-            console.log(this.addValidate.senario_type);
+            let  _this = this;
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                     this.showAddModal = false;
+                    console.log("开始添加");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/senario/add',{
+                        data:{
+                            senario_type:_this.addValidate.senario_type,
+                            senario_name:_this.addValidate.senario_name,
+                            senario_desc:_this.addValidate.fie,
+                            perf_task:_this.addValidate.ref_task_name,
+                            script:_this.addValidate.ref_script_name,
+                        }
+                    }).then(function(response){
+                        console.log("响应回来的数据",response);
+                        _this.$Message.success('提交成功!');
+                        _this.showAddModal = false;
+                        console.log("添加成功");
+                        _this.$refs[name].resetFields();
+                    })
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    _this.$Message.error('表单验证失败!');
                 }
-                console.log(this);                 //方法接口写好时再清空之前输入的
+                console.log(_this);                 //方法接口写好时再清空之前输入的
                  //this.$refs[name].resetFields();
             });
             
@@ -582,7 +599,69 @@ export default {
              //this.$Message.info('点击了取消');
             this.showAddModal = false;
         },
-
+        /**通过任务管理加载出来的任务名称 */
+        perftask:function(){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:_this.addValidate.ref_task_name,
+                }
+            }).then(function(response){
+                console.log("任务管理请求回的数据",response.data.resultList);
+                _this.perftaskList = response.data.resultList;
+                _this.perftaskOpts = _this.perftaskList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
+                    }
+                })
+                console.log("关联任务选项",_this.perftaskOpts);
+            })
+        },
+        /**远程加载任务名称方法 */
+        perftaskRemote:function(query){
+            if(query !== ''){
+                console.log("输入的参数",query);
+                this.perftaskLoading = true;
+                setTimeout(() => {
+                    this.perftaskLoading = false;
+                    let _this = this;
+                    _this.addValidate.ref_task_name = query;
+                    console.log("将参数赋值之后的关联脚本",_this.addValidate.ref_task_name);
+                    _this.perftask();
+                }, 200);
+             }//else{
+            //     _this.perftaskOpts = _this.perftaskList.map(item=>{
+            //         return {
+            //             value:item.id,
+            //             label:item.perftask_name,
+            //         }
+            //     })
+            // }
+        },
+        
+        /**关联任务选中项改变时根据需求加载关联脚本 */
+        perftaskOptChange:function(optionValue){
+            console.log("关联任务选中选项id值",optionValue);
+            // let _this = this;
+            // _this.id = optionValue;
+            // this.$http.defaults.withCredentials = false;
+            // this.$http.post("/myapi/perftask/taskRelatedScript",{
+            //     data:{
+            //         id:_this.id
+            //     }
+            // }).then(function(response){
+            //     _this.scriptOpts = response.data.resultList.map(item=>{
+            //         return {
+            //             value:item.id,
+            //             label:item.script_name,
+            //         }
+            //     })
+            //     console.log("关联脚本返回数据",response.data.resultList)
+            //     console.log("关联脚本",_this.scriptOpts)
+            // })
+        },
         /**=========================================执行模态框事件==================================== */
         /**确认事件 */
         exeOk:function(){
