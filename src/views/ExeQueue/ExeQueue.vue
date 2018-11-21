@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<div class="pageContent">
         <Card>
             <div class="caseBox">
@@ -9,12 +9,12 @@
                 <Form ref="formValidate" class="formValidate">
                     <div class="rowbox">
                         <Row :gutter="16">
-                            <Col span="2" class="searchLable">物理子系统</Col>
+                            <Col span="2" class="searchLable">任务名称</Col>
                             <Col span="5">
                                 <Select
                                     clearable
-                                    v-model="sComponent"
-                                    placeholder="输入物理子系统中文名称或英文简称"
+                                    v-model="task_name"
+                                    placeholder="输入任务名称中文名称或英文简称"
                                     filterable
                                     remote
                                     :remote-method="srchComponent"
@@ -22,61 +22,26 @@
                                     <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
                                 </Select>
                             </Col>
-                            <Col span="2" class="searchLable">任务名称</Col>
+                            <Col span="2" class="searchLable">场景名称</Col>
                             <Col span="5">
-                                <Input clearable v-model="sTaskName" placeholder="输入任务名称"></Input>
+                                <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
                             </Col>
-                            <Col span="2" class="searchLable">任务状态</Col>
-                            <Col span="5">
-                                    <Select v-model="sTaskStatus" style="">
-                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                                </Select>
-                            </Col>
+                           
                             <Col span="3">
                                 <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
                             </Col>
                         </Row>
                         <Row :gutter="16" v-if="isShowMoreShow">
-                            <Col span="2" class="searchLable">任务开始时间</Col>
-                            <Col span="9">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
+                                <Col span="2" class="searchLable">执行人</Col>
+                                <Col span="9">
+                                    <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
                                 </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
+                                <Col span="2" class="searchLable">执行状态</Col>
+                                <Col span="9">
+                                        <Select v-model="exe_status" style="">
+                                        <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                    </Select>
                                 </Col>
-                                <Col span="1"></Col>
-                            </Col>
-                            <Col span="2" class="searchLable">任务结束时间</Col>
-                            <Col span="9">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1"></Col>
-                            </Col>
-                            <Col span="2"></Col>
-                        </Row>
-                        <Row :gutter="16" v-if="isShowMoreShow">
-                            <Col span="2" class="searchLable">显示已删除</Col>
-                            <Col span="10">
-                                <Input v-model="createUser" placeholder="是否显示已删除任务"></Input>
-                            </Col>
-                            <Col span="2" class="searchLable">创建时间</Col>
-                            <Col span="10">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime"></DatePicker>
-                                </Col>
-                                <Col span="1"></Col>
-                            </Col>
                         </Row>   
                     </div>
                     <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
@@ -87,10 +52,10 @@
                 
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <Button type="success" @click="addCase" >新建任务</Button>
+                        <!--<Button type="success" @click="addCase" >新建任务</Button>
                         <Button type="warning" @click="deleteCase">测试需求</Button>
-                        <Button type="primary" @click="listCase">测试指标</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button type="primary" @click="listCase">测试指标</Button>-->
+                        <Button @click="deleteCase" type="error">停止</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -99,62 +64,6 @@
                     </div>
                 </div>
             </div>
-
-
-            <!-- /* add by xin */ -->
-            <!--===================================新建任务时弹出的对话框===============-->
-            <Modal v-model="Deletips" width="1000">
-                <p slot="header" style="text-align:center" >
-                    <Icon type="ios-information-circle"></Icon>
-                    <span>添加任务</span>
-                </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="物理子系统" prop="component_name">
-                                    <i-select v-model="addValidate.component_name" placeholder="请选择所在地">
-                                        <i-option value="card1">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card2">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card3">(N-CIS)贷记卡发卡</i-option>
-                                    </i-select>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="任务名称" prop="perftask_name">
-                                    <i-input v-model="addValidate.perftask_name"></i-input>
-                                </Form-item>
-                            </i-col>
-                    </Row>
-                        <Row>
-                            <i-col span="8">
-                                    <Form-item label="投产日期" prop="start_time">
-                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                            
-                            <i-col span="8">
-                                    <Form-item label="任务开始日期" prop="start_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                            
-                            <i-col span="8">
-                                <Form-item label="任务结束日期" prop="finish_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.finish_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                    
-                    </i-form>
-                </div>
-                <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
-                </div>
-            </Modal>
         </Card>
     </div>
 </template>
@@ -169,124 +78,74 @@ export default {
             srchCmploading: false,
             cmpOpts: [],
             list: [], 
-            sTaskStatus:'',
             taskStatusList: this.$Global.taskStatusList,  
-            interfaceId:'',
-            sTaskName:'',
-            startTime:'',
+            execution_name:'',  //执行人
+            task_name:'',      //任务名称
+            senario_name:'',  //场景名称
+            exe_status:'',    //执行状态
             endTime:'',
-            createUser:'',     
             columns: [
-            	{
-                    type: 'selection',
-                    width: 50,
-                    align: 'center'
-                },
-                {
-                    title: 'id',
-                    key: 'id',
-                    width: 60,
-                },
-                {
-                    title: '物理子系统',
-                    key: 'component_name',
-                    width: 220,
-                    // ellipsis: true, 
-                    tooltip: true, 
-                },
-                {
-                    title: '任务名称',
-                    width: 220,
-                    key: 'perftask_name'
-                },
-                {
-                    title: '投产日期',
-                    key: 'online_date',
-                    width: 100,
-                },
-                {
-                    title: '任务状态',
-                    key: 'perftask_status',
-                    width: 90,
-                    render : (h, params)=>{
-                        let _this = this
-                        console.log('$Global.taskStatusList: ', _this.$Global.taskStatusList);
-                        console.log('$Global.taskStatusMap: ', _this.$Global.taskStatusMap);
-                        console.log('00-------', _this.$Global.taskStatusMap['00']);
-                        console.log('params:', params);
-                        return h('span', _this.$Global.taskStatusMap[params.row.perftask_status]);
-                    }
-                },
-                {
-                    title: '任务开始日期',
-                    key: 'perftask_begin_date',
-                    width: 110,
-                },
-                {
-                    title: '任务结束日期',
-                    key: 'perftask_end_date',
-                    width: 110,
-                },
+            {
+                type: 'selection',
+                width: 50,
+                align: 'center'
+            },
+            {
+                title: '',
+                key: 'id',
+                width: 60,
+            },
+            {
+                title: '执行编号',
+                key: 'executor_id',
+                width: 130,
+                // ellipsis: true, 
+                tooltip: true, 
+            },
+            {
+                title: '关联任务',
+                width: 200,
+                key: 'task_name'//perftask_name
+            },
+            {
+                title: '关联场景',
+                key: 'senario_name',//online_date
+                width: 200,
+            },
+            {
+                title: '执行人',
+                key: 'execution_name',//online_name
+                width: 87,
+            },
+            {
+                title: '执行状态',
+                key: 'exe_status', //perftask_status
+                width: 90,
+                render : (h, params)=>{
+                    let _this = this
+                    console.log('$Global.taskStatusList: ', _this.$Global.taskStatusList);
+                    console.log('$Global.taskStatusMap: ', _this.$Global.taskStatusMap);
+                    console.log('00-------', _this.$Global.taskStatusMap['00']);
+                    console.log('params:', params);
+                    return h('span', _this.$Global.taskStatusMap[params.row.exe_status]);
+                }
+            },
+            {
+                title: '预设启动时间',
+                key: 'start_time',//perftask_begin_date
+                width: 150,
+            },
+            {
+                title: '实际启动时间',
+                key: 'exe_time',//perftask_end_date
+                width: 150,
+            },
                 // {
                 //     title: '创建时间',
                 //     key: 'created_date',
                 //     width: 150,
                 //     align: 'center',
                 // },
-                {
-                    title: '操作',
-                    key: 'opration',
-                    width:130,
-                    render: (h, params) => {
-                        return h('div', [
-                        h('Button', {
-                                        props: {
-                                            type: 'primary',
-                                            size: 'small'
-                                        },
-                                        style: {
-                                            marginRight: '5px'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                    if (params.row.$isEdit) {
-                                                        this.handleSave(params.row);
-                                                    } else {
-                                                        this.handleEdit(params.row);
-                                                    }
-                                            }
-                                        }
-                                    },params.row.$isEdit ? '保存' : '编辑'),
-                        // h('Button', {
-                        //                 props: {
-                        //                     type: 'error',
-                        //                     size: 'small'
-                        //                 },
-                        //                 style: {
-                        //                     marginRight: '5px'
-                        //                 },
-                        //                 on: {
-                        //                     click: () => {
-                        //                         this.remove(params.index);
-                        //                         console.log(params)
-                        //                     }
-                        //                 }
-                        //             }, '删除'),
-                        h('Button', {
-                                        props: {
-                                            type: 'default',
-                                            size: 'small'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                console.log("文档")
-                                            }
-                                        }
-                                    }, '文档')
-                        ])
-                                            
-                    }
-                }
             ],
             tableData: [],
             tableDAtaTatol:0,
@@ -294,28 +153,7 @@ export default {
             selectedData:[],
 
             /* add by xin */
-            /**===================================模态框表单验证数据 =========================*/
             Deletips:false, 
-            addValidate: {
-                   component_name: '',
-                    task_name: '',
-                    start_time: '',
-                    finish_time: '',
-                },
-            ruleValidate: {
-                task_name: [
-                    { required: true, message: '此项为必填项', trigger: 'blur' }
-                ],
-                component_name: [
-                    { required: true, message: '此项为必填项', trigger: 'change' }
-                ],
-                start_time: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
-                ],
-                finish_time: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
-                ]
-            },
         }
     },
     created(){
@@ -335,7 +173,7 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/search', 
+                    this.$http.post('/myapi/testresult/list', 
                     {
                         headers: {
                         },
@@ -397,7 +235,7 @@ export default {
             console.log('listPerfTask');
             console.log('component_name:', _this.sComponent);
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/perftask/list', {
+            this.$http.post('/myapi/testresult/list', {
                 // header: {
                 //     // txCode:'listCase',
                 //     // sysTransId:'20181010153628000165432',
@@ -495,8 +333,6 @@ export default {
             this.tableData.splice(index,1);
             console.log("这是删除一条数据",row);
         },
-
-
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
             console.log(this.addValidate);
@@ -504,8 +340,6 @@ export default {
                 if (valid) {
                     this.$Message.success('提交成功!');
                      this.Deletips = false;
-                     //this.$refs.addValidate.$el.input.value = ''
-                   console.log("确认按钮之后", this.$refs.addValidate.$el)
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
@@ -571,9 +405,7 @@ export default {
 .serchBtnBox{
     position: relative;
 }
-// .actionBtn{
-//     width: 16%;
-// }
+
 .caseBoxRow{
     padding-bottom:10px;
 }
