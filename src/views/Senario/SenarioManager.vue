@@ -92,20 +92,20 @@
                     <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
                 </FormItem>
                 <FormItem label="关联任务:" prop="ref_task_name">
-                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" >
+                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange">
                         <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
                     </Select>
                 </FormItem>
                 <FormItem label="关联脚本:" prop="ref_script_name">
-                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable>
+                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled">
                         <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
                     </Select>
                 </FormItem>
             </Form>
             </div>
             <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
                 <Button type="primary" @click="Addcancel()">取消</Button>
+                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
             </div>
         </Modal>
 
@@ -242,8 +242,9 @@ export default {
             showAddModal:false,                  //新建窗口
             perftaskOpts:[],                     //关联任务下拉选项
             perftaskList:[],
-            scriptOpts:[],
+            scriptOpts:[],                      //关联脚本下拉选项
             perftaskLoading:false,
+            isDisabled:true,                   //关联脚本下拉框是否禁用
             id:'',
             addValidate: {                                     
                     senario_type: '',                 
@@ -263,10 +264,10 @@ export default {
                     { required: false, message: '描述不能为空', trigger: 'change' }            
                 ],
                 ref_task_name: [                 
-                    { required: true, message: '请选择任务', trigger: 'change' }            
+                    { type:'number',required: true, message: '请选择任务', trigger: 'change' }     //默认校验的是string类型，select默认value是number类型，进行校验时需修改类型为number       
                 ],
                 ref_script_name: [                 
-                    { required: true, message: '请选择脚本', trigger: 'change' }            
+                    { type:'number',required: true, message: '请选择脚本', trigger: 'change' }            
                 ],        
             },
             /*=================================表格数据========================*/
@@ -609,6 +610,7 @@ export default {
                 }
             }).then(function(response){
                 console.log("任务管理请求回的数据",response.data.resultList);
+                console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
                 _this.perftaskList = response.data.resultList;
                 _this.perftaskOpts = _this.perftaskList.map(item=>{
                     return {
@@ -627,7 +629,7 @@ export default {
                 setTimeout(() => {
                     this.perftaskLoading = false;
                     let _this = this;
-                    _this.addValidate.ref_task_name = query;
+                    // _this.addValidate.ref_task_name = query;      //option选中项会在选中之后消失
                     console.log("将参数赋值之后的关联脚本",_this.addValidate.ref_task_name);
                     _this.perftask();
                 }, 200);
@@ -641,26 +643,29 @@ export default {
             // }
         },
         
-        /**关联任务选中项改变时根据需求加载关联脚本 */
+        /**关联任务选中项改变时根据id加载對應关联脚本 */
         perftaskOptChange:function(optionValue){
             console.log("关联任务选中选项id值",optionValue);
-            // let _this = this;
-            // _this.id = optionValue;
-            // this.$http.defaults.withCredentials = false;
-            // this.$http.post("/myapi/perftask/taskRelatedScript",{
-            //     data:{
-            //         id:_this.id
-            //     }
-            // }).then(function(response){
-            //     _this.scriptOpts = response.data.resultList.map(item=>{
-            //         return {
-            //             value:item.id,
-            //             label:item.script_name,
-            //         }
-            //     })
-            //     console.log("关联脚本返回数据",response.data.resultList)
-            //     console.log("关联脚本",_this.scriptOpts)
-            // })
+            let _this = this;
+            _this.id = optionValue;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/taskRelatedScript",{
+                data:{
+                    id:_this.id
+                }
+            }).then(function(response){
+                console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
+                console.log("关联脚本",_this.scriptOpts)
+                if(response.data.resultList.length){
+                    _this.isDisabled = false;
+                    _this.scriptOpts = response.data.resultList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.script_name,
+                        }
+                    })
+                }
+            })
         },
         /**=========================================执行模态框事件==================================== */
         /**确认事件 */
