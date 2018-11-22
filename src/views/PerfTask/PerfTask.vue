@@ -3,7 +3,7 @@
         <Card>
             <div class="caseBox">
                 <h3 class="Title">
-                    <span>非功能任务列表--</span>
+                    <span>非功能任务列表</span>
                 </h3>
             
                 <Form ref="formValidate" class="formValidate">
@@ -28,55 +28,58 @@
                             </Col>
                             <Col span="2" class="searchLable">任务状态</Col>
                             <Col span="5">
-                                    <Select v-model="sTaskStatus" style="">
+                                <Select clearable v-model="sTaskStatus" style="">
                                     <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </Col>
                             <Col span="3">
-                                <Button @click="listCase"  type="primary" icon="ios-search">搜索</Button>
+                                <Button @click="listPTask"  type="primary" icon="ios-search">搜索</Button>
                             </Col>
                         </Row>
                         <Row :gutter="16" v-if="isShowMoreShow">
                             <Col span="2" class="searchLable">任务开始日期</Col>
                             <Col span="9">
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startTime_s"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="startDate_s"></DatePicker>
                                 </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
+                                <Col span="1" class="lineBtwTimes">-</Col>
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startTime_f"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="startDate_f"></DatePicker>
                                 </Col>
                                 <Col span="1"></Col>
                             </Col>
                             <Col span="2" class="searchLable">任务结束日期</Col>
                             <Col span="9">
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="endTime_s"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="endDate_s"></DatePicker>
                                 </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
+                                <Col span="1" class="lineBtwTimes">-</Col>
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="endTime_f"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="endDate_f"></DatePicker>
                                 </Col>
                                 <Col span="1"></Col>
                             </Col>
                             <Col span="2"></Col>
                         </Row>
                         <Row :gutter="16" v-if="isShowMoreShow">
-                            <Col span="2" class="searchLable">显示已删除</Col>
-                            <Col span="10">
-                                <Input v-model="createUser" placeholder="是否显示已删除任务"></Input>
+                            <Col span="2" class="searchLable">任务来源</Col>
+                            <Col span="3">
+                                <Select clearable v-model="sTaskSource" style="">
+                                    <Option v-for="item in taskSourceList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                </Select>
                             </Col>
                             <Col span="2" class="searchLable">投产日期</Col>
-                            <Col span="10">
+                            <Col span="9">
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="createTime_s"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="onlineDate_s"></DatePicker>
                                 </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
+                                <Col span="1" class="lineBtwTimes">-</Col>
                                 <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="createTime_f"></DatePicker>
+                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="onlineDate_f"></DatePicker>
                                 </Col>
                                 <Col span="1"></Col>
                             </Col>
+                            <Col span="8"></Col>
                         </Row>   
                     </div>
                     <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
@@ -89,7 +92,7 @@
                     <div class="tableBtnBox">
                         <Button type="success" @click="addCase" >新建任务</Button>
                         <Button type="warning" @click="deleteCase">测试需求</Button>
-                        <Button type="primary" @click="listCase">测试指标</Button>
+                        <Button type="primary" @click="listPTask">测试指标</Button>
                         <Button @click="deleteCase" type="error">删除</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -98,63 +101,78 @@
                         <!-- <p>总共{{totalcount}}条记录</p> -->
                     </div>
                 </div>
+
+                <!-- <Modal v-model="addModal" 
+                    title="Common Modal dialog box title" 
+                    @on-ok="ok()" 
+                    @on-cancle="cancle()">
+                    <p>Content of dialog</p>
+                </Modal> -->
             </div>
 
 
-            <!-- /* add by xin */ -->
-            <!--===================================新建任务时弹出的对话框===============-->
-            <Modal v-model="Deletips" width="1000">
+            <!--=================================== S 新建任务时弹出的对话框 S ===================================-->
+            <Modal v-model="AddPTask" width="800">
                 <p slot="header" style="text-align:center" >
-                    <Icon type="ios-information-circle"></Icon>
+                    <Icon type="ios-information-circle-outline"></Icon>
                     <span>添加任务</span>
                 </p>
                 <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="物理子系统" prop="component_name">
-                                    <i-select v-model="addValidate.component_name" placeholder="请选择所在地">
-                                        <i-option value="card1">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card2">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card3">(N-CIS)贷记卡发卡</i-option>
-                                    </i-select>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="任务名称" prop="task_name">
-                                    <i-input v-model="addValidate.task_name"></i-input>
-                                </Form-item>
-                            </i-col>
-                    </Row>
+                    <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="right">
+                        <!-- <Row>
+                            <i-col span="24"> -->
+                        <Form-item label="物理子系统" prop="component_name">
+                            <i-select v-model="addValidate.component_name" 
+                                placeholder="输入物理子系统中文名称或英文简称" 
+                                clearable 
+                                filterable 
+                                remote 
+                                :remote-method="srchComponent" 
+                                :loading="srchCmploading" 
+                                :transfer=false
+                                >
+                                <i-option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</i-option>
+                            </i-select>
+                        </Form-item>
+                            <!-- </i-col>
+                        </Row> -->
+                        <!-- <Row>
+                            <i-col span="24"> -->
+                        <Form-item label="任务名称" prop="task_name">
+                            <i-input v-model="addValidate.task_name"></i-input>
+                        </Form-item>
+                            <!-- </i-col>
+                        </Row> -->
                         <Row>
                             <i-col span="8">
-                                    <Form-item label="投产日期" prop="start_time">
-                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
+                                <Form-item label="任务开始日期" prop="perftask_begin_date">
+                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.perftask_begin_date" format="yyyy-MM-dd"></Date-picker>
                                 </Form-item>
                             </i-col>
                             
                             <i-col span="8">
-                                    <Form-item label="任务开始日期" prop="start_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
+                                <Form-item label="任务结束日期" prop="perftask_end_date">
+                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.perftask_end_date" format="yyyy-MM-dd"></Date-picker>
                                 </Form-item>
                             </i-col>
-                            
+
                             <i-col span="8">
-                                <Form-item label="任务结束日期" prop="finish_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.finish_time"></Date-picker>
+                                <Form-item label="投产日期" prop="online_date">
+                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.online_date" format="yyyy-MM-dd"></Date-picker>
                                 </Form-item>
                             </i-col>
+
+                            <!-- <i-col span="3"></i-col> -->
                         </Row>
                     
-                    </i-form>
+                    </Form>
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
                     <Button type="primary" @click="cancel()">取消</Button>
                 </div>
             </Modal>
+            <!--=================================== F 新建任务时弹出的对话框 F ===================================-->
         </Card>
     </div>
 </template>
@@ -165,20 +183,23 @@ export default {
     data () {
         return {
             isShowMoreShow:false,
-            sComponent:'',                  //物理子系统
+            sComponent:'',          // 物理子系统
             srchCmploading: false,
             cmpOpts: [],
             list: [], 
-            sTaskStatus:'',                  //任务状态
+            sTaskStatus:'',         // 任务状态
             taskStatusList: this.$Global.taskStatusList,
-            sTaskName:'',                       //任务名称
-            startTime_s:'',                        //开始时间
-            startTime_f:'',
-            endTime_s:'',                         //结束时间
-            endTime_f:'',
-            createTime_s:'',                      //投产日期
-            createTime_f:'',
-            createUser:'',     
+            taskSourceList: this.$Global.taskSourceList,
+            sTaskName:'',           // 任务名称
+            startDate_s:'',         // 任务开始日期
+            startDate_f:'',
+            endDate_s:'',           // 任务结束日期
+            endDate_f:'',
+            sTaskSource:'',         // 任务来源
+            onlineDate_s:'',        // 投产日期
+            onlineDate_f:'',
+            createUser:'',  
+            addModal: false,    
             columns: [
             	{
                     type: 'selection',
@@ -230,12 +251,11 @@ export default {
                     key: 'perftask_end_date',
                     width: 110,
                 },
-                // {
-                //     title: '创建时间',
-                //     key: 'created_date',
-                //     width: 150,
-                //     align: 'center',
-                // },
+                {
+                    title: '任务来源',
+                    key: 'perftask_source',
+                    width: 90,
+                },
                 {
                     title: '操作',
                     key: 'opration',
@@ -292,44 +312,50 @@ export default {
                 }
             ],
             tableData: [],
-            totalcount:0,                         //共多少条数据
-            pageno:1,                            //当前页
-            pagesize:10,                           //每页显示多少条数据
+            totalcount:0,               // 共多少条数据
+            pageno:1,                   // 当前页
+            pagesize:10,                // 每页显示多少条数据
             selectedData:[],
 
-            /* add by xin */
-            /**===================================模态框表单验证数据 =========================*/
-            Deletips:false, 
+            
+            /**=================================== S 模态框表单验证数据 S ===================================*/
+            AddPTask:false, 
             addValidate: {
-                    component_name: '',
-                    task_name: '',
-                    start_time: '',
-                    finish_time: '',
+                    component_name: '', 
+                    task_name: '', 
+                    perftask_begin_date: '', 
+                    perftask_end_date: '', 
+                    online_date: '', 
                 },
             ruleValidate: {
                 task_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
-                ],
+                ], 
                 component_name: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
-                ],
-                start_time: [
+                ], 
+                perftask_begin_date: [
+                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                ], 
+                perftask_end_date: [
+                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                ], 
+                online_date: [
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
-                finish_time: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
-                ]
             },
+            /**=================================== F 模态框表单验证数据 F ===================================*/
         }
     },
     created(){
-        this.listCase();
+        this.listPTask();
     },
     methods: {
         show:function(ev){
             alert(ev.keyCode)
         },
         srchComponent:function(query){
+            // console.log("now in srchComponent, this is ", this);
             this.cmpOpts = [];
             if(query !== ''){
                 this.srchCmploading = true;
@@ -341,7 +367,7 @@ export default {
                         headers:{},
                         data:{
                             name:query,
-                            endTime:''
+                            endDate:''
                         },
                     }).then(function(response){
                         //console.log('下拉框请求的响应',response);
@@ -359,48 +385,7 @@ export default {
                 this.cmpOpts = [];
             }
         },
-        // srchComponent: function(query) {       //输入查询条件时查询方法
-        //     this.cmpOpts = [];                   //下拉框预选项中的数据
-        //     if (query !== '') {                 //如果输入的条件不为空
-        //         this.srchCmploading = true;       
-        //         setTimeout(() => {
-        //             this.srchCmploading = false;
-
-        //             let _this = this
-        //             //console.log('srchComponent');
-        //             //console.log('list-before: ', this.list);
-        //             //console.log('query: ', query)
-
-        //             this.$http.defaults.withCredentials = false;
-        //             this.$http.post('/myapi/component/search',     //发送请求
-        //             {
-        //                 headers: {
-        //                 },
-        //                 data: {
-        //                     name: query,
-        //                     endTime: '',
-        //                 },
-                        
-        //             }
-        //             ).then(function (response) {           //请求回来的数据
-        //                 //console.log('response:', response);
-        //                 //console.log('response.data: ', response.data);
-        //                 _this.list = response.data.resultList;
-        //                 //console.log('list-after: ', _this.list);
-        //                 const list = _this.list.map(item => {     //进行遍历
-        //                     return {
-        //                         value: item.id,                   //将id和name取出
-        //                         label: item.name
-        //                     };
-        //                 });
-        //                 _this.cmpOpts = list                      //取出的id和name赋值到预选项的列表中
-        //                 //console.log('this.cmpOpts:', _this.cmpOpts);
-        //             })
-        //         }, 200);
-        //     } else {
-        //         this.cmpOpts = [];                               //否则的话预选项为空
-        //     }
-        // },
+        
 
         /* add by xin */
         /*删除按钮功能*/
@@ -429,7 +414,7 @@ export default {
             });
         },
         /**加载表格中的数据 */
-        listCase: function() {
+        listPTask: function() {
             let _this = this;
             //console.log('listPerfTask');
             console.log('物理子系统:', _this.sComponent);
@@ -439,25 +424,29 @@ export default {
             this.$http.post('/myapi/perftask/list', {
                 header: {},
                 data: {
-                    component_name: _this.sComponent,
-                    perftask_name:_this.sTaskName,                  //任务名称
-                    perftask_begin_date_s:_this.startTime_s,            //任务开始日期
-                    perftask_begin_date_f:_this.startTime_f,
-                    perftask_end_date_s:_this.endTime_s,                 //任务结束日期
-                    perftask_end_date_f:_this.endTime_f,
-                    online_date_s:_this.createTime_s,
-                    online_date_f:_this.createTime_f,
-                    perftask_status:_this.sTaskStatus,               //任务状态
+                    component_name: _this.sComponent,           // 物理子系统名称
+                    perftask_name: _this.sTaskName,             // 任务名称
+                    perftask_begin_date_s: _this.startDate_s,   // 任务开始日期
+                    perftask_begin_date_f: _this.startDate_f,
+                    perftask_end_date_s: _this.endDate_s,       // 任务结束日期
+                    perftask_end_date_f: _this.endDate_f,
+                    online_date_s: _this.onlineDate_s,
+                    online_date_f: _this.onlineDate_f,
+                    perftask_status: _this.sTaskStatus,         //任务状态
+                    perftask_source: _this.sTaskSource,
 
-                    pageno:this.pageno,                             //当前页码
-                    pagesize:this.pagesize                           //当前页面大小
+                    pageno:this.pageno,                         //当前页码
+                    pagesize:this.pagesize                      //当前页面大小
                     
                 }
             }).then(function (response) {
                 console.log("列表请求回来的分页数据",response.headers);
                 console.log("请求回来的模糊查询数据",response.data);
-                //console.log('response:',response);
-                //console.log('response.data: ', response.data);
+                let result = response.data.result;
+                console.log("result: ", result);
+                if (result == "ok"){
+                    console.log("******** result ok *********");
+                }
                 _this.totalcount = response.headers.totalcount               //将总的数据条数赋值后渲染
                 _this.tableData = response.data.resultList;
             })
@@ -466,13 +455,13 @@ export default {
         pageSizeChange:function(pagesize){
             //console.log("页码大小切换",pagesize);
             this.pagesize = pagesize;                     //改变当前页大小后
-            this.listCase();                                 //重新请求数据
+            this.listPTask();                                 //重新请求数据
         },
         /**分页查询功能----切换当前页 */
         pageChange:function(pageno){
             //console.log("页码切换",pageno);
             this.pageno = pageno; 
-            this.listCase();
+            this.listPTask();
         },
         findCase: function(id) {
             let _this = this
@@ -528,12 +517,10 @@ export default {
             this.$router.push({path:'/addCase',query:{id:row.id}});
         },
 
-        // addCase: function() {
-            // this.$router.push('addCase')
-        // }
+
         /**添加新数据弹出模态框 */
         addCase:function(){
-            this.Deletips = true;
+            this.AddPTask = true;
             //console.log("显示模态框");
         },
         /**点击保存之后的事件 */
@@ -552,22 +539,45 @@ export default {
 
         /***==========模态框弹出时确定事件: 验证表单提交 ===================*/
         handleSubmit (name) {
-            //console.log(this.addValidate);
+            let _this = this;
+            console.log("**********************this: ", _this);
+            console.log("**********************addValidate: ", _this.addValidate);
+            console.log(_this.addValidate.component_name);
+            console.log(_this.addValidate.task_name);
+            console.log(_this.addValidate.perftask_begin_date);
+            console.log(_this.addValidate.perftask_end_date);
+            console.log(_this.addValidate.online_date);
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                     this.Deletips = false;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/perftask/add', {
+                        header: {},
+                        data: {
+                            component_name: _this.addValidate.component_name,   // 物理子系统名称
+                            task_name: _this.addValidate.task_name,             // 任务名称
+                            perftask_begin_date: _this.addValidate.perftask_begin_date,   // 任务开始日期
+                            perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
+                            online_date: _this.addValidate.online_date,
+                            perftask_source: "2",
+                        }
+                    }).then(function (response) {
+                        _this.$Message.success('提交成功!');
+                        _this.AddPTask = false;
+                        console.log('tableData before: ', _this.tableData);
+                        _this.tableData.push(_this.addValidate);
+                        console.log('tableData after: ', _this.tableData);
+                    })
                      //this.$refs.addValidate.$el.input.value = ''
                    //console.log("确认按钮之后", this.$refs.addValidate.$el)
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    _this.$Message.error('表单验证失败!');
                 }
             });
         },     
         /**模态框弹出取消事件 */
         cancel () {
             this.$Message.info('点击了取消');
-            this.Deletips = false;
+            this.AddPTask = false;
         },
         /**清除搜索条件 */
         handleReset (name) {
@@ -725,6 +735,11 @@ export default {
     padding-bottom: 25px;
     text-align: right;
     font-size: 12px;
+}
+
+.lineBtwTimes {
+    text-align: center; 
+    padding: 9px 0px
 }
 
 /* add by xin */

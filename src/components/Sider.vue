@@ -40,12 +40,12 @@
         </MenuItem>
 
         
-        <!-- <MenuItem name="1-6" >
+        <!-- <MenuItem name="1-11" >
           <router-link  to="/InterfaceCase" />
           <Icon type="ios-navigate"></Icon>
           <span>接口管理</span>
         </MenuItem> -->
-        <!-- <MenuItem name="1-7">
+        <!-- <MenuItem name="1-12">
           <router-link to="/environmentManage" />
           <Icon type="ios-keypad"></Icon>
           <span>环境管理</span>
@@ -59,8 +59,8 @@
           <router-link to="/baffleConfiguration" />
           <Icon type="ios-book-outline" />
           <span>挡板配置</span>
-        </MenuItem>
-        <MenuItem name="1-10">
+        </MenuItem> -->
+        <!-- <MenuItem name="1-10">
           <router-link to="/standardBasis" />
           <Icon type="ios-barcode-outline" />
          <span>依据标准</span>
