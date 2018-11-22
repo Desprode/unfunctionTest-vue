@@ -4,273 +4,330 @@
             <h3 class="Title">
                 <span>场景管理</span>
             </h3>
-           
-            <Form ref="formValidate" class="formValidate" :label-width="80" v-if="isbouterAlive">
-                    <div class="rowbox">
-                            <Row class="caseBoxRow">
-                                <Col span="8">
-                                    <FormItem label="场景类型:">
-                                        <Select v-model="senario_type">
-                                            <Option  value="1">单交易基准</Option>
-                                            <Option  value="2">单交易负载</Option>
-                                            <Option  value="3">混合场景</Option>
-                                        </Select>
-                                    </FormItem>
-                                </Col>
-                                <Col span="8">
-                                    <FormItem label="场景名称:">
-                                        <Input v-model="senario_name" placeholder="输入场景名称"></Input>
-                                    </FormItem>
-                                </Col>
-                                <Col span="8">
-                                    <FormItem label="创建人:">
-                                        <Col>
-                                            <Select
-                                                clearable
-                                                v-model="senario_creator"
-                                                placeholder="输入创建人"
-                                                filterable
-                                                remote
-                                                :remote-method="srchComponent"
-                                                :loading="srchCmploading">
-                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                            </Select>
-                                        </Col>
-                                    </FormItem>
-                                </Col>
-                            </Row>
-                            <Row class="caseBoxRow">
-                                <Col span="8">
-                                    <FormItem label="显示已删除:">
-                                        <Select v-model="interfaceId">
-                                            <Option  value="1">否</Option>
-                                            <Option  value="2">是</Option>
-                                        </Select>
-                                    </FormItem>
-                                </Col>
-                                <Col span="8">
-                                    <FormItem label="关联任务:">
-                                        <Col>
-                                            <Select
-                                                clearable
-                                                v-model="ref_task_name"
-                                                placeholder="输入关联任务"
-                                                filterable
-                                                remote
-                                                :remote-method="srchComponent"
-                                                :loading="srchCmploading">
-                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                            </Select>
-                                        </Col>
-                                    </FormItem>
-                                </Col>
-                                <Col span="8">
-                                    <FormItem label="关联脚本:">
-                                        <Col>
-                                            <Select
-                                                clearable
-                                                v-model="ref_script_name"
-                                                placeholder="输入关联脚本"
-                                                filterable
-                                                remote
-                                                :remote-method="srchComponent"
-                                                :loading="srchCmploading">
-                                                <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                            </Select>
-                                        </Col>
-                                    </FormItem>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <col span="2">
-                                <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
-                                </col>
-                            </Row>
+           <!--==================================form 表单============================================-->
+            <Form ref="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
+                <div class="rowbox">
+                    <Row class="caseBoxRow">
+                        <Col span="7">
+                            <FormItem label="场景类型:">
+                                <Select v-model="senario_type" clearable>
+                                    <Option  value="01">单交易基准</Option>
+                                    <Option  value="02">单交易负载</Option>
+                                    <Option  value="03">混合场景</Option>
+                                </Select>
+                            </FormItem>
+                        </Col>
+                        <Col span="7">
+                            <FormItem label="场景名称:">
+                                <Input v-model="senario_name" placeholder="输入场景名称"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="7">
+                            <FormItem label="创建人:">
+                               <Input v-model="senario_creator" placeholder="输入场景创建人"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="3">
+                            <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
+                        </Col>
+                    </Row>
+                    <Row class="caseBoxRow" v-show="isShowMore">
+                        <Col span="8">
+                            <FormItem label="显示已删除:">
+                                <Select v-model="is_deleted" clearable>
+                                    <Option  value="false">否</Option>
+                                    <Option  value="true">是</Option>
+                                </Select>
+                            </FormItem>
+                        </Col>
+                        <Col span="8">
+                            <FormItem label="关联任务:">
+                                <Input v-model="perftask_name" placeholder="输入关联任务"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="8">
+                            <FormItem label="关联脚本:">
+                                <Input v-model="script_name" placeholder="输入脚本名称"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>  
                 </div>
-                <div align="left">
-                    <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
-                    <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
+                <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
+                    <Icon type="chevron-down" color="#fff" ></Icon>
+                    <Icon type="chevron-down" color="#fff" ></Icon>
                 </div>
             </Form>
+            <div align="left">
+                <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
+                <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
+            </div>
             <div class="tableBox">
-                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
-                    <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" show-elevator></Page>
-                    <p>总共{{tableDAtaTatol}}条记录</p>
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    <p>总共{{totalPage}}页</p>
                 </div>
             </div>
         </div>
-        <Modal v-model="Deletips" width="1000">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
+
+
+        <!--========================================创建场景模态框：===============================-->
+        <Modal v-model="showAddModal" width="800">
+            <p slot="header" style="color:#f60" >
                 <span>新增</span>
             </p>
             <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-                <Form-item label="场景类型:" prop="senario_type">
-                   <i-select v-model="addValidate.senario_type" placeholder="请选择场景类型">
-                            <i-option value="1">单交易基准</i-option>
-                            <i-option value="2">单交易负载</i-option>
-                            <i-option value="3">混合场景</i-option>                      
-                    </i-select>
-                </Form-item>
-                <Form-item label="场景名称:" prop="senario_name">                      
-                   <i-input v-model="addValidate.senario_name" placeholder="请输入场景名称"></i-input>
-                </Form-item>
-                    <div>
-                        <Form-item label="场景描述:" prop="fie">
-                        <textarea class="form-control"  placeholder="请填写场景描述"  v-model="addValidate.fie" data_type="text" id="field_senario_desc" name="senario_desc" rows="5" cols="125"></textarea>
-                        </Form-item>
-                    </div>
-                <Form-item label="关联任务:" prop="ref_task_name">
-                   <i-select v-model="addValidate.ref_task_name" placeholder="请选择任务">
-                            <i-option value="1">关联1</i-option>
-                            <i-option value="2">关联2</i-option>
-                            <i-option value="3">关联3</i-option>                      
-                    </i-select>
-                </Form-item>
-                <Form-item label="关联脚本:" prop="ref_script_name">
-                   <i-select v-model="addValidate.ref_script_name" placeholder="请选择脚本">
-                            <i-option value="1">脚本1</i-option>
-                            <i-option value="2">脚本2</i-option>
-                            <i-option value="3">脚本3</i-option>                      
-                    </i-select>
-                </Form-item>
-            </i-form>
+            <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
+                <FormItem label="场景类型:" prop="senario_type">
+                   <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable>
+                        <Option value="01">单交易基准</Option>
+                        <Option value="02">单交易负载</Option>
+                        <Option value="03">混合场景</Option>                      
+                    </Select>
+                </FormItem>
+                <FormItem label="场景名称:" prop="senario_name">                      
+                   <Input v-model="addValidate.senario_name" placeholder="请输入场景名称"></Input>
+                </FormItem>
+                <FormItem label="场景描述:" prop="fie">
+                    <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
+                </FormItem>
+                <FormItem label="关联任务:" prop="ref_task_name">
+                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" >
+                        <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
+                    </Select>
+                </FormItem>
+                <FormItem label="关联脚本:" prop="ref_script_name">
+                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable>
+                        <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
+                    </Select>
+                </FormItem>
+            </Form>
             </div>
             <div slot="footer">
                 <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
+                <Button type="primary" @click="Addcancel()">取消</Button>
             </div>
         </Modal>
 
-
-        <Modal v-model="Deletipss" width="500">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
-                <span>设置</span>
+        <!--==================================执行操作模态框：===============================-->
+        <Modal v-model="showExeModal" width="800">
+            <p slot="header" style="color:#f60" >
+                <span>执行时间设置</span>
             </p>
-            <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-               设置
-            </i-form>
-            </div>
+            <Form ref="eveValidate" :model="eveValidate" :rules="eveRuleValidate" :label-width="100" label-position="left">
+                <FormItem label="执行类型" prop="exeType">
+                    <RadioGroup v-model="eveValidate.exeType" vertical >
+                        <Radio label="00" checked>立即执行</Radio>
+                        <Radio label="01">定时执行</Radio>
+                    </RadioGroup>
+                </FormItem>
+                <FormItem label="预设启动时间" v-show="eveValidate.exeType=='01'?true:false">
+                    <DatePicker type="datetime" placeholder="选择日期" v-model="eveValidate.exeDateTime"></DatePicker>
+                </FormItem>
+            </Form>
             <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
+                <Button color="#1c2438" @click="exeOk()">确认</Button>
+                <Button type="primary" @click="exeCancel()">取消</Button>
             </div>
         </Modal>
-        <!--创建场景模态框-->
-        <Modal v-model="Deletipsss" width="500">
-            <p slot="header" style="color:#f60;text-align:center" >
-                <Icon type="ios-information-circle"></Icon>
-                <span>执行</span>
+
+        <!--=============================场景设置模态框============================-->
+        <Modal v-model="showSetModal" width="800">
+            <p slot="header" style="color:#f60" >
+                <span>编辑场景</span>
             </p>
-            <div style="text-align:center">
-            <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-               执行类型:
-            </i-form>
-            </div>
+            <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
+                <h2>基本属性</h2>
+                <FormItem label="场景名称:" prop="senario_name">                      
+                   <Input v-model="setValidate.senario_name"></Input>
+                </FormItem>
+                <FormItem label="场景描述:" prop="senario_desc">
+                    <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
+                </FormItem>
+                <h2>压力机配置</h2> 
+                <FormItem label="每台压力机最大并发用户数：" prop="maxNum">
+                    <Input v-model="setValidate.maxNum"></Input>
+                </FormItem>
+                <h2>运行设置</h2>
+                <FormItem label="持续时长（分钟）：" prop="duration" v-show="showSetType=='03'?true:false">
+                    <Input v-model="setValidate.duration"></Input>
+                </FormItem>
+                <Row v-show="showSetType !='03'?true:false">
+                    <Col span="10">
+                        <FormItem label="每个线程组运行时常：" prop="yunxingshichang">
+                            <Input v-model="setValidate.yunxingshichang"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="10">
+                        <FormItem label="间隔(毫秒)" prop="haomiao">
+                            <Input v-model="setValidate.haomiao"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
+                <Row v-show="showSetType !='03'?true:false">
+                    <Col span="10" offset="2">
+                        <span>线程组个数：</span>
+                        <span>2</span>
+                    </Col>
+                    <Col span="10">
+                        <span>运行时长:</span>
+                        <span>36</span>
+                    </Col>
+                </Row>
+                <h2 v-show="showSetType=='03'?true:false">线程组配置</h2>
+                <br>
+                 <Row v-show="showSetType=='03'?true:false">
+                    <Col span="8">
+                        <FormItem :label-width="10" prop="xianchengzu1">
+                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="组件并发数:" prop="bingFaShu1">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
+                <Row v-show="showSetType=='03'?true:false">
+                    <Col span="8">
+                        <FormItem :label-width="10" prop="xianchengzu1">
+                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="组件并发数:" prop="bingFaShu1">
+                            <Input v-model="setValidate.bingFaShu1"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
+                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                        </FormItem>
+                    </Col>
+                </Row>
+            </Form>
             <div slot="footer">
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                <Button type="primary" @click="cancel()">取消</Button>
+                <Button color="#1c2438" @click="setOk('setValidate')">确认</Button>
+                <Button type="primary" @click="setCancel()">取消</Button>
             </div>
         </Modal>
     </div>
 
 
-        <!-- <AddItemPop :isShow="isShowAddPop" :isAdd="isAdd" :addLoading="true" @popClose="popCloseFn"  @tableDataAdd="tableDataAddFn" :tabDataRow="tableDataRow" /> -->
-
 </template>
 <script>
 export default {
-    inject: ["reload"],
     name: 'TestCase',
-    provide(){
-      return {
-        reload: this.reload
-      };
-    },
     data () { 
         return {
+            
             isbouterAlive: true,
-            addValidate: {
+            senario_name:'',                                      //场景名称             
+            senario_type:'',                                      //场景类型
+            senario_creator:'',                                  //创建人
+            is_deleted:'',                                       //是否删除
+            perftask_name:'',                                    //关联任务
+            script_name:'',                                      //脚本名称
+            isShowMore:false,                                   //是否显示更多查询条件
+            /**============新增模态框数据=========== */
+            showAddModal:false,                  //新建窗口
+            perftaskOpts:[],                     //关联任务下拉选项
+            perftaskList:[],
+            scriptOpts:[],
+            perftaskLoading:false,
+            id:'',
+            addValidate: {                                     
                     senario_type: '',                 
                     senario_name: '',   
                     fie: '',
                     ref_task_name: '',
                     ref_script_name: '',
-                    },
-                    ruleValidate: {        
-                        senario_name: [                
-                            { required: true, message: '场景名称不能为空', trigger: 'blur' }              
-                                       ],        
-                        senario_type: [                 
-                            { required: true, message: '请选择场景类型', trigger: 'change' }            
-                                 ],
-                        fie: [                 
-                            { required: true, message: '描述不能为空', trigger: 'change' }            
-                             ],
-                        ref_task_name: [                 
-                            { required: true, message: '请选择任务', trigger: 'change' }            
-                                     ],
-                        ref_script_name: [                 
-                            { required: true, message: '请选择脚本', trigger: 'change' }            
-                                ]         
-                                   },
-            perf_task:'',
-            senario_name:'',
-            script:'',
-            senario_type:'',
-            duration:'',
-            ref_task_name:'',
-            ref_script_name:'',
-            update_time:'',
-            senario_creator:'',
-            interfaceId:'',
-            columns: [
+            },
+            ruleValidate: {        
+                senario_name: [                
+                    { required: true, message: '场景名称不能为空', trigger: 'blur' }              
+                ],        
+                senario_type: [                 
+                    { required: true, message: '请选择场景类型', trigger: 'change' }            
+                ],
+                fie: [                 
+                    { required: false, message: '描述不能为空', trigger: 'change' }            
+                ],
+                ref_task_name: [                 
+                    { required: true, message: '请选择任务', trigger: 'change' }            
+                ],
+                ref_script_name: [                 
+                    { required: true, message: '请选择脚本', trigger: 'change' }            
+                ],        
+            },
+            /*=================================表格数据========================*/
+            columns: [                                                
             	{
                     type: 'selection',
-                    width: 60,
+                    width: 40,
                     align: 'center'
                 },
                 {
                     title: 'ID',
-                    key: 'id',
+                    key: 'senario_id',
                     width: 60,
                 },
                 {
                     title: '关联任务',
-                    key: 'ref_task_name',
-                    align: 'center',
+                    key: 'perftask_name',
+                    ellipsis: true, 
+                    width:110,
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
+                    width:180,
+                    ellipsis: true, 
                 },
                 {
                     title: '关联脚本',
-                    key: 'ref_script_name'
+                    key: 'script_name',
+                    width:100,
+                    align: 'center',
+                    ellipsis: true, 
                 },
                 {
                     title: '场景类型',
                     key: 'senario_type',
+                    width:90,
+                    align: 'center',
                 },
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
+                    width:120,
+                    align: 'center',
                 },
                 {
                     title: '线程组并发数',
                     key: 'threads_total',
+                    width:110,
+                    align: 'center',
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
+                    width:145,
+                    align: 'center',
                 },
                 {
                     title:'操作',
                     key:'operAtion',
+                    width:160,
                     align: 'center',
                     render: (h, item) => {
                         return h('div', [
@@ -299,7 +356,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.upadtezx(item.index)
+                                        this.showExeModal = true;
                                     }
                                 }
                             }, '执行'),
@@ -310,21 +367,23 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.setCiFlag(item.index)
+                                        this.showSetModal = true;
+                                        console.log(item.row.senario_type);
+                                        this.showSetType = item.row.senario_type;
+                                        console.log(this.showSetType);
                                     }
                                 }
                             }, '设置'),
                             h('Button', {
                                 props: {
-                                    type: 'error',
-                                    size: 'small'
+                                    icon:'ios-trash',
                                 },
                                 on: {
                                     click: () => {
                                         this.deleteDataCase(item.index)
                                     }
                                 }
-                            }, '删除'),
+                            } ),
                         ])
 
                     }
@@ -333,230 +392,447 @@ export default {
             tableData: [],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
-            selectedData:[],
-            //选中的项的数组
-            Deletips:false,
-            Deletipss:false,
-            Deletipsss:false
+            selectedData:[],                    //选中的项的数组
+            totalCount:0,                         //共多少条数据
+            pageNo:1,                            //当前页
+            pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
+            /**====================执行模态框数据=================== */
+            showExeModal:false,                  //执行窗口
+            eveValidate: {        
+                exeType:'00',                             //执行类型
+                exeDateTime:new Date(),                         //执行时间
+               
+
+            },
+            eveRuleValidate:{
+                exeType:[
+                    {required:true,message:"",trigger:"change"}
+                ],
+            },
+            /**======================设置模态框数据========================== */
+            showSetModal:false,
+            showSetType:'',
+            setValidate:{
+                senario_name:'',
+                senario_desc:'',
+                maxNum:'',
+                duration:'',
+                xianchengzu1:'',
+                bingFaShu1:'',
+                haoMiaoShu1:'',
+                yunxingshichang:'',
+                haomiao:'',
+            },
+            setRuleValidate:{
+                senario_name:[
+                    {required:true,message:"这是必输字段",trigger:'blur'}
+                ],
+                senario_desc:[
+                    {required:false,message:'',trigger:'blur'}
+                ],
+                maxNum:[
+                    {required:false,message:'',trigger:'blur'}
+                ],
+                duration:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                bingFaShu1:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                haomiao:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                yunxingshichang:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ], 
+                haomiao:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+            },
         }
     },
     mounted:function () {
       },
     created(){
         this.listCase();
+        this.perftask();
     },
     methods: {
-        reload(){
-            this.isbouterAlive = false;
-            this.$nextTick(function(){
-            this.isbouterAlive = true;
+        
+        /**========================================加载列表中的数据======================================= */
+        listCase: function() {
+            let _this = this;
+            console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/senario/list', {
+                data: {
+                    senario_type: _this.senario_type, 
+                    senario_name:_this.senario_name,
+                    senario_creator:_this.senario_creator,
+                    is_deleted:_this.is_deleted,
+                    perftask_name:_this.perftask_name,
+                    script_name:_this.script_name,
+                    pageno:_this.pageNo,
+                    pagesize:_this.pageSize,
+                }
+            }).then(function (response) {
+                console.log(response);
+                console.log('请求回来的表格数据: ', response.data.resultList);
+                _this.tableData = response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
             })
         },
+        /**切换页码 */
+        pageChange:function(pageNo){
+            console.log(pageNo);
+            this.pageNo = pageNo;
+            this.listCase();
+        },
+        /**切换页面大小 */
+        pageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.pageSize = pageSize;
+            this.listCase();
+        },
+        
+        /**============================删除多条数据========================= */
         deleteCase: function () {
-            console.log("删除多条按钮");
+            //console.log("删除多条按钮");
             let selectedData = this.selectedData;      //选中要删除的数据
             let resArr = [];
             let deleteId = [];                       //选中数据的id
             if (selectedData.length > 0) {               //如果有选中的数据
                 for (let i in selectedData) {         //进行遍历
                     deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                    console.log(selectedData[i].id);
-                    console.log(deleteId);
+                    //console.log(selectedData[i].id);
+                    //console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 }
             } else {
                 this.$Message.error("请选择要删除的数据")
             }
         }, 
-            deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
-                let tableData = this.tableData;          //原有的数据
-                tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                    if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                        tableData.splice(index, 1);        //即删除该数据
+        deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
+            let tableData = this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    this.$Modal.confirm({
+                    title:'确认',
+                    content: '是否删除该数据',
+                    onOk: () => {
+                        tableData.splice(index, 1);        //即删除该数据上
+                        this.$Message.info('删除成功');
+                    },
+                    onCancel: () => {
+                        this.$Message.info('删除失败');
                     }
-                });
-            },
-        onSelectionChanged: function(data) {
-            this.selectedData = data;
-            console.log(data)
-        },
-        //
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
-        },
-        deleteDataCase (index){      
-            console.log("删除单条按钮");
-            let tableData = this.tableData;
-            tableData.splice(index, 1);
-        },
-
-        listCase: function() {
-            let _this = this;
-            console.log('listPerfTask');
-            console.log('component_name:', _this.sComponent);
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/senario/list', {
-                data: {
-                    component_name: _this.sComponent,
+                }); 
                    
                 }
-            }).then(function (response) {
-                console.log('response:');
-                console.log(response);
-                console.log('response.data: ', response.data);
-                _this.tableData = response.data.resultList;
-            })
-        },
-
-        setCiFlag: function() {
-            let _this = this
-            let ids = []
-            this.selectedData.forEach(e => {
-                ids.push(e.id)
             });
-            console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
+        },
+            /**选中的数据发生改变 */
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            //console.log(data)
+        },
+        
+        /**================================删除一条数据================================ */
+        deleteDataCase:function (index){      
+            //console.log("删除单条按钮");
+            let tableData = this.tableData;
+            console.log(tableData[index]);
+            this.$Modal.confirm({
+                title:'确认',
+                content: `是否删除该数据`,
+                onOk: () => {
+                    tableData.splice(index, 1);
+                    this.$Message.info('删除成功');
                 },
-                data: {
-                    ids: ids
+                onCancel: () => {
+                    this.$Message.info('删除失败');
                 }
-            })           
+            });       
+            
         },
 
-        /**模态框弹出取消事件 */
-        cancel:function () {
-             this.reload();
-             //this.$Message.info('点击了取消');
-            this.Deletips = false;
-        },
+       
         /**添加新数据弹出模态框 */
         addCase:function(){
-            this.Deletips = true;
-            console.log("显示模态框");
+            this.showAddModal = true;
+            //console.log("显示模态框");
         },
-/***模态框弹出时确定事件: 验证表单提交 */
-        handleSubmit (name) {
+        /***================================新增模态框事件===========================================*/
+        handleSubmit:function (name) {
+            let  _this = this;
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.reload();
+                    console.log("开始添加");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/senario/add',{
+                        data:{
+                            senario_type:_this.addValidate.senario_type,
+                            senario_name:_this.addValidate.senario_name,
+                            senario_desc:_this.addValidate.fie,
+                            perf_task:_this.addValidate.ref_task_name,
+                            script:_this.addValidate.ref_script_name,
+                        }
+                    }).then(function(response){
+                        console.log("响应回来的数据",response);
+                        _this.$Message.success('提交成功!');
+                        _this.showAddModal = false;
+                        console.log("添加成功");
+                        _this.$refs[name].resetFields();
+                    })
+                } else {
+                    _this.$Message.error('表单验证失败!');
+                }
+                console.log(_this);                 //方法接口写好时再清空之前输入的
+                 //this.$refs[name].resetFields();
+            });
+            
+        },
+         /**新增模态框弹出取消事件 */
+        Addcancel:function () {
+             //this.$Message.info('点击了取消');
+            this.showAddModal = false;
+        },
+        /**通过任务管理加载出来的任务名称 */
+        perftask:function(){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:_this.addValidate.ref_task_name,
+                }
+            }).then(function(response){
+                console.log("任务管理请求回的数据",response.data.resultList);
+                _this.perftaskList = response.data.resultList;
+                _this.perftaskOpts = _this.perftaskList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
+                    }
+                })
+                console.log("关联任务选项",_this.perftaskOpts);
+            })
+        },
+        /**远程加载任务名称方法 */
+        perftaskRemote:function(query){
+            if(query !== ''){
+                console.log("输入的参数",query);
+                this.perftaskLoading = true;
+                setTimeout(() => {
+                    this.perftaskLoading = false;
+                    let _this = this;
+                    _this.addValidate.ref_task_name = query;
+                    console.log("将参数赋值之后的关联脚本",_this.addValidate.ref_task_name);
+                    _this.perftask();
+                }, 200);
+             }//else{
+            //     _this.perftaskOpts = _this.perftaskList.map(item=>{
+            //         return {
+            //             value:item.id,
+            //             label:item.perftask_name,
+            //         }
+            //     })
+            // }
+        },
+        
+        /**关联任务选中项改变时根据需求加载关联脚本 */
+        perftaskOptChange:function(optionValue){
+            console.log("关联任务选中选项id值",optionValue);
+            // let _this = this;
+            // _this.id = optionValue;
+            // this.$http.defaults.withCredentials = false;
+            // this.$http.post("/myapi/perftask/taskRelatedScript",{
+            //     data:{
+            //         id:_this.id
+            //     }
+            // }).then(function(response){
+            //     _this.scriptOpts = response.data.resultList.map(item=>{
+            //         return {
+            //             value:item.id,
+            //             label:item.script_name,
+            //         }
+            //     })
+            //     console.log("关联脚本返回数据",response.data.resultList)
+            //     console.log("关联脚本",_this.scriptOpts)
+            // })
+        },
+        /**=========================================执行模态框事件==================================== */
+        /**确认事件 */
+        exeOk:function(){
+            
+            if(this.eveValidate.exeType == '00'){
+                console.log(new Date());
+            }else{
+                console.log(this.eveValidate.exeDateTime);
+            }
+            this.showExeModal = false;
+        },
+        /**取消事件 */
+        exeCancel:function(){
+            this.showExeModal = false;
+        },
+
+
+
+
+
+        /**================================设置模态框事件================================ */
+        setOk:function(name){
+            this.$refs[name].validate((valid) => {
+                if (valid) {
                     this.$Message.success('提交成功!');
+                    this.showSetModal = false;
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
+                console.log(this);                 //方法接口写好时再清空之前输入的
+                console.log(this.setValidate);
+                 //this.$refs[name].resetFields();
             });
-            this.Deletips = false;
         },
-
-         /**修改新数据弹出模态框 */
-         setCiFlag:function(){
-            this.Deletipss = true;
-            console.log("显示模态框");
-        },
-        /**修改新数据弹出模态框 */
-        upadtezx:function(){
-            this.Deletipsss = true;
-            console.log("显示模态框");
+        setCancel:function(){
+            this.showSetModal = false;
         },
     }
 }
 </script>
 <style lang="less" scoped>
-.Title{
-    text-align: left;
-    font-weight: 400;
-    font-size: 14px;
-    position: relative;
-    padding-left: 0;
-    padding-bottom: 7px;
-    border-bottom: 2px solid #01babc;
-    margin-top:0px;
-    margin-bottom: 20px;
-}
-.btn_selected, .header .h_menu .h_menu_btn_all .h_menu_btn:hover {
-    color: #01babc;
-  }
-.Title span{
-    padding-right: 26px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    background-color: #01babc; 
-    border-radius: 0px 38px 38px 0px;
-    color:#fff;
-    padding-left: 26px;
-}
-.Title::before{
-    content: '';
-    position: absolute;
-    left:12px;
-    top:1px;
-    width:4px;
-    height: 60%;
-    background-color: #fff;
-    border-radius: 2px;
-}
-.pageContent{
-    margin:-16px;
-}
-.rowbox{
-    width:90%;
-    margin: 0px auto;
-}
-.myTable {
-    margin-bottom: 15px;
-}
-.caseInputBox{
-    display: flex;
-}
-.serchBtnBox{
-    position: relative;
-}
-.actionBtn{
-    width: 16%;
-}
-.caseBoxRow{
-    padding-bottom:10px;
-}
-.serchBtn{
-    position: absolute;
-    left:0;
-    top:50%;
-    transform: translate(50%, -65%);
-}
-.formValidate {
-	margin:0 auto;
-	width: 100%;
-	margin-left: 0;
+    .Title{
+        text-align: left;
+        font-weight: 400;
+        font-size: 14px;
+        position: relative;
+        padding-left: 0;
+        padding-bottom: 7px;
+        border-bottom: 2px solid #01babc;
+        margin-top:0px;
+        margin-bottom: 20px;
+    }
+    .btn_selected, .header .h_menu .h_menu_btn_all .h_menu_btn:hover {
+        color: #01babc;
+    }
+    .Title span{
+        padding-right: 26px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        background-color: #01babc; 
+        border-radius: 0px 38px 38px 0px;
+        color:#fff;
+        padding-left: 26px;
+    }
+    .Title::before{
+        content: '';
+        position: absolute;
+        left:12px;
+        top:1px;
+        width:4px;
+        height: 60%;
+        background-color: #fff;
+        border-radius: 2px;
+    }
+    .pageContent{
+        margin:-16px;
+    }
+    .rowbox{
+        width:90%;
+        margin: 0px auto;
+    }
+    .myTable {
+        margin-bottom: 15px;
+    }
+    .caseInputBox{
+        display: flex;
+    }
+    .serchBtnBox{
+        position: relative;
+    }
+    // .actionBtn{
+    //     width: 16%;
+    // }
+    .caseBoxRow{
+        padding-bottom:10px;
+    }
+    .serchBtn{
+        position: absolute;
+        left:0;
+        top:50%;
+        transform: translate(50%, -65%);
+    }
+    .formValidate {
+        margin:0 auto;
+        width: 100%;
+        margin-left: 0;
 
-}
-.caseBox{
- padding-top:10px;
-}
-.tableBox{
-	padding-top: 20px;
-}
-.tableBtnBox{
-	padding-top:0;
-	padding-bottom:10px;
-}
-.pageBox {
-	padding-bottom:20px;
-	padding-top:20px;
-	overflow: hidden;
-}
-.pageBox ul{
-	float: right;
-}
-.pageBox p{
-	float:left;
-	line-height: 32px;
-	font-size:12px;
-}
+    }
+    .caseBox{
+    padding-top:10px;
+    }
+    .tableBox{
+        padding-top: 20px;
+    }
+    .tableBtnBox{
+        padding-top:0;
+        padding-bottom:10px;
+    }
+    .pageBox {
+        padding-bottom:20px;
+        padding-top:20px;
+        overflow: hidden;
+    }
+    .pageBox ul{
+        float: right;
+    }
+    .pageBox p{
+        float:left;
+        line-height: 32px;
+        font-size:12px;
+    }
+
+
+    /*是否显示更多箭头样式*/
+    .formValidateMoreBtnBox {
+        text-align: center;
+        height: 16px;
+        background: #01babc;
+        position: relative;
+        width: 8%;
+        margin: 0 auto;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .arrUp{
+        transform: rotate(-180deg);
+        transform-origin: center center;
+    }
+    .arrDown{
+        transform: rotate(0deg);
+        transform-origin: center center;
+    }
+
+    .formValidateMoreBtnBox .ivu-icon {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -30%);
+        -ms-transform: translate(-50%, -30%);
+        -webkit-transform: translate(-50%, -30%);
+    }
+
+    .formValidateMoreBtnBox .ivu-icon:first-of-type {
+        transform: translate(-50%, -60%);
+        -ms-transform: translate(-50%, -60%);
+        -webkit-transform: translate(-50%, -60%);
+    }
+
+    .formValidateMoreBtnBox .ivu-icon:last-of-type {
+        transform: translate(-50%, -20%);
+        -ms-transform: translate(-50%, -20%);
+        -webkit-transform: translate(-50%, -20%);
+    }
 </style>
