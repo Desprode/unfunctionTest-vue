@@ -14,6 +14,7 @@ import Script from '@/views/Script/Script.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
 import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
+import Details from   '@/views/ExeResult/Details.vue'
 import Machine from '@/views/Machine/Machine.vue'
 
 //合并挡板配置
@@ -56,6 +57,11 @@ export default new Router({
           component: ExeResult
         },
         {
+          path: '/details',
+          name: 'Details',
+          component: Details
+        },
+        {
           path: '/machine',
           name: 'Machine',
           component: Machine
@@ -73,6 +79,7 @@ export default new Router({
           component:AddCase,
           props:true
         },
+        
         // {
         //   path:'/environmentManage',
         //   name:'EnvironmentManage',

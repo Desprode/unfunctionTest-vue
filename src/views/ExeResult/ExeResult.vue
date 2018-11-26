@@ -1,6 +1,5 @@
 <template>
 	<div class="pageContent">
-        <Card>
             <div class="caseBox">
                 <h3 class="Title">
                     <span>执行结果</span>
@@ -18,33 +17,26 @@
                             </Col>
                             <Col span="2" class="searchLable">场景类型</Col>
                             <Col span="5">
-                                    <Select v-model="type_name" style="">
-                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                <Select v-model="type_name" >
+                                    <Option value="混合交易" >混合交易</Option>
+                                    <Option value="单交易基准" >单交易基准</Option>
+                                    <Option value="单交易负载" >单交易负载</Option>
                                 </Select>
                             </Col>
                             <Col span="3">
-                                <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
+                                <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
                             </Col>
                         </Row>
                         <Row :gutter="16" v-show="isShowMoreShow">
                             <Col span="2" class="searchLable">执行状态</Col>
                             <Col span="5">
-                                    <Select v-model="exe_status" style="">
-                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                    <Select v-model="exe_status" >
+                                    <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </Col>
                             <Col span="2" class="searchLable">执行人</Col>
                             <Col span="5">
-                                <Select
-                                    clearable
-                                    v-model="execution_name"
-                                    placeholder="输入执行人名称"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</Option>
-                                </Select>
+                                <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
                             </Col>
                         </Row>
                         <Row :gutter="17" v-show="isShowMoreShow">
@@ -78,75 +70,18 @@
                     </div>
                 </Form>
                 
+                <div align="left">
+                    <Button type="success" @click="" >聚合报告</Button>
+                    <Button @click="deleteCase" type="error">删除结果</Button>
+                </div>
                 <div class="tableBox">
-                    <div class="tableBtnBox">
-                        <Button type="success" @click="addCase" >聚合报告</Button>
-                        <Button @click="deleteCase" type="error">删除结果</Button>
-                    </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
-                        <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" show-elevator></Page>
-                        <p>总共{{tableDAtaTatol}}条记录</p>
+                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                        <p>总共{{totalPage}}页</p>
                     </div>
                 </div>
             </div>
-
-
-            <!-- /* add by xin */ -->
-            <!--===================================新建任务时弹出的对话框===============-->
-            <!--<Modal v-model="Deletips" width="1000">
-                <p slot="header" style="text-align:center" >
-                    <Icon type="ios-information-circle"></Icon>
-                    <span>添加任务</span>
-                </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="物理子系统" prop="component_name">
-                                    <i-select v-model="addValidate.component_name" placeholder="请选择所在地">
-                                        <i-option value="card1">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card2">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card3">(N-CIS)贷记卡发卡</i-option>
-                                    </i-select>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                        <Row>
-                            <i-col span="24">
-                                <Form-item label="任务名称" prop="perftask_name">
-                                    <i-input v-model="addValidate.perftask_name"></i-input>
-                                </Form-item>
-                            </i-col>
-                    </Row>
-                        <Row>
-                            <i-col span="8">
-                                    <Form-item label="投产日期" prop="start_time">
-                                        <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                            
-                            <i-col span="8">
-                                    <Form-item label="任务开始日期" prop="start_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.start_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                            
-                            <i-col span="8">
-                                <Form-item label="任务结束日期" prop="finish_time">
-                                    <Date-picker type="date" placeholder="选择日期" v-model="addValidate.finish_time"></Date-picker>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                    
-                    </i-form>
-                </div>
-                <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
-                </div>
-            </Modal>-->
-        </Card>
     </div>
 </template>
 
@@ -156,11 +91,8 @@ export default {
     data () {
         return {
             isShowMoreShow:false,               //是否显示更多查询条件
-            sComponent:'',
             srchCmploading: false,
-            cmpOpts: [],
-            list: [], 
-            taskStatusList: this.$Global.taskStatusList,  
+            exeStatusList: this.$Global.exeStatusList,  
             
             executor_id:'',                     //执行编号
             component_name:'',                  //物理子系统
@@ -187,6 +119,7 @@ export default {
                     title: '物理子系统',
                     key: 'component_name',
                     tooltip: true, 
+                    width: 180,
                 },
                 {
                     title: '关联任务',
@@ -199,7 +132,7 @@ export default {
                 {
                     title:'场景类型',
                     key:'type_name',
-                    width: 90,
+                    width: 100,
                 },
                 {
                     title: '执行人',
@@ -209,21 +142,38 @@ export default {
                 {
                     title: '执行状态',
                     key: 'exe_status',
+                    render: (h, params) => {
+                        let _this = this;
+                        let texts='';
+                        if(params.row.exe_status=='10'){
+                            texts = '执行完成'
+                        }else if(params.row.exe_status=='00'){
+                            texts = '执行异常'
+                        }else if(params.row.exe_status=='11'){
+                            texts = '执行停止'
+                        }
+                        return h('div',{
+                            props:{
+                            },
+                        },texts)
+                    },
                     width: 90,
                 },
                 {
                     title: '开始日期',
                     key: 'start_time',
+                    width: 150,
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
+                    width: 150,
                 },
                 {
                     title: '操作',
                     key: 'opration',
                     width: 80,
-                    render: (h, params) => {
+                    render: (h, item) => {
                         return h('div', [
                         h('Button', {
                                         props: {
@@ -232,7 +182,7 @@ export default {
                                         },
                                         on: {
                                             click: () => {
-                                                console.log("详情")
+                                                this.detailCase(item.executor_id);
                                             }
                                         }
                                     }, '详情')
@@ -241,31 +191,6 @@ export default {
                     }
                 }
             ],
-
-            /* add by xin */
-            /**===================================模态框表单验证数据 =========================*/
-            Deletips:false, 
-            addValidate: {
-                   component_name: '',
-                    task_name: '',
-                    start_time: '',
-                    finish_time: '',
-                },
-            ruleValidate: {
-                task_name: [
-                    { required: true, message: '此项为必填项', trigger: 'blur' }
-                ],
-                component_name: [
-                    { required: true, message: '此项为必填项', trigger: 'change' }
-                ],
-                start_time: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
-                ],
-                finish_time: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
-                ]
-            },
-
             tableData: [],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
@@ -274,56 +199,12 @@ export default {
             pageNo:1,                            //当前页
             pageSize:10,                           //每页显示多少条数据
             totalPage:0,                           //共多少页
-            Deletips:false,
         }
     },
     created(){
         this.listCase();
     },
     methods: {
-        srchComponent: function(query) {
-            this.cmpOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-
-                    let _this = this
-                    console.log('srchComponent');
-                    console.log('list-before: ', this.list);
-                    console.log('query: ', query)
-
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/list', 
-                    {
-                        headers: {
-                        },
-                        data: {
-                            name: query,
-                            endTime: '',
-                        },
-                        
-                    }
-                    ).then(function (response) {
-                        console.log('response:', response);
-                        console.log('response.data: ', response.data);
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                value: item.id,
-                                label: item.name
-                            };
-                        });
-                        _this.cmpOpts = list
-                        console.log('this.cmpOpts:', _this.cmpOpts);
-                    })
-                }, 200);
-            } else {
-                this.cmpOpts = [];
-            }
-        },
-
         /*删除按钮功能*/
         deleteCase: function() {
             console.log("删除多条按钮");
@@ -362,26 +243,22 @@ export default {
         //页面展示
         listCase: function() {
             let _this = this;
-            console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
                 data: {
-                    component_name: _this.component_name,
                     task_name:_this.task_name,
                     senario_name:_this.senario_name,
                     execution_name:_this.execution_name,
-                    pageNo:_this.pageNo,
-                    pageSize:_this.pageSize,
+                    exe_status:_this.exe_status,
+                    type_name:_this.type_name,
+                    pageno:_this.pageNo,
+                    pagesize:_this.pageSize,
                 }
             }).then(function (response) {
-                console.log(response);
-                console.log('请求回来的表格数据: ', response.data);
-                _this.tableData = response.data.resultList;
+                _this.tableData =  response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
-                console.log(response.headers.totalcount);
-                console.log(_this.totalCount);  
-                _this.tableData = response.data.resultList;
+                
             })
         },
         /**切换页码 */
@@ -396,36 +273,31 @@ export default {
             this.pageSize = pageSize;
             this.listCase();
         },
+        
         /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            console.log(data)
+            //console.log(data)
         },
 
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
+        onRowDblClick: function(executor_id) {
+            this.$router.push({path:'/details',params:{id:executor_id}});
         },
 
-        /**添加新数据弹出模态框 */
-        addCase:function(){
-            this.Deletips = true;
+        /**详情信息展示跳转 */
+        detailCase:function(executor_id){
+            this.$router.push({
+                path:'/details',
+                params:{id:executor_id}
+            });
             console.log("显示模态框");
+            console.log("测试2",executor_id);
         },
-        /**点击保存之后的事件 
-        handleSave(row){
-            console.log("这是保存",row)
-        },
-        /**点击编辑之后的事件 
-        handleEdit(row){
-            console.log("这是编辑",row)
-        },*/
         /**删除一条数据 */
         remove(index){
             this.tableData.splice(index,1);
             console.log("这是删除一条数据",row);
         },
-
-
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
             console.log(this.addValidate);
@@ -448,7 +320,7 @@ export default {
         /**清除搜索条件 */
         handleReset (name) {
             console.log(this.$refs)
-            this.$refs[name].resetFields();
+            this.$refs[name].listCase();
         }
     }
 }
