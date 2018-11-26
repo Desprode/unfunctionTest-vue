@@ -13,5 +13,7 @@ export default {
     // 任务来源
     taskSourceList: [{value: '1', label: '开发任务'}, {value: '2', label: '自建'}], 
     taskSourceMap: {'1':'开发任务', '2':'自建'},
+    //场景类型
+    senarioType:{'01':'单交易基准','02':'单交易负载','03':'混合场景'}
 }
 </script>
