@@ -273,7 +273,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{executor_id:row.executor_id}});
+            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id}});
         },
 
         // addCase: function() {

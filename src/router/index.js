@@ -7,7 +7,7 @@ import InterfaceCase from '@/views/InterfaceCase/InterfaseCaseIndex/InterfaceCas
 import AddCase from '@/views/InterfaceCase/AddCase/AddCase'
 // import EnvironmentManage from '@/views/EnvironmentManagement/EnvironmentManageIndex/EnvironmentManage'
 import AddGlobalConfig from '@/views/AddGlobalConfig/AddGlobalConfig'
-
+import Monitoring from '@/views/ExeQueue/Monitoring/Monitoring'
 
 import PerfTask from '@/views/PerfTask/PerfTask.vue'
 import Script from '@/views/Script/Script.vue'
@@ -77,6 +77,12 @@ export default new Router({
           path:'/addCase',
           name:'addCase',
           component:AddCase,
+          props:true
+        },
+        {
+          path:'/monitoring',
+          name:'monitoring',
+          component:Monitoring,
           props:true
         },
         
