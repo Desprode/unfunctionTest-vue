@@ -5,25 +5,15 @@
                 <h3 class="Title">
                     <span>执行队列</span>
                 </h3>
-            
                 <Form ref="formValidate" class="formValidate">
                     <div class="rowbox">
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">任务名称</Col>
                             <Col span="5">
-                                <Select
-                                    clearable
-                                    v-model="task_name"
-                                    placeholder="输入任务名称中文名称或英文简称"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select>
-                            </Col>
+                                <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
+                            </Col> 
                             <Col span="2" class="searchLable">场景名称</Col>
-                            <Col span="5">
+                            <Col span="5"> 
                                 <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
                             </Col>
                            
@@ -36,10 +26,14 @@
                                 <Col span="9">
                                     <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
                                 </Col>
-                                <Col span="2" class="searchLable">执行状态</Col>
+                                <!--
+                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                    -->
+                                    <Col span="2" class="searchLable">执行状态</Col>
                                 <Col span="9">
-                                        <Select v-model="exe_status" style="">
-                                        <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                        <Select v-model="exe_status" style="" clearable>
+                                        <Option  value="10">执行中</Option>
+                                        <Option  value="00">等待执行</Option>
                                     </Select>
                                 </Col>
                         </Row>   
@@ -59,8 +53,8 @@
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
-                        <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" show-elevator></Page>
-                        <p>总共{{tableDAtaTatol}}条记录</p>
+                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                        <p>总共{{totalPage}}页</p>
                     </div>
                 </div>
             </div>
@@ -73,7 +67,7 @@ export default {
 	name: 'TestCase',
     data () {
         return {
-            isShowMoreShow:false,
+            isShowMoreShow:false,   //是否显示更多查询条件
             sComponent:'',
             srchCmploading: false,
             cmpOpts: [],
@@ -84,16 +78,12 @@ export default {
             senario_name:'',  //场景名称
             exe_status:'',    //执行状态
             endTime:'',
+
             columns: [
             {
                 type: 'selection',
                 width: 50,
                 align: 'center'
-            },
-            {
-                title: '',
-                key: 'id',
-                width: 60,
             },
             {
                 title: '执行编号',
@@ -120,15 +110,20 @@ export default {
             {
                 title: '执行状态',
                 key: 'exe_status', //perftask_status
+                render: (h, params) => {
+                    let _this = this;
+                    let texts='';
+                    if(params.row.exe_status=='10'){
+                         texts = '执行中'
+                    }else if(params.row.exe_status=='00'){
+                        texts = '等待执行'
+                    }
+                    return h('div',{
+                        props:{
+                        },
+                    },texts)
+                },
                 width: 90,
-                render : (h, params)=>{
-                    let _this = this
-                    console.log('$Global.taskStatusList: ', _this.$Global.taskStatusList);
-                    console.log('$Global.taskStatusMap: ', _this.$Global.taskStatusMap);
-                    console.log('00-------', _this.$Global.taskStatusMap['00']);
-                    console.log('params:', params);
-                    return h('span', _this.$Global.taskStatusMap[params.row.exe_status]);
-                }
             },
             {
                 title: '预设启动时间',
@@ -151,6 +146,10 @@ export default {
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],
+            totalCount:0,                         //共多少条数据
+            pageNo:1,                            //当前页
+            pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
 
             /* add by xin */
             Deletips:false, 
@@ -173,7 +172,7 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/testresult/list', 
+                    this.$http.post('/myapi/component/list', 
                     {
                         headers: {
                         },
@@ -230,77 +229,42 @@ export default {
             });
         },
 
+        //页面展示
         listCase: function() {
             let _this = this;
-            console.log('listPerfTask');
-            console.log('component_name:', _this.sComponent);
+            console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
-                // header: {
-                //     // txCode:'listCase',
-                //     // sysTransId:'20181010153628000165432',
-                //     // projectId:'1001',
-                //     // projectName:'res',
-                //     reqTime:'153628001',
-                //     // userId:'admin',
-                // },
                 data: {
-                    component_name: _this.sComponent,
-                    // startTime: '',
-                    // endTime: '',
-                    // createUser: this.createUser
+                    component_name: _this.component_name,
+                    task_name:_this.task_name,
+                    senario_name:_this.senario_name,
+                    execution_name:_this.execution_name,
+                    pageNo:_this.pageNo,
+                    pageSize:_this.pageSize,
                 }
             }).then(function (response) {
-                console.log('response:');
                 console.log(response);
-                console.log('response.data: ', response.data);
+                console.log('请求回来的表格数据: ', response.data);
+                _this.tableData = response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
+                console.log(response.headers.totalcount);
+                console.log(_this.totalCount);  
                 _this.tableData = response.data.resultList;
             })
         },
-
-        findCase: function(id) {
-            let _this = this
-            console.log('findCase')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    id: id
-                }
-            }).then(function (response) {
-                console.log('response')
-                console.log(response.data.data)
-            })
+        /**切换页码 */
+        pageChange:function(pageNo){
+            console.log(pageNo);
+            this.pageNo = pageNo;
+            this.listCase();
         },
-        
-        setCiFlag: function() {
-            let _this = this
-            let ids = []
-            this.selectedData.forEach(e => {
-                ids.push(e.id)
-            });
-            console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    ids: ids
-                }
-            })           
+        /**切换页面大小 */
+        pageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.pageSize = pageSize;
+            this.listCase();
         },
 
         onSelectionChanged: function(data) {
@@ -309,7 +273,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
+            this.$router.push({path:'/addCase',query:{executor_id:row.executor_id}});
         },
 
         // addCase: function() {
@@ -319,14 +283,6 @@ export default {
         addCase:function(){
             this.Deletips = true;
             console.log("显示模态框");
-        },
-        /**点击保存之后的事件 */
-        handleSave(row){
-            console.log("这是保存",row)
-        },
-        /**点击编辑之后的事件 */
-        handleEdit(row){
-            console.log("这是编辑",row)
         },
         /**删除一条数据 */
         remove(index){
