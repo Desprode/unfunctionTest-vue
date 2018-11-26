@@ -409,7 +409,17 @@ export default {
             let tableData = this.tableData;          //原有的数据
             tableData.forEach((item,index) => {      //对原有的数据进行遍历
                 if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   tableData.splice(index,1);        //即删除该数据
+                   this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            tableData.splice(index, 1);        //即删除该数据上
+                            this.$Message.info('删除成功');
+                        },
+                        onCancel: () => {
+                            this.$Message.info('删除失败');
+                        }
+                    });
                 }
             });
         },

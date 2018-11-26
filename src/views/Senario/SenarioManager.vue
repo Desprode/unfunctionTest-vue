@@ -33,16 +33,13 @@
                     </Row>
                     <Row class="caseBoxRow" v-show="isShowMore">
                         <Col span="8">
-                            <FormItem label="显示已删除:">
-                                <Select v-model="is_deleted" clearable>
-                                    <Option  value="false">否</Option>
-                                    <Option  value="true">是</Option>
-                                </Select>
-                            </FormItem>
-                        </Col>
-                        <Col span="8">
                             <FormItem label="关联任务:">
-                                <Input v-model="perftask_name" placeholder="输入关联任务"></Input>
+                                <Select v-model="perftask_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
+                                    <Option  value="01">单交易基准</Option>
+                                    <Option  value="02">单交易负载</Option>
+                                    <Option  value="03">混合场景</Option>
+                                </Select>
+                                <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
                             </FormItem>
                         </Col>
                         <Col span="8">
@@ -92,20 +89,22 @@
                     <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
                 </FormItem>
                 <FormItem label="关联任务:" prop="ref_task_name">
-                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange">
+                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
                         <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
                     </Select>
                 </FormItem>
                 <FormItem label="关联脚本:" prop="ref_script_name">
-                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled">
-                        <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
+                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
+                        <Scroll :on-reach-bottom="reftaskReachBottom">
+                            <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>   
+                        </Scroll>                 
                     </Select>
                 </FormItem>
             </Form>
             </div>
             <div slot="footer">
-                <Button type="primary" @click="Addcancel()">取消</Button>
-                <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
+                <Button color="#1c2438"  @click="Addcancel()">取消</Button>
+                <Button type="primary" @click="handleSubmit('addValidate')">确认</Button>
             </div>
         </Modal>
 
@@ -126,8 +125,8 @@
                 </FormItem>
             </Form>
             <div slot="footer">
-                <Button color="#1c2438" @click="exeOk()">确认</Button>
-                <Button type="primary" @click="exeCancel()">取消</Button>
+                <Button color="#1c2438" @click="exeCancel()">取消</Button>
+                <Button type="primary" @click="exeOk()">确认</Button>
             </div>
         </Modal>
 
@@ -216,8 +215,8 @@
                 </Row>
             </Form>
             <div slot="footer">
-                <Button color="#1c2438" @click="setOk('setValidate')">确认</Button>
-                <Button type="primary" @click="setCancel()">取消</Button>
+                <Button color="#1c2438" @click="setCancel()">取消</Button>
+                <Button type="primary" @click="setOk('setValidate')">确认</Button>
             </div>
         </Modal>
     </div>
@@ -234,8 +233,8 @@ export default {
             senario_name:'',                                      //场景名称             
             senario_type:'',                                      //场景类型
             senario_creator:'',                                  //创建人
-            is_deleted:'',                                       //是否删除
             perftask_name:'',                                    //关联任务
+            perftaskNameLoading:false,
             script_name:'',                                      //脚本名称
             isShowMore:false,                                   //是否显示更多查询条件
             /**============新增模态框数据=========== */
@@ -243,6 +242,7 @@ export default {
             perftaskOpts:[],                     //关联任务下拉选项
             perftaskList:[],
             scriptOpts:[],                      //关联脚本下拉选项
+            scriptList:[],
             perftaskLoading:false,
             isDisabled:true,                   //关联脚本下拉框是否禁用
             id:'',
@@ -291,7 +291,7 @@ export default {
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    width:180,
+                    width:175,
                     ellipsis: true, 
                 },
                 {
@@ -304,14 +304,28 @@ export default {
                 {
                     title: '场景类型',
                     key: 'senario_type',
-                    width:90,
+                    width:100,
                     align: 'center',
+                    render:(h,params) =>{
+                        let _this = this;
+                        //console.log("场景类型",h,params);
+                        return h('span',_this.$Global.senarioType[params.row.senario_type])
+                    }
                 },
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
                     width:120,
                     align: 'center',
+                    render:(h,params)=>{
+                        let _this = this;
+                        console.log("持续时长",params,params.row.duration,params.row.thread_groups_num,(params.row.duration * params.row.thread_groups_num));
+                        if(params.row.senario_type == '03'){
+                            return h('span',params.row.duration)
+                        }else{
+                            return h('span',(params.row.duration * params.row.thread_groups_num))
+                        }
+                    }
                 },
                 {
                     title: '线程组并发数',
@@ -322,7 +336,7 @@ export default {
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:145,
+                    width:148,
                     align: 'center',
                 },
                 {
@@ -471,7 +485,6 @@ export default {
                     senario_type: _this.senario_type, 
                     senario_name:_this.senario_name,
                     senario_creator:_this.senario_creator,
-                    is_deleted:_this.is_deleted,
                     perftask_name:_this.perftask_name,
                     script_name:_this.script_name,
                     pageno:_this.pageNo,
@@ -485,6 +498,7 @@ export default {
                 _this.totalPage = response.headers.totalpage;
             })
         },
+
         /**切换页码 */
         pageChange:function(pageNo){
             console.log(pageNo);
@@ -497,7 +511,9 @@ export default {
             this.pageSize = pageSize;
             this.listCase();
         },
-        
+        perftaskNameRemote:function(query){
+            console.log('query',query);
+        },
         /**============================删除多条数据========================= */
         deleteCase: function () {
             //console.log("删除多条按钮");
@@ -506,30 +522,41 @@ export default {
             let deleteId = [];                       //选中数据的id
             if (selectedData.length > 0) {               //如果有选中的数据
                 for (let i in selectedData) {         //进行遍历
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
+                    deleteId.push(selectedData[i].senario_id);  //将选中的而数据的id放入要删除的集合中
                     //console.log(selectedData[i].id);
                     //console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 }
+                console.log("删除多条的id",deleteId);
             } else {
                 this.$Message.error("请选择要删除的数据")
             }
         }, 
-        deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
+        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
+            console.log("删除多台哦数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
             tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                    this.$Modal.confirm({
-                    title:'确认',
-                    content: '是否删除该数据',
-                    onOk: () => {
-                        tableData.splice(index, 1);        //即删除该数据上
-                        this.$Message.info('删除成功');
-                    },
-                    onCancel: () => {
-                        this.$Message.info('删除失败');
-                    }
-                }); 
+                if (deleArr.includes(item.senario_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/senario/del",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即删除该数据上
+                                _this.$Message.info('删除成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
                    
                 }
             });
@@ -537,23 +564,33 @@ export default {
             /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
+            console.log("选中要删除的数据",this.selectedData)
             //console.log(data)
         },
         
         /**================================删除一条数据================================ */
         deleteDataCase:function (index){      
             //console.log("删除单条按钮");
-            let tableData = this.tableData;
+            let _this = this;
+            let tableData = _this.tableData;
             console.log(tableData[index]);
-            this.$Modal.confirm({
+            _this.$Modal.confirm({
                 title:'确认',
                 content: `是否删除该数据`,
                 onOk: () => {
-                    tableData.splice(index, 1);
-                    this.$Message.info('删除成功');
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/senario/del",{
+                        header:{},
+                        data:{
+                            ids:[tableData[index].senario_id],
+                        }
+                    }).then(function(){
+                        tableData.splice(index, 1);
+                        _this.$Message.info('删除成功');
+                    })
                 },
-                onCancel: () => {
-                    this.$Message.info('删除失败');
+                onCancel:() => {
+                    _this.$Message.info('删除失败');
                 }
             });       
             
@@ -609,8 +646,8 @@ export default {
                     perftask_name:_this.addValidate.ref_task_name,
                 }
             }).then(function(response){
-                console.log("任务管理请求回的数据",response.data.resultList);
-                console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                // console.log("任务管理请求回的数据",response.data.resultList);
+                // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
                 _this.perftaskList = response.data.resultList;
                 _this.perftaskOpts = _this.perftaskList.map(item=>{
                     return {
@@ -629,25 +666,43 @@ export default {
                 setTimeout(() => {
                     this.perftaskLoading = false;
                     let _this = this;
-                    // _this.addValidate.ref_task_name = query;      //option选中项会在选中之后消失
-                    console.log("将参数赋值之后的关联脚本",_this.addValidate.ref_task_name);
-                    _this.perftask();
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/perftask/list",{
+                        data:{
+                            perftask_name:query,
+                        }
+                    }).then(function(response){
+                        console.log("任务管理请求回的数据",response.data.resultList);
+                        console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                        if(response.data.resultList.length){
+                            _this.isDisabled = false;
+                            _this.perftaskOpts =response.data.resultList.map(item=>{
+                                return {
+                                    value:item.id,
+                                    label:item.perftask_name,
+                                }
+                            })
+                        }
+                        console.log("关联任务选项",_this.perftaskList);
+                    })
                 }, 200);
-             }//else{
-            //     _this.perftaskOpts = _this.perftaskList.map(item=>{
-            //         return {
-            //             value:item.id,
-            //             label:item.perftask_name,
-            //         }
-            //     })
-            // }
+             }else{
+                 if(_this.perftaskList.length){
+                    _this.perftaskOpts = _this.perftaskList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.perftask_name,
+                        }
+                    })
+                }
+            }
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
         perftaskOptChange:function(optionValue){
-            console.log("关联任务选中选项id值",optionValue);
+            console.log("关联任务选中选项id值",optionValue.value);
             let _this = this;
-            _this.id = optionValue;
+            _this.id = optionValue.value;
             this.$http.defaults.withCredentials = false;
             this.$http.post("/myapi/perftask/taskRelatedScript",{
                 data:{
@@ -658,7 +713,8 @@ export default {
                 console.log("关联脚本",_this.scriptOpts)
                 if(response.data.resultList.length){
                     _this.isDisabled = false;
-                    _this.scriptOpts = response.data.resultList.map(item=>{
+                    _this.scriptList = response.data.resultList;
+                    _this.scriptOpts = _this.scriptList.map(item=>{
                         return {
                             value:item.id,
                             label:item.script_name,
@@ -666,6 +722,51 @@ export default {
                     })
                 }
             })
+        },
+        perftaskClear:function(){
+            console.log("关联脚本中的内容被清空了");
+            this.isDisabled = true;
+            this.addValidate.ref_script_name = '';
+        },
+        /**远程加载关联脚本数据 */
+        refscriptRemote:function(query){
+            
+            if(query !== ''){
+                console.log("输入的脚本参数",query);
+                this.perftaskLoading = true;
+                setTimeout(() => {
+                    this.perftaskLoading = false;
+                    let _this = this;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/perftask/taskRelatedScript",{
+                        data:{
+                            script_name:query,
+                        }
+                    }).then(function(response){
+                        console.log("任务管理请求回的数据",response.data.resultList);
+                        console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                        if(response.data.resultList.length > 0 ){
+                            _this.perftaskOpts =response.data.resultList.map(item=>{
+                                return {
+                                    value:item.id,
+                                    label:item.perftask_name,
+                                }
+                            })
+                        }
+                        console.log("关联任务选项",_this.scriptList);
+                    })
+                }, 200);
+             }else{
+                _this.perftaskOpts = _this.scriptList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
+                    }
+                })
+            }
+        },
+        reftaskReachBottom:function(){
+            console.log("到达底部了");
         },
         /**=========================================执行模态框事件==================================== */
         /**确认事件 */
