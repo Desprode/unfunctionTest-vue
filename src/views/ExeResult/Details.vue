@@ -3,26 +3,26 @@
         <div align="left" >
             <font size="5" color="#01babc">执行结果详细信息</font>
         </div></br>
-    <Tabs type="card"  >
+    <Tabs type="card">
         <Tab-pane label="测试报告">
-            <iframe>{{html}}</iframe>
+            <iframe>{{}}</iframe>
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="压力机日志">
-            <Table :columns="columns1" :data="data1"></Table>
+            <Table border  ref="selection" :columns="columns"  :data="tableData" class="myTable"></Table>
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="平台日志">
-            <Table :columns="columns1" :data="data1"></Table>
+            <Table border  ref="selection" :columns="columnss" :data="tableDatas" class="myTable"></Table>
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="执行结果">
-            <Form-item label="执行结果是否通过：" >
+            <Form-item label="执行结果是否通过：">
                 <Row>
                     <i-col span="3">
-                        <i-select>
-                                <i-option value="1">是</i-option>
-                                <i-option value="0">否</i-option>
+                        <i-select v-model="result_is_pass" >
+                                <i-option value="ture">是</i-option>
+                                <i-option value="false">否</i-option>
                         </i-select>
                     </i-col>
                 </Row>
@@ -30,7 +30,7 @@
             <Form-item label="测试结论分析描述：" >
                 <Row>
                     <i-col span="13">
-                         <i-input :value.sync="formItem.textarea" type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..."></i-input>
+                         <i-input v-model="result_desc" type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..."></i-input>
                     </i-col>
                 </Row>
             </Form-item>
@@ -47,6 +47,9 @@
     export default {
         data () {
             return {
+                result_is_pass:'',  //执行结果是否通过：
+                result_desc:'',     //测试结论分析描述：
+
                 formItem: {
                     html:'',
                     input: '',
@@ -59,93 +62,157 @@
                     slider: [20, 50],
                     textarea: ''
                 },
-                columns1: [
-                    {
-                        title: '序号',
-                        key: 'name'
-                    },
+                //压力机日志
+                columns: [
                     {
                         title: '机器名',
-                        key: 'age'
+                        key: 'machineName'
                     },
                     {
                         title: 'ip',
-                        key: 'address'
+                        key: 'ip'
                     },
                     {
                         title: 'CPU%',
-                        key: 'address'
+                        key: 'avg_cpu'
                     },
                     {
                         title: 'MEM%',
-                        key: 'address'
+                        key: 'avg_memory'
                     },
                     {
                         title: 'IObusy%',
-                        key: 'address'
+                        key: 'avg_io'
                     },
                     {
                         title: '失败数',
-                        key: 'address'
+                        key: 'error_count'
                     },
                     {
                         title: 'jmeter日志',
-                        key: 'address'
+                        key: 'jmeter_log_url'
                     },
                     {
                         title: 'JTL日志',
-                        key: 'address'
+                        key: 'jtl_log_url'
                     }
                 ],
-                data1: [
+                tableData: [],
+                //平台日志
+                columnss: [
                     {
-                        name: 'John Brown',
-                        age: 18,
-                        address: 'New York No. 1 Lake Park',
-                        date: '2016-10-03'
+                        title: '步骤名称',
+                        key: 'step_name'
                     },
                     {
-                        name: 'Jim Green',
-                        age: 24,
-                        address: 'London No. 1 Lake Park',
-                        date: '2016-10-01'
+                        title: '开始时间',
+                        key: 'start_time'
                     },
                     {
-                        name: 'Joe Black',
-                        age: 30,
-                        address: 'Sydney No. 1 Lake Park',
-                        date: '2016-10-02'
+                        title: '结束时间',
+                        key: 'end_time'
                     },
                     {
-                        name: 'Jon Snow',
-                        age: 26,
-                        address: 'Ottawa No. 2 Lake Park',
-                        date: '2016-10-04'
+                        title: '错误码',
+                        key: 'exit_code'
                     }
-                ]
+                ],
+                tableDatas: [],
+                //执行结果
+                columnsss: [
+                    {
+                        title: '执行结果是否通过:',
+                        key: 'result_is_pass',
+                        render: (h, params) => {
+                            let _this = this;
+                            let texts='';
+                            if(params.row.result_is_pass=='true'){
+                                texts = '是'
+                            }else if(params.row.exe_status=='false'){
+                                texts = '否'
+                            }
+                            return h('div',{
+                                props:{
+                                },
+                        },texts)
+                    },
+                    },
+                    {
+                        title: '测试结论分析描述:',
+                        key: 'result_desc'
+                    }
+                ],
+                tableDatass: [],
             }
         },
+        
         created(){
-        this.listCase();
+            //this.listCase();
+            this.pressCase();
+            this.platfCase();
+            this.resulCase();
         },
         
         methods:{
-            //页面展示
+            //加载测试报告
             listCase: function() {
-                console.log("111111111111111111111111111111");
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
-                this.$http.get('http://128.195.0.13:8000/testresult/getreport?fileurl=report/1542855394106/report.html', {
+                this.$http.post('/myapi/testresult/list', {
                     data: {
-                        
                     }
                 }).then(function (response) {
-                    html=response.data.html;
-                    console.log(response.data.html);
+                    _this.tableData =  response.data.resultList;
                     
-                })  
+                })
+                console.log("测试报告");
             },
-            
+            //加载压力机日志
+            pressCase: function() {
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;        //获取上个页面传的id值
+                console.log("第二个页面接收的ID",executor_id);
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/testresult/agentLog', {
+                    data: {
+                        executor_id:executor_id,
+                    }
+                }).then(function (response) {
+                    _this.tableData =  response.data.resultList;
+                    
+                })
+                console.log("压力机日志");
+            },
+            //加载平台日志
+            platfCase: function() {
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/testresult/platformLog', {
+                    data: {
+                        executor_id:executor_id,
+                    }
+                }).then(function (response) {
+                    _this.tableDatas =  response.data.resultList;
+                    
+                })
+                console.log("平台日志");
+            },
+            //加载执行结果
+            resulCase: function() {
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/testresult/result', {
+                    data: {
+                        executor_id:executor_id,
+                    }
+                }).then(function (response) {
+                    _this.tableDatass =  response.data.resultList;
+                    
+                })
+                console.log("执行结果");
+            },
         }
     }
 
