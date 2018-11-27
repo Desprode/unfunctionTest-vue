@@ -34,17 +34,17 @@
                     <Row class="caseBoxRow" v-show="isShowMore">
                         <Col span="8">
                             <FormItem label="关联任务:">
-                                <Select v-model="perftask_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
-                                    <Option  value="01">单交易基准</Option>
-                                    <Option  value="02">单交易负载</Option>
-                                    <Option  value="03">混合场景</Option>
+                                <Select v-model="perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
+                                    <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
                                 </Select>
                                 <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
                             </FormItem>
                         </Col>
                         <Col span="8">
                             <FormItem label="关联脚本:">
-                                <Input v-model="script_name" placeholder="输入脚本名称"></Input>
+                                <Select v-model="script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
+                                    <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
+                                </Select>
                             </FormItem>
                         </Col>
                     </Row>  
@@ -95,9 +95,7 @@
                 </FormItem>
                 <FormItem label="关联脚本:" prop="ref_script_name">
                    <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
-                        <Scroll :on-reach-bottom="reftaskReachBottom">
-                            <Option v-for="(opts,index) of scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>   
-                        </Scroll>                 
+                            <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                     </Select>
                 </FormItem>
             </Form>
@@ -144,22 +142,27 @@
                     <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
                 </FormItem>
                 <h2>压力机配置</h2> 
-                <FormItem label="每台压力机最大并发用户数：" prop="maxNum">
-                    <Input v-model="setValidate.maxNum"></Input>
+                <FormItem label="每台压力机最大并发用户数：" prop="max_conusrs_perpm">
+                    <Input v-model="setValidate.max_conusrs_perpm"></Input>
                 </FormItem>
                 <h2>运行设置</h2>
                 <FormItem label="持续时长（分钟）：" prop="duration" v-show="showSetType=='03'?true:false">
                     <Input v-model="setValidate.duration"></Input>
                 </FormItem>
-                <Row v-show="showSetType !='03'?true:false">
-                    <Col span="10">
-                        <FormItem label="每个线程组运行时常：" prop="yunxingshichang">
-                            <Input v-model="setValidate.yunxingshichang"></Input>
+                <Row>
+                    <Col span="10"  v-show="showSetType =='02'?true:false">
+                        <FormItem label="每个线程组并发数：" prop="per_threads">
+                            <Input v-model="setValidate.per_threads"></Input>
                         </FormItem>
                     </Col>
-                    <Col span="10">
-                        <FormItem label="间隔(毫秒)" prop="haomiao">
-                            <Input v-model="setValidate.haomiao"></Input>
+                    <Col span="10"  v-show="showSetType !='03'?true:false">
+                        <FormItem label="每个线程组运行时常：" prop="per_duration">
+                            <Input v-model="setValidate.per_duration"></Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="10"  v-show="showSetType =='01'?true:false">
+                        <FormItem label="间隔(毫秒)" prop="base_pacing">
+                            <Input v-model="setValidate.base_pacing"></Input>
                         </FormItem>
                     </Col>
                 </Row>
@@ -173,43 +176,22 @@
                         <span>36</span>
                     </Col>
                 </Row>
-                <h2 v-show="showSetType=='03'?true:false">线程组配置</h2>
+                <h2>线程组配置</h2>
                 <br>
-                 <Row v-show="showSetType=='03'?true:false">
+                 <Row v-for="(threadItem,index) in threadList" :key="index">
                     <Col span="8">
-                        <FormItem :label-width="10" prop="xianchengzu1">
-                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
+                        <FormItem :label-width="10" prop="thread_name">
+                            <Checkbox v-model="threadItem.enable">{{threadItem.thread_name}}</Checkbox>  
                         </FormItem>
                     </Col>
-                    <Col span="8">
-                        <FormItem label="组件并发数:" prop="bingFaShu1">
-                            <Input v-model="setValidate.bingFaShu1"></Input>
+                    <Col span="8" v-show="showSetType=='03'?true:false">
+                        <FormItem label="组件并发数:" prop="thread_num">
+                            <Input v-model="threadItem.thread_num"></Input>
                         </FormItem>
                     </Col>
-                    <Col span="8">
-                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
-                            <Input v-model="setValidate.haoMiaoShu1"></Input>
-                        </FormItem>
-                    </Col>
-                </Row>
-                <Row v-show="showSetType=='03'?true:false">
-                    <Col span="8">
-                        <FormItem :label-width="10" prop="xianchengzu1">
-                            <Checkbox v-model="setValidate.xianchengzu1">&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;SA0100900线程组</Checkbox>  
-                        </FormItem>
-                    </Col>
-                    <Col span="8">
-                        <FormItem label="组件并发数:" prop="bingFaShu1">
-                            <Input v-model="setValidate.bingFaShu1"></Input>
-                        </FormItem>
-                    </Col>
-                    <Col span="8">
-                        <FormItem label="间隔（毫秒）:" prop="haoMiaoShu1">
-                            <Input v-model="setValidate.haoMiaoShu1"></Input>
+                    <Col span="8" v-show="showSetType=='03'?true:false">
+                        <FormItem label="间隔（毫秒）:" prop="pacing">
+                            <Input v-model="threadItem.pacing"></Input>
                         </FormItem>
                     </Col>
                 </Row>
@@ -220,8 +202,6 @@
             </div>
         </Modal>
     </div>
-
-
 </template>
 <script>
 export default {
@@ -233,10 +213,12 @@ export default {
             senario_name:'',                                      //场景名称             
             senario_type:'',                                      //场景类型
             senario_creator:'',                                  //创建人
-            perftask_name:'',                                    //关联任务
+            perf_task:'',                                    //关联任务
             perftaskNameLoading:false,
-            script_name:'',                                      //脚本名称
+            script:'',                                      //脚本名称
             isShowMore:false,                                   //是否显示更多查询条件
+            searchOpts:[],
+            searchList:[],
             /**============新增模态框数据=========== */
             showAddModal:false,                  //新建窗口
             perftaskOpts:[],                     //关联任务下拉选项
@@ -319,7 +301,7 @@ export default {
                     align: 'center',
                     render:(h,params)=>{
                         let _this = this;
-                        console.log("持续时长",params,params.row.duration,params.row.thread_groups_num,(params.row.duration * params.row.thread_groups_num));
+                        //console.log("持续时长",params,params.row.duration,params.row.thread_groups_num,(params.row.duration * params.row.thread_groups_num));
                         if(params.row.senario_type == '03'){
                             return h('span',params.row.duration)
                         }else{
@@ -366,31 +348,58 @@ export default {
                             }, params.row.$isEdit ? '保存' : '编辑'),*/
                             h('Button', {
                                 props: {
-                                    type: 'error',
-                                    size: 'small'
+                                    size: 'small',
+                                    type:'success',
+                                    icon:'ios-play',
+                                },
+                                style: {
+                                    marginRight: '5px'
                                 },
                                 on: {
                                     click: () => {
                                         this.showExeModal = true;
                                     }
                                 }
-                            }, '执行'),
+                            }),
                             h('Button', {
                                 props: {
-                                    type: 'primary',
-                                    size: 'small'
+                                    size: 'small',
+                                    type:'info',
+                                    icon:'ios-bookmarks',
+                                },
+                                style: {
+                                    marginRight: '5px'
                                 },
                                 on: {
                                     click: () => {
                                         this.showSetModal = true;
-                                        console.log(item.row.senario_type);
-                                        this.showSetType = item.row.senario_type;
-                                        console.log(this.showSetType);
+                                        console.log(item.row);
+                                        this.showSetType =  item.row.senario_type;
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/senario/view',{
+                                            header:{},
+                                            data:{
+                                                senario_id:item.row.senario_id,
+                                            }
+                                        }).then(function(response){
+                                            console.log("view接口",response.data);
+                                            _this.setValidate.senario_name= response.data.resultMap.senario_name,
+                                            _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
+                                            _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
+                                            _this.setValidate.duration = response.data.resultMap.duration;
+                                            _this.setValidate.per_threads = response.data.resultMap.per_threads;
+                                            _this.setValidate.per_duration = response.data.resultMap.per_duration;
+                                            _this.setValidate.base_pacing = response.data.resultMap.base_pacing;
+                                            _this.threadList = response.data.resultList;
+                                        })
                                     }
                                 }
-                            }, '设置'),
+                            }),
                             h('Button', {
                                 props: {
+                                    size:'small',
+                                    type:'warning',
                                     icon:'ios-trash',
                                 },
                                 on: {
@@ -428,16 +437,18 @@ export default {
             /**======================设置模态框数据========================== */
             showSetModal:false,
             showSetType:'',
+            threadList:[],
             setValidate:{
+                senario_type:'',
                 senario_name:'',
                 senario_desc:'',
-                maxNum:'',
-                duration:'',
-                xianchengzu1:'',
-                bingFaShu1:'',
-                haoMiaoShu1:'',
-                yunxingshichang:'',
-                haomiao:'',
+                max_conusrs_perpm:'',                                //每台压力机最大并发数
+                per_duration:'',                                       //每个线程运行时长
+                base_pacing:'',                                       //间隔
+                per_threads:'',                                        //每个线程组并发数
+                duration:'',                                           //持续时长
+                pacing:'',                                             //间隔（混合场景）
+                
             },
             setRuleValidate:{
                 senario_name:[
@@ -446,22 +457,19 @@ export default {
                 senario_desc:[
                     {required:false,message:'',trigger:'blur'}
                 ],
-                maxNum:[
+                max_conusrs_perpm:[
                     {required:false,message:'',trigger:'blur'}
                 ],
+                per_duration:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                base_pacing:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                per_threads:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
                 duration:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ],
-                bingFaShu1:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ],
-                haomiao:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ],
-                yunxingshichang:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ], 
-                haomiao:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
             },
@@ -471,7 +479,7 @@ export default {
       },
     created(){
         this.listCase();
-        this.perftask();
+        
     },
     methods: {
         
@@ -485,8 +493,8 @@ export default {
                     senario_type: _this.senario_type, 
                     senario_name:_this.senario_name,
                     senario_creator:_this.senario_creator,
-                    perftask_name:_this.perftask_name,
-                    script_name:_this.script_name,
+                    perf_task:_this.perf_task,
+                    script:_this.script,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
                 }
@@ -496,6 +504,15 @@ export default {
                 _this.tableData = response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
+                _this.searchOpts = response.data.resultList.map(item=>{
+                    return {
+                        perfTaskID:item.perf_task,
+                        perfTaskName:item.perftask_name,
+                        scriptID:item.script,
+                        scriptName:item.script_name,
+                    }
+                })
+                console.log("搜索提示选项",_this.searchOpts)
             })
         },
 
@@ -512,7 +529,44 @@ export default {
             this.listCase();
         },
         perftaskNameRemote:function(query){
+            let _this = this;
             console.log('query',query);
+            console.log("搜索关联任务",_this.perf_task);   
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/senario/list',{
+                header:{},
+                data:{
+                    perftask_name:query,
+                }
+            }).then(function(response){
+                _this.searchOpts = response.data.resultList.map(item=>{
+                    return {
+                        perfTaskID:item.perf_task,
+                        perfTaskName:item.perftask_name,
+                        scriptID:item.script,
+                        scriptName:item.script_name,
+                    }
+                })
+            })
+        },
+        perfScriptRemote:function(query){
+            let _this = this;  
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/senario/list',{
+                header:{},
+                data:{
+                    script_name:query,
+                }
+            }).then(function(response){
+                _this.searchOpts = response.data.resultList.map(item=>{
+                    return {
+                        perfTaskID:item.perf_task,
+                        perfTaskName:item.perftask_name,
+                        scriptID:item.script,
+                        scriptName:item.script_name,
+                    }
+                })
+            })
         },
         /**============================删除多条数据========================= */
         deleteCase: function () {
@@ -600,6 +654,7 @@ export default {
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.showAddModal = true;
+            this.perftask();
             //console.log("显示模态框");
         },
         /***================================新增模态框事件===========================================*/
@@ -623,6 +678,8 @@ export default {
                         _this.showAddModal = false;
                         console.log("添加成功");
                         _this.$refs[name].resetFields();
+                        _this.isDisabled = true;
+                        _this.perftaskOpts = _this.perftaskList;
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -637,13 +694,13 @@ export default {
              //this.$Message.info('点击了取消');
             this.showAddModal = false;
         },
-        /**通过任务管理加载出来的任务名称 */
+        /**通过任务管理加载出来的关联任务 */
         perftask:function(){
             let _this = this;
             this.$http.defaults.withCredentials = false;
             this.$http.post("/myapi/perftask/list",{
                 data:{
-                    perftask_name:_this.addValidate.ref_task_name,
+                    perftask_name:_this.addValidate.ref_task_name,    //第一次请求时关联任务为空
                 }
             }).then(function(response){
                 // console.log("任务管理请求回的数据",response.data.resultList);
@@ -658,7 +715,7 @@ export default {
                 console.log("关联任务选项",_this.perftaskOpts);
             })
         },
-        /**远程加载任务名称方法 */
+        /**远程加载关联任务方法 */
         perftaskRemote:function(query){
             if(query !== ''){
                 console.log("输入的参数",query);
@@ -674,35 +731,25 @@ export default {
                     }).then(function(response){
                         console.log("任务管理请求回的数据",response.data.resultList);
                         console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                        if(response.data.resultList.length){
-                            _this.isDisabled = false;
-                            _this.perftaskOpts =response.data.resultList.map(item=>{
-                                return {
-                                    value:item.id,
-                                    label:item.perftask_name,
-                                }
-                            })
-                        }
+                        _this.perftaskOpts =response.data.resultList.map(item=>{
+                            return {
+                                value:item.id,
+                                label:item.perftask_name,
+                            }
+                        })
                         console.log("关联任务选项",_this.perftaskList);
                     })
                 }, 200);
              }else{
-                 if(_this.perftaskList.length){
-                    _this.perftaskOpts = _this.perftaskList.map(item=>{
-                        return {
-                            value:item.id,
-                            label:item.perftask_name,
-                        }
-                    })
-                }
+                 _this.perftaskOpts = _this.perftaskList;
+                 _this.isDisabled = true;
             }
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
-        perftaskOptChange:function(optionValue){
-            console.log("关联任务选中选项id值",optionValue.value);
+        perftaskOptChange:function(){
             let _this = this;
-            _this.id = optionValue.value;
+            _this.id = _this.addValidate.ref_task_name;
             this.$http.defaults.withCredentials = false;
             this.$http.post("/myapi/perftask/taskRelatedScript",{
                 data:{
@@ -710,11 +757,11 @@ export default {
                 }
             }).then(function(response){
                 console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
-                console.log("关联脚本",_this.scriptOpts)
-                if(response.data.resultList.length){
+                if(response.data.resultList.length == 0){
+                    _this.isDisabled = true;
+                }else{
                     _this.isDisabled = false;
-                    _this.scriptList = response.data.resultList;
-                    _this.scriptOpts = _this.scriptList.map(item=>{
+                    _this.scriptOpts = response.data.resultList.map(item=>{
                         return {
                             value:item.id,
                             label:item.script_name,
@@ -724,9 +771,10 @@ export default {
             })
         },
         perftaskClear:function(){
-            console.log("关联脚本中的内容被清空了");
-            this.isDisabled = true;
+            console.log("关联任务中的内容被清空了");
             this.addValidate.ref_script_name = '';
+            this.isDisabled = true;
+            
         },
         /**远程加载关联脚本数据 */
         refscriptRemote:function(query){
@@ -741,28 +789,22 @@ export default {
                     this.$http.post("/myapi/perftask/taskRelatedScript",{
                         data:{
                             script_name:query,
+                            id:_this.id,
                         }
                     }).then(function(response){
-                        console.log("任务管理请求回的数据",response.data.resultList);
-                        console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                        if(response.data.resultList.length > 0 ){
-                            _this.perftaskOpts =response.data.resultList.map(item=>{
+                        console.log("远程加载管理脚本的数据",response.data.resultList);
+                         _this.isDisabled = false;
+                        _this.scriptOpts =response.data.resultList.map(item=>{
                                 return {
                                     value:item.id,
-                                    label:item.perftask_name,
+                                    label:item.script_name,
                                 }
                             })
-                        }
-                        console.log("关联任务选项",_this.scriptList);
+                        console.log("远程加载回来之后关联脚本的数据",_this.scriptOpts)
                     })
                 }, 200);
              }else{
-                _this.perftaskOpts = _this.scriptList.map(item=>{
-                    return {
-                        value:item.id,
-                        label:item.perftask_name,
-                    }
-                })
+              _this.scriptOpts=[];
             }
         },
         reftaskReachBottom:function(){
