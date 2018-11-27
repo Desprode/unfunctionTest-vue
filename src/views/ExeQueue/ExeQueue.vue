@@ -48,8 +48,9 @@
                     <div class="tableBtnBox">
                         <!--<Button type="success" @click="addCase" >新建任务</Button>
                         <Button type="warning" @click="deleteCase">测试需求</Button>
-                        <Button type="primary" @click="listCase">测试指标</Button>-->
-                        <Button @click="deleteCase" type="error">停止</Button>
+                        <Button type="primary" @click="listCase">测试指标</Button>
+                        <Button @click="deleteCase" type="error">停止</Button>-->
+                        <Button @click="deleteCase" type="error" class="actionBtn">停止</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -172,7 +173,7 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/list', 
+                    this.$http.post('/myapi/testresult/runtests/list', 
                     {
                         headers: {
                         },
@@ -202,39 +203,62 @@ export default {
             }
         },
 
-        /* add by xin */
-        /*删除按钮功能*/
-        deleteCase: function() {
-            console.log("删除多条按钮");
-            let selectedData=this.selectedData;      //选中要删除的数据
-            let resArr = [];                         
+        deleteCase: function () {
+            //console.log("停止多条按钮");
+            let selectedData = this.selectedData;      //选中要停止的数据
+            let resArr = [];
             let deleteId = [];                       //选中数据的id
-            if(selectedData.length>0){               //如果有选中的数据
-                for(let i in selectedData){         //进行遍历
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                   
-                    console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-                } 
-            }else{
-                    this.$Message.error("请选择要删除的数据")
+            if (selectedData.length > 0) {               //如果有选中的数据
+                for (let i in selectedData) {         //进行遍历
+                    deleteId.push(selectedData[i].executor_id);  //将选中的而数据的id放入要停止的集合中
+                    this.deleteData(deleteId);            //调用停止数据的方法，将tableData中的数据停止
+                }
+                console.log("停止多条的id",deleteId);
+            } else {
+                this.$Message.error("请选择要停止的数据")
             }
         }, 
-        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
-            tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   tableData.splice(index,1);        //即删除该数据
+        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id停止
+            console.log("停止多台哦数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否停止该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/testresult/runtests/cancel",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即停止该数据上
+                                _this.$Message.info('停止成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('停止失败');
+                        }
+                    }); 
+                   
                 }
             });
         },
-
+            /**选中的数据发生改变 */
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            console.log("选中要停止的数据",this.selectedData)
+            //console.log(data)
+        },
         //页面展示
         listCase: function() {
             let _this = this;
             console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/testresult/list', {
+            this.$http.post('/myapi/testresult/runtests/list', {
                 data: {
                     component_name: _this.component_name,
                     task_name:_this.task_name,
@@ -246,7 +270,7 @@ export default {
             }).then(function (response) {
                 console.log(response);
                 console.log('请求回来的表格数据: ', response.data);
-                _this.tableData = response.data.resultList;
+                _this.tableData = response.data.resultList;  
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
                 console.log(response.headers.totalcount);
@@ -273,7 +297,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id}});
+            this.$router.push({path:'/addCase',query:{executor_id:row.executor_id}});
         },
 
         // addCase: function() {
