@@ -143,37 +143,37 @@
                 </FormItem>
                 <h2>压力机配置</h2> 
                 <FormItem label="每台压力机最大并发用户数：" prop="max_conusrs_perpm">
-                    <Input v-model="setValidate.max_conusrs_perpm"></Input>
+                    <Input v-model="setValidate.max_conusrs_perpm" :number="true"></Input>
                 </FormItem>
                 <h2>运行设置</h2>
-                <FormItem label="持续时长（分钟）：" prop="duration" v-show="showSetType=='03'?true:false">
-                    <Input v-model="setValidate.duration"></Input>
+                <FormItem label="持续时长（分钟）：" prop="duration" v-if="showSetType=='03'?true:false">
+                    <Input v-model="setValidate.duration" :number="true"></Input>
                 </FormItem>
                 <Row>
-                    <Col span="10"  v-show="showSetType =='02'?true:false">
+                    <Col span="10"  v-if="showSetType =='02'?true:false">
                         <FormItem label="每个线程组并发数：" prop="per_threads">
-                            <Input v-model="setValidate.per_threads"></Input>
+                            <Input v-model="setValidate.per_threads" :number="true"></Input>
                         </FormItem>
                     </Col>
-                    <Col span="10"  v-show="showSetType !='03'?true:false">
+                    <Col span="10"  v-if="showSetType !='03'?true:false">
                         <FormItem label="每个线程组运行时常：" prop="per_duration">
-                            <Input v-model="setValidate.per_duration"></Input>
+                            <Input v-model="setValidate.per_duration" :number="true"></Input>
                         </FormItem>
                     </Col>
-                    <Col span="10"  v-show="showSetType =='01'?true:false">
+                    <Col span="10"  v-if="showSetType =='01'?true:false">
                         <FormItem label="间隔(毫秒)" prop="base_pacing">
-                            <Input v-model="setValidate.base_pacing"></Input>
+                            <Input v-model="setValidate.base_pacing" :number="true"></Input>
                         </FormItem>
                     </Col>
                 </Row>
-                <Row v-show="showSetType !='03'?true:false">
+                <Row v-if="showSetType !='03'?true:false">
                     <Col span="10" offset="2">
                         <span>线程组个数：</span>
-                        <span>2</span>
+                        <span>{{setValidate.thread_groups_num}}</span>
                     </Col>
                     <Col span="10">
                         <span>运行时长:</span>
-                        <span>36</span>
+                        <span>{{totalTime}}</span>
                     </Col>
                 </Row>
                 <h2>线程组配置</h2>
@@ -181,16 +181,16 @@
                  <Row v-for="(threadItem,index) in threadList" :key="index">
                     <Col span="8">
                         <FormItem :label-width="10" prop="thread_name">
-                            <Checkbox v-model="threadItem.enable">{{threadItem.thread_name}}</Checkbox>  
+                            <Checkbox v-model="threadItem.enable" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
                         </FormItem>
                     </Col>
-                    <Col span="8" v-show="showSetType=='03'?true:false">
+                    <Col span="8" v-if="showSetType=='03'?true:false">
                         <FormItem label="组件并发数:" prop="thread_num">
                             <Input v-model="threadItem.thread_num"></Input>
                         </FormItem>
                     </Col>
-                    <Col span="8" v-show="showSetType=='03'?true:false">
-                        <FormItem label="间隔（毫秒）:" prop="pacing">
+                    <Col span="8" v-if="showSetType=='03'?true:false">
+                        <FormItem label="间隔（毫秒）:">
                             <Input v-model="threadItem.pacing"></Input>
                         </FormItem>
                     </Col>
@@ -384,13 +384,16 @@ export default {
                                             }
                                         }).then(function(response){
                                             console.log("view接口",response.data);
-                                            _this.setValidate.senario_name= response.data.resultMap.senario_name,
+                                            _this.setValidate.senario_name= response.data.resultMap.senario_name;
                                             _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
                                             _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
                                             _this.setValidate.duration = response.data.resultMap.duration;
-                                            _this.setValidate.per_threads = response.data.resultMap.per_threads;
-                                            _this.setValidate.per_duration = response.data.resultMap.per_duration;
-                                            _this.setValidate.base_pacing = response.data.resultMap.base_pacing;
+                                            _this.setValidate.per_threads = response.data.resultMap.threads_total;
+                                            _this.setValidate.per_duration = response.data.resultMap.duration;
+                                            _this.setValidate.base_pacing = response.data.resultMap.pacing;
+                                            _this.setValidate.thread_groups_num = response.data.resultMap.thread_groups_num;
+                                            _this.setValidate.senario_type = response.data.resultMap.senario_type;
+                                            _this.setValidate.senario_id = response.data.resultMap.senario_id;
                                             _this.threadList = response.data.resultList;
                                         })
                                     }
@@ -447,8 +450,8 @@ export default {
                 base_pacing:'',                                       //间隔
                 per_threads:'',                                        //每个线程组并发数
                 duration:'',                                           //持续时长
-                pacing:'',                                             //间隔（混合场景）
-                
+                thread_groups_num:'',                                  //线程组个数
+                senario_id:'',
             },
             setRuleValidate:{
                 senario_name:[
@@ -458,19 +461,19 @@ export default {
                     {required:false,message:'',trigger:'blur'}
                 ],
                 max_conusrs_perpm:[
-                    {required:false,message:'',trigger:'blur'}
+                    {type:'number',required:true,message:'',trigger:'blur'}
                 ],
                 per_duration:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
                 ],
                 base_pacing:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
                 ],
                 per_threads:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
                 ],
                 duration:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
                 ],
             },
         }
@@ -480,6 +483,11 @@ export default {
     created(){
         this.listCase();
         
+    },
+    computed: {
+      totalTime:function(){
+          return this.setValidate.per_duration*this.setValidate.thread_groups_num;
+      }, 
     },
     methods: {
         
@@ -833,19 +841,43 @@ export default {
         /**================================设置模态框事件================================ */
         setOk:function(name){
             this.$refs[name].validate((valid) => {
+                let _this = this;
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                    this.showSetModal = false;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/senario/settings",{
+                        header:{},
+                        data:{
+                            senario_id:_this.setValidate.senario_id,
+                            senario_name:_this.setValidate.senario_name,
+                            senario_desc: _this.setValidate.senario_desc,
+                            max_conusrs_perpm:_this.setValidate.max_conusrs_perpm,
+                            per_duration:_this.setValidate.per_duration,
+                            base_pacing:_this.setValidate.base_pacing,
+                            per_threads:_this.setValidate.per_threads,
+                            duration:_this.setValidate.duration,
+                            scene:_this.threadList,
+                        },
+                    }).then(function(response){
+                        _this.$Message.success('提交成功!');
+                        _this.showSetModal = false;
+                        console.log('response',);
+                    })
+                    
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
-                console.log(this);                 //方法接口写好时再清空之前输入的
-                console.log(this.setValidate);
+                console.log(_this);                 //方法接口写好时再清空之前输入的
+                console.log(_this.setValidate);
                  //this.$refs[name].resetFields();
             });
         },
         setCancel:function(){
             this.showSetModal = false;
+        },
+        isChecked:function(index){
+            console.log(index)
+            this.threadList[index].enable = !this.threadList[index].enable;
+            console.log(this.threadList);
         },
     }
 }
@@ -856,7 +888,7 @@ export default {
         font-weight: 400;
         font-size: 14px;
         position: relative;
-        padding-left: 0;
+        padding-left: 0; 
         padding-bottom: 7px;
         border-bottom: 2px solid #01babc;
         margin-top:0px;
