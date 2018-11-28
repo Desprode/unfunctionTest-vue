@@ -106,42 +106,44 @@ export default {
             columns: [
             	{
                     type: 'selection',
-                    width: 50,
+                    width: 60,
                     align: 'center'
                 },
                 {
                     title: '执行编号',
                     key: 'executor_id',
                     tooltip: true, 
-                    width: 130,
+                    width:130,
                 },
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    tooltip: true, 
-                    width: 180,
+                    ellipsis: true, 
                 },
                 {
                     title: '关联任务',
-                    key: 'task_name'
+                    key: 'task_name',
+                    ellipsis: true, 
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
+                    ellipsis: true, 
                 },
                 {
                     title:'场景类型',
                     key:'type_name',
-                    width: 100,
+                    width:100,
                 },
                 {
                     title: '执行人',
                     key: 'execution_name',
-                    width: 80,
+                    width:90,
                 },
                 {
                     title: '执行状态',
                     key: 'exe_status',
+                    width:100,
                     render: (h, params) => {
                         let _this = this;
                         let texts='';
@@ -157,17 +159,16 @@ export default {
                             },
                         },texts)
                     },
-                    width: 90,
                 },
                 {
                     title: '开始日期',
                     key: 'start_time',
-                    width: 150,
+                    width:148,
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
-                    width: 150,
+                    width:148,
                 },
                 {
                     title: '操作',
@@ -182,7 +183,7 @@ export default {
                                         },
                                         on: {
                                             click: () => {
-                                                this.detailCase(item.executor_id);
+                                                this.detailCase(item.index);
                                             }
                                         }
                                     }, '详情')
@@ -280,18 +281,20 @@ export default {
             //console.log(data)
         },
 
-        onRowDblClick: function(executor_id) {
-            this.$router.push({path:'/details',params:{id:executor_id}});
+        onRowDblClick: function(data) {
+            console.log(data.executor_id);
+            this.$router.push({path:'/details',query:{executor_id:data.executor_id}});
         },
 
         /**详情信息展示跳转 */
-        detailCase:function(executor_id){
+        detailCase:function(index){
+            let _this = this;
+            let tableData = _this.tableData;
+            console.log("第一个页面传递的ID",tableData[index].executor_id);
             this.$router.push({
                 path:'/details',
-                params:{id:executor_id}
+                query:{executor_id:tableData[index].executor_id}
             });
-            console.log("显示模态框");
-            console.log("测试2",executor_id);
         },
         /**删除一条数据 */
         remove(index){

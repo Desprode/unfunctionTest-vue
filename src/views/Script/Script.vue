@@ -5,7 +5,6 @@
                 <h3 class="Title">
                     <span>脚本管理</span>
                 </h3>
-            
                 <Form ref="formValidate"   class="formValidate">
                     <div class="rowbox">
                         <Row :gutter="16">
@@ -17,38 +16,24 @@
                             <Col span="4">
                                 <Input clearable v-model="app_name" placeholder="请输入物理子系统"></Input>
                             </Col>
-                            <Col span="2" class="searchLable">创建者:</Col>
+                            <Col span="2" class="searchLable">创建人:</Col>
                             <Col span="4">
-                                <Select  clearable v-model="creater" placeholder="请输入创建者" filterable remote 
+                                <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
                                         :remote-method="searchCreater" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in creater" :value="option.value" :key="index">{{ option.label }}</Option>
+                                    <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
                                 </Select>
-                                 <!-- <Select
-                                    clearable
-                                    v-model="sComponent"
-                                    placeholder="输入物理子系统中文名称或英文简称"
-                                    filterable
-                                    remote
-                                    :remote-method="srchComponent"
-                                    :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.value" :key="index">{{option.label}}</Option>
-                                </Select> -->
                             </Col>
                             <Col span="6">
-                                <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
-                                <Button @click="handleReset('formValidate')" type="default"  ghost>清除条件</Button>
+                                <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
+                                <Button @click="handleReset('formValidate')" type="default"  ghost>重置</Button>
                             </Col>
                         </Row>
                     </div>                    
                 </Form>
-                
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
                         <Button @click="addCase"  type="primary">新增</Button>
                         <Button @click="deleteCase" type="error">删除</Button>
-                        <!-- <Button @click="" >编辑</Button>
-                        <Button @click="" >参数化设置</Button>
-                        <Button @click="" >下载</Button> -->
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -57,10 +42,26 @@
                     </div>
                 </div>
             </div>
-
-
+            <!-- 参数化设置对话框 -->
+            <Modal v-model="paramStatus" width="760" @on-ok="handleSubmit(addValidate)" @on-cancel="cancelParamWin()">
+                <p slot="header" style="text-align:center" >
+                    <Icon type="ios-information-circle"></Icon>
+                    <span>参数化文件</span>
+                </p>
+                <div style="text-align:center">
+                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                        <Row>
+                            <i-col span="60">
+                                <Form-item label="请勾选可以拆分的参数化文件：" prop="script_name">
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                    </i-form>
+                </div>
+            </Modal>
             <!-- /* add by xin */ -->
-            <!--新建任务时弹出的对话框-->
+            <!--新建脚本时弹出的对话框-->
             <Modal v-model="Deletips" width="760" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
@@ -77,15 +78,11 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <!-- <Form-item label="物理子系统：" prop="taskName" >
-                                    <i-input v-model="addValidate.app_name" placeholder="请输入物理子系统"></i-input>
-                                </Form-item> -->
                                 <Form-item label="物理子系统" prop="app_name">
-                                    <i-select v-model="addValidate.app_name" placeholder="请选择物理子系统">
-                                        <i-option value="card1">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card2">(N-CIS)贷记卡发卡</i-option>
-                                        <i-option value="card3">(N-CIS)贷记卡发卡</i-option>
-                                    </i-select>
+                                    <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" filterable remote 
+                                        :remote-method="searchAppname" :loading="srchCmploading">
+                                    <Option v-for="(option,index) in app_name" :value="option.value" :key="index">{{ option.label }}</Option>
+                                </Select>
                                 </Form-item>
                             </i-col>
                         </Row>
@@ -103,7 +100,7 @@
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
-                                <Upload action="//jsonplaceholder.typicode.com/posts/" 
+                                <Upload action="/myapi/upload" 
                                         :before-upload="handleUpload" 
                                         :format="['zip']" 
                                         :on-format-error="handleFormatError"
@@ -152,7 +149,7 @@ export default {
                 },
             	{
                     type: 'selection',
-                    width: 40,
+                    width: 50,
                     align: 'center'
                 },
                 {
@@ -174,7 +171,7 @@ export default {
                     width: 205,
                 },
                 {
-                    title: '创建者',
+                    title: '创建人',
                     key: 'script_manager_name',
                     width: 80,                    
                 },
@@ -221,6 +218,7 @@ export default {
                                         on: {
                                             click: () => {
                                                 console.log("场景化设置")
+                                                this.paramStatus = true ;
                                             }
                                         }
                                     }),
@@ -246,7 +244,8 @@ export default {
             tableDAtaTatol:0,
             tableDAtaPageLine:0,
             selectedData:[],
-
+            /* 参数化设置开关 */
+            paramStatus:false,
             /* add by xin */
             Deletips:false, 
             formValidate: {
@@ -256,7 +255,7 @@ export default {
                     script_name: '',
                     app_name: '',
                     desc: '',
-                    script_filename: '',
+                    script_filename: ''
                 },
             ruleValidate: {
                 script_name: [
@@ -287,17 +286,14 @@ export default {
 
         },
         handleUpload:function(file){
-            //var reg = /[~!@#$%^&*()/\|,<>?"'();:+-=\[\]{}]/;
-            // var regEn = /[`~!@#$%^&*()_+<>?:"{},.\/;'[\]]/im,
-            //     regCn = /[·！#￥（——）：；“”‘、，|《。》？、【】[\]]/im;
-            // console.log(file.name)
-            // console.log(regEn.test(file.name))
-            // console.log(regCn.test(file.name))
-            
-            // if(regEn.test(file.name) || regCn.test(file.name)){
-            //    this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
-            // }
-            // return false;
+            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
+            var fname = file.name.substr(0,file.name.indexOf('.'))
+            if(reg.test(fname)==true){
+                this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
+                return false;
+            }
+        },
+        searchAppname: function(query){
         },
         searchCreater: function(query) {
             this.cmpOpts = [];
@@ -312,15 +308,13 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/search', 
+                    this.$http.post('/myapi/user/search', 
                     {
                         headers: {
                         },
                         data: {
-                            name: query,
-                            endTime: '',
-                        },
-                        
+                            name: this.creater,                            
+                        },                        
                     }
                     ).then(function (response) {
                         console.log('response:', response);
@@ -330,7 +324,7 @@ export default {
                         const list = _this.list.map(item => {
                             return {
                                 value: item.id,
-                                label: item.name
+                                label: item.member_name
                             };
                         });
                         _this.cmpOpts = list
@@ -352,7 +346,6 @@ export default {
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
                     deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                   
                     console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
@@ -386,7 +379,7 @@ export default {
                 data: {
                     script_name: _this.script_name,
                     app_name:_this.app_name,
-                    //  creater:_this.creator,
+                    script_manager_id:_this.creater,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
                     pageSize: 15                    
                 }
@@ -457,16 +450,16 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
+            //this.$router.push({path:'/addCase',query:{id:row.id}});
         },
-
-        // addCase: function() {
-            // this.$router.push('addCase')
-        // }
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.Deletips = true;
             console.log("显示模态框");
+        },
+        setParam:function(){
+            this.paramStatus = true;
+            console.log("参数化设置!");
         },
         /**点击保存之后的事件 */
         handleSave(row){
@@ -498,11 +491,16 @@ export default {
             this.$Message.info('您取消了添加脚本!');
             this.Deletips = false;
         },
+        cancelParamWin(){
+            this.$Message.info("您取消了参数化文件设置!");
+            this.paramStatus = false;
+        },
         /**清除搜索条件 */
         handleReset (name) {
             let _this = this;
             _this.app_name='';
             _this.script_name='';
+            _this.creater='';
             // console.log(this.$refs[name])
             // this.$refs[name].resetFields()
             //this.$emit('on-reset')
