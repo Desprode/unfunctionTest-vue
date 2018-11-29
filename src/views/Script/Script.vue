@@ -302,12 +302,7 @@ export default {
     },
     methods: {
         handleFormatError:function(file){
-            // this.$Notice.warning({
-            //     title: '文件格式不正确',
-            //     desc: file.name + '文件格式不正确,请上传zip格式的文件!'
-            // });
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
-
         },
         handleUpload:function(file){
             var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
@@ -316,6 +311,9 @@ export default {
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
                 return false;
             }
+            let _this = this;
+            _this.addValidate.script_filename=file.name;
+            console.log('111'+_this.addValidate.script_filename)
         },
         searchAppname: function(query){
         },
@@ -373,10 +371,31 @@ export default {
             }
         }, 
         deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
-            tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   tableData.splice(index,1);        //即删除该数据
+            console.log("删除多台哦数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/scripts/del",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即删除该数据上
+                                _this.$Message.info('删除成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
+                   
                 }
             });
         },
