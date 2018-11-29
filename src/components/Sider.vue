@@ -267,6 +267,14 @@
     border-bottom: 1px solid #00cccc !important;
   }
 
+  .ivu-menu-submenu {
+    text-align: start;
+  }
+  .ivu-menu-submenu .ivu-menu-item {
+    text-align: center;
+    font-size: small;
+  }
+
   // .router-span {
   //   display: block;
   //   width: 100%;
