@@ -4,7 +4,7 @@
     <Sider  ref="SiderBox" collapsible :collapsed-width="65" v-model="isCollapsed" class="siderBox"  hide-trigger>
       <Menu :active-name="currentMenu" theme="dark" width="auto" :class="menuitemClasses" @on-open-change="onOpenChange" ref="side_menu" class="siderMenu">
         <MenuItem name="1-1" >
-          <router-link  to="/" />
+          <router-link to="/" />
           <Icon type="ios-keypad"></Icon>
           <span>任务管理</span>
         </MenuItem>
@@ -28,15 +28,30 @@
           <Icon type="ios-analytics" />
          <span>执行结果</span>
         </MenuItem>
+        <Submenu name="2">
+          <template slot="title"><Icon type="ios-cog" />插件管理</template>
+          <MenuItem name="2-1">
+            <router-link to="/userpluginmgr" />
+            用户插件管理
+          </MenuItem>
+          <MenuItem name="2-2">
+            <router-link to="/syspluginmgr" />
+            系统插件管理
+          </MenuItem>
+        </Submenu>
         <!-- <MenuItem name="1-6">
-          <router-link to="/perftask" />
           <Icon type="ios-cog" />
-         <span>插件管理</span>
+          <span>插件管理</span>
+          <MenuItem name="1-6">
+            <Icon type="ios-cog" />
+            <span>插件管理1</span>
+            <router-link to="/perftask" />
+          </MenuItem>
         </MenuItem> -->
         <MenuItem name="1-7">
           <router-link to="/machine" />
           <Icon type="ios-keypad" />
-         <span>机器管理</span>
+          <span>机器管理</span>
         </MenuItem>
 
         
@@ -44,7 +59,7 @@
           <router-link  to="/InterfaceCase" />
           <Icon type="ios-navigate"></Icon>
           <span>接口管理</span>
-        </MenuItem> -->
+        </Submenu> -->
         <!-- <MenuItem name="1-12">
           <router-link to="/environmentManage" />
           <Icon type="ios-keypad"></Icon>
@@ -251,5 +266,11 @@
     border-top: 1px solid #00cccc !important;
     border-bottom: 1px solid #00cccc !important;
   }
+
+  // .router-span {
+  //   display: block;
+  //   width: 100%;
+  //   height: 100%;
+  // }
 
 </style>
