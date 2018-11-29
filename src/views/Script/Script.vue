@@ -43,26 +43,29 @@
                 </div>
             </div>
             <!-- 参数化设置对话框 -->
-            <Modal v-model="paramStatus" width="760" @on-ok="handleSubmit(addValidate)" @on-cancel="cancelParamWin()">
-                <p slot="header" style="text-align:center" >
-                    <Icon type="ios-information-circle"></Icon>
-                    <span>参数化文件</span>
+            <Modal v-model="paramStatus" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancelParamWin()">
+                <p slot="header" style="color:rgba(184, 124, 13, 0.637)" >
+                    <span>参数化文件设置</span>
                 </p>
                 <div style="text-align:center">
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                        <h3>请勾选可以拆分的参数化文件：</h3>
+                        <br>
                         <Row>
                             <i-col span="60">
-                                <Form-item label="请勾选可以拆分的参数化文件：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称"></i-input>
+                                <CheckboxGroup v-model="param">
+                                    <Checkbox label="文件1"></Checkbox>
+                                    <Checkbox label="文件2"></Checkbox>
+                                    <Checkbox label="文件3"></Checkbox>
+                                </CheckboxGroup>
                                 </Form-item>
                             </i-col>
                         </Row>
                     </i-form>
                 </div>
             </Modal>
-            <!-- /* add by xin */ -->
             <!--新建脚本时弹出的对话框-->
-            <Modal v-model="Deletips" width="760" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
+            <Modal v-model="Deletips" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加脚本</span>
@@ -136,6 +139,7 @@ export default {
             script_name:'',
             app_name:'',
             creater:'',
+            param:'',
             startTime:'',
             endTime:'',
             createUser:'',
@@ -185,57 +189,77 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:100,
+                    width:120,
                     render: (h, params) => {
                         return h('div', [
-                        h('Icon', {
-                                    props: {
-                                        type: 'edit'
-                                    },
-                                    style: {
-                                        fontSize: '20px',
-                                        color:'#559DF9'
-                                    },
-                                    on: {
-                                        click: () => {
-                                                if (params.row.$isEdit) {
-                                                    this.handleSave(params.row);
-                                                } else {
-                                                    this.handleEdit(params.row);
-                                                }
+                        h('Button', {//编辑
+                                props: {
+                                    size: 'small',
+                                    type:'success',
+                                    icon:'ios-play',
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        if (params.row.$isEdit) {
+                                            this.handleSave(params.row);
+                                        } else {
+                                            this.handleEdit(params.row);
                                         }
                                     }
-                                    }) ,                       
-                        
-                        h('Icon', {
-                                        props: {
-                                            type: 'settings',
-                                        },
-                                        style: {
-                                            fontSize: '20px', // 改变icon的样式
-                                            color: '#559DF9'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                console.log("场景化设置")
-                                                this.paramStatus = true ;
-                                            }
-                                        }
-                                    }),
-                        h('Icon',{
-                            props:{
-                                type: 'ios-download',
-                            },
-                            style: {
-                                fontSize: '20px',
-                                color:'559DF9'                                
-                            },
-                            on: {
-                                click: () =>{
-                                    console.log('下载')
                                 }
-                            }
-                        })
+                            }),
+                            h('Button', {//场景化设置
+                                props: {
+                                    size: 'small',
+                                    type:'info',
+                                    icon:'ios-bookmarks',
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.paramStatus = true ;
+                                        // this.showSetModal = true;
+                                        // console.log(item.row);
+                                        // this.showSetType =  item.row.senario_type;
+                                        // let _this = this;
+                                        // this.$http.defaults.withCredentials = false;
+                                        // this.$http.post('/myapi/senario/view',{
+                                        //     header:{},
+                                        //     data:{
+                                        //         senario_id:item.row.senario_id,
+                                        //     }
+                                        // }).then(function(response){
+                                            // console.log("view接口",response.data);
+                                            // _this.setValidate.senario_name= response.data.resultMap.senario_name,
+                                            // _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
+                                            // _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
+                                            // _this.setValidate.duration = response.data.resultMap.duration;
+                                            // _this.setValidate.per_threads = response.data.resultMap.per_threads;
+                                            // _this.setValidate.per_duration = response.data.resultMap.per_duration;
+                                            // _this.setValidate.base_pacing = response.data.resultMap.base_pacing;
+                                            // _this.threadList = response.data.resultList;
+                                        // })
+                                    },
+                                }
+                            }),
+                            h('Button', {//下载
+                                props: {
+                                    size:'small',
+                                    type:'warning',
+                                    icon:'ios-trash',
+                                    tooltip:'',
+                                },
+                                on: {
+                                    click: () => {
+                                        // this.deleteDataCase(item.index)
+                                    }
+                                }
+                            } ),
                         ])
                     }
                 }
@@ -278,12 +302,7 @@ export default {
     },
     methods: {
         handleFormatError:function(file){
-            // this.$Notice.warning({
-            //     title: '文件格式不正确',
-            //     desc: file.name + '文件格式不正确,请上传zip格式的文件!'
-            // });
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
-
         },
         handleUpload:function(file){
             var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
@@ -292,6 +311,9 @@ export default {
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
                 return false;
             }
+            let _this = this;
+            _this.addValidate.script_filename=file.name;
+            console.log('111'+_this.addValidate.script_filename)
         },
         searchAppname: function(query){
         },
@@ -301,19 +323,14 @@ export default {
                 this.srchCmploading = true;
                 setTimeout(() => {
                     this.srchCmploading = false;
-
                     let _this = this
-                    console.log('srchComponent');
-                    console.log('list-before: ', this.list);
-                    console.log('query: ', query)
-
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/user/search', 
                     {
                         headers: {
                         },
                         data: {
-                            name: this.creater,                            
+                            name: _this.creater,                            
                         },                        
                     }
                     ).then(function (response) {
@@ -354,27 +371,39 @@ export default {
             }
         }, 
         deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
-            tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   tableData.splice(index,1);        //即删除该数据
+            console.log("删除多台哦数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/scripts/del",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即删除该数据上
+                                _this.$Message.info('删除成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
+                   
                 }
             });
         },
-
         listCase: function() {
             let _this = this;
-            // console.log('listPerfTask');
             this.$http.defaults.withCredentials = false;
-            console.log('111执行展示列表...');
             this.$http.post('/myapi/scripts/list', {
                 header: {
-                    // txCode:'listCase',
-                    // sysTransId:'20181010153628000165432',
-                    // projectId:'1001',
-                    // projectName:'res',
-                    //reqTime:'153628001',
-                    // userId:'admin',
                 },
                 data: {
                     script_name: _this.script_name,
