@@ -16,6 +16,8 @@ import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
 import Details from   '@/views/ExeResult/Details.vue'
 import Machine from '@/views/Machine/Machine.vue'
+import SysPluginMgr from '@/views/SysPluginMgr/SysPluginMgr.vue'
+import UserPluginMgr from '@/views/UserPluginMgr/UserPluginMgr.vue'
 
 //合并挡板配置
 // const BaffleConfiguration = resolve => require(['@/views/BaffleConfiguration/BaffleConfigurationIndex/BaffleConfiguration'],resolve);
@@ -60,6 +62,16 @@ export default new Router({
           path: '/details',
           name: 'Details',
           component: Details
+        },
+        {
+          path: '/syspluginmgr',
+          name: 'SysPluginMgr',
+          component: SysPluginMgr
+        },
+        {
+          path: '/userpluginmgr',
+          name: 'UserPluginMgr',
+          component: UserPluginMgr
         },
         {
           path: '/machine',
