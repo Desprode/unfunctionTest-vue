@@ -227,6 +227,10 @@ export default {
                     title: '投产日期',
                     key: 'online_date',
                     width: 100,
+                    render : (h, params)=>{
+                        let _this = this;
+                        return h('span', _this.$Global.formatDate(new Date(params.row.online_date), 'yyyy-MM-dd'));
+                    }
                 },
                 {
                     title: '任务状态',
@@ -234,9 +238,6 @@ export default {
                     width: 90,
                     render : (h, params)=>{
                         let _this = this
-                        //console.log('$Global.taskStatusList: ', _this.$Global.taskStatusList);
-                        //console.log('$Global.taskStatusMap: ', _this.$Global.taskStatusMap);
-                        //console.log('00-------', _this.$Global.taskStatusMap['00']);
                         //console.log('params:', params);
                         return h('span', _this.$Global.taskStatusMap[params.row.perftask_status]);
                     }
@@ -245,16 +246,28 @@ export default {
                     title: '任务开始日期',
                     key: 'perftask_begin_date',
                     width: 110,
+                    render : (h, params)=>{
+                        let _this = this;
+                        return h('span', _this.$Global.formatDate(new Date(params.row.perftask_begin_date), 'yyyy-MM-dd'));
+                    }
                 },
                 {
                     title: '任务结束日期',
                     key: 'perftask_end_date',
                     width: 110,
+                    render : (h, params)=>{
+                        let _this = this;
+                        return h('span', _this.$Global.formatDate(new Date(params.row.perftask_end_date), 'yyyy-MM-dd'));
+                    }
                 },
                 {
                     title: '任务来源',
-                    key: 'perftask_source',
+                    key: 'ptask_source',
                     width: 90,
+                    render : (h, params)=>{
+                        let _this = this
+                        return h('span', _this.$Global.taskSourceMap[params.row.ptask_source]);
+                    }
                 },
                 {
                     title: '操作',
@@ -427,9 +440,10 @@ export default {
         listPTask: function() {
             let _this = this;
             //console.log('listPerfTask');
-            console.log('物理子系统:', _this.sComponent);
-            console.log("任务名称",_this.sTaskName);
-            console.log("任务状态",_this.sTaskStatus);
+            // console.log('物理子系统:', _this.sComponent);
+            // console.log("任务名称",_this.sTaskName);
+            // console.log("任务状态",_this.sTaskStatus);
+            console.log("任务来源:", _this.sTaskSource);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
                 header: {},
@@ -443,7 +457,7 @@ export default {
                     online_date_s: _this.onlineDate_s,
                     online_date_f: _this.onlineDate_f,
                     perftask_status: _this.sTaskStatus,         //任务状态
-                    perftask_source: _this.sTaskSource,
+                    ptask_source: _this.sTaskSource,
 
                     pageno:this.pageno,                         //当前页码
                     pagesize:this.pagesize                      //当前页面大小
@@ -472,27 +486,6 @@ export default {
             //console.log("页码切换",pageno);
             this.pageno = pageno; 
             this.listPTask();
-        },
-        findCase: function(id) {
-            let _this = this
-            //console.log('findCase')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    id: id
-                }
-            }).then(function (response) {
-                //console.log('response')
-                //console.log(response.data.data)
-            })
         },
         
         setCiFlag: function() {
@@ -551,12 +544,12 @@ export default {
         handleSubmit (name) {
             let _this = this;
             console.log("**********************this: ", _this);
-            console.log("**********************addValidate: ", _this.addValidate);
-            console.log(_this.addValidate.component_name);
-            console.log(_this.addValidate.task_name);
-            console.log(_this.addValidate.perftask_begin_date);
-            console.log(_this.addValidate.perftask_end_date);
-            console.log(_this.addValidate.online_date);
+            
+            // console.log(_this.addValidate.component_name);
+            // console.log(_this.addValidate.task_name);
+            // console.log(_this.addValidate.perftask_begin_date);
+            // console.log(_this.addValidate.perftask_end_date);
+            // console.log(_this.addValidate.online_date);
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.$http.defaults.withCredentials = false;
@@ -571,6 +564,13 @@ export default {
                             perftask_source: "2",
                         }
                     }).then(function (response) {
+                        console.log("**********************addValidate: ", _this.addValidate);
+                        console.log('response: ', response)
+                        console.log('response.data.resultMap: ', response.data.resultMap);
+                        _this.addValidate.perftask_name = _this.addValidate.task_name;
+                        _this.addValidate.id = response.data.resultMap.id;
+                        _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
+                        console.log("**********************addValidate: ", _this.addValidate);
                         _this.$Message.success('提交成功!');
                         _this.AddPTask = false;
                         console.log('tableData before: ', _this.tableData);
