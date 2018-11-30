@@ -89,8 +89,10 @@
                     <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
                 </FormItem>
                 <FormItem label="关联任务:" prop="ref_task_name">
-                   <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
-                        <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>                    
+                    <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
+                        <Scroll :on-reach-bottom="perftaskReachBottom">
+                            <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
+                        </Scroll>                
                     </Select>
                 </FormItem>
                 <FormItem label="关联脚本:" prop="ref_script_name">
@@ -228,6 +230,7 @@ export default {
             perftaskLoading:false,
             isDisabled:true,                   //关联脚本下拉框是否禁用
             id:'',
+            pNo:1,
             addValidate: {                                     
                     senario_type: '',                 
                     senario_name: '',   
@@ -721,6 +724,7 @@ export default {
                     }
                 })
                 console.log("关联任务选项",_this.perftaskOpts);
+                console.log('response',response);
             })
         },
         /**远程加载关联任务方法 */
@@ -815,8 +819,37 @@ export default {
               _this.scriptOpts=[];
             }
         },
-        reftaskReachBottom:function(){
+        perftaskReachBottom:function(){
             console.log("到达底部了");
+            let _this = this;
+            return new Promise(resolve => {
+                setTimeout(()=>{
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/perftask/list",{
+                        header:{},
+                        data:{
+                            pageno:_this.pNo+1,
+                        },
+                    }).then(function(response){
+                        console.log("触底响应",response.headers.pageno);
+                        console.log(response);
+                        _this.perftaskList = response.data.resultList.map(item=>{
+                            return {
+                                value:item.id,
+                                label:item.perftask_name,
+                            }
+                        });
+                        console.log(_this.perftaskList);
+                        _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskList);
+                        console.log(_this.perftaskOpts);
+                        if(_this.pNo < response.headers.totalpage){
+                            _this.pNo++;
+                        }else{
+                            console.log("没有更多了")
+                        }
+                    })
+                },200)
+            })
         },
         /**=========================================执行模态框事件==================================== */
         /**确认事件 */
@@ -861,6 +894,7 @@ export default {
                         _this.$Message.success('提交成功!');
                         _this.showSetModal = false;
                         console.log('response',);
+                        console.log(_this.threadList);
                     })
                     
                 } else {
@@ -874,9 +908,18 @@ export default {
         setCancel:function(){
             this.showSetModal = false;
         },
-        isChecked:function(index){
-            console.log(index)
-            this.threadList[index].enable = !this.threadList[index].enable;
+        isChecked:function(){
+            var checkedNum = 0,unCheckedNum = 0;
+            this.threadList.map(item=>{
+                if(item.enable == true){
+                    checkedNum ++;
+                }else{
+                    unCheckedNum ++;
+                }
+            })
+            this.setValidate.thread_groups_num = checkedNum;
+            console.log(checkedNum);
+            console.log(unCheckedNum);
             console.log(this.threadList);
         },
     }
