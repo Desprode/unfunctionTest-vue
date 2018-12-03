@@ -189,33 +189,31 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:120,
+                    width:200,
                     render: (h, params) => {
                         return h('div', [
-                        h('Button', {//编辑
+                            h('Button', {
                                 props: {
-                                    size: 'small',
-                                    type:'success',
-                                    icon:'ios-play',
+                                    type: 'primary',
+                                    size: 'small'
                                 },
                                 style: {
                                     marginRight: '5px'
                                 },
                                 on: {
                                     click: () => {
-                                        if (params.row.$isEdit) {
-                                            this.handleSave(params.row);
-                                        } else {
-                                            this.handleEdit(params.row);
-                                        }
+                                            if (params.row.$isEdit) {
+                                                this.handleSave(params.row);
+                                            } else {
+                                                this.handleEdit(params.row);
+                                            }
                                     }
                                 }
-                            }),
-                            h('Button', {//场景化设置
+                            },params.row.$isEdit ? '保存' : '编辑'),
+                            h('Button', {
                                 props: {
-                                    size: 'small',
-                                    type:'info',
-                                    icon:'ios-bookmarks',
+                                    type: 'primary',
+                                    size: 'small'
                                 },
                                 style: {
                                     marginRight: '5px'
@@ -223,44 +221,21 @@ export default {
                                 on: {
                                     click: () => {
                                         this.paramStatus = true ;
-                                        // this.showSetModal = true;
-                                        // console.log(item.row);
-                                        // this.showSetType =  item.row.senario_type;
-                                        // let _this = this;
-                                        // this.$http.defaults.withCredentials = false;
-                                        // this.$http.post('/myapi/senario/view',{
-                                        //     header:{},
-                                        //     data:{
-                                        //         senario_id:item.row.senario_id,
-                                        //     }
-                                        // }).then(function(response){
-                                            // console.log("view接口",response.data);
-                                            // _this.setValidate.senario_name= response.data.resultMap.senario_name,
-                                            // _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
-                                            // _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
-                                            // _this.setValidate.duration = response.data.resultMap.duration;
-                                            // _this.setValidate.per_threads = response.data.resultMap.per_threads;
-                                            // _this.setValidate.per_duration = response.data.resultMap.per_duration;
-                                            // _this.setValidate.base_pacing = response.data.resultMap.base_pacing;
-                                            // _this.threadList = response.data.resultList;
-                                        // })
-                                    },
+                                    }
                                 }
-                            }),
-                            h('Button', {//下载
+                            },'参数设置'),
+                            h('Button', {
                                 props: {
-                                    size:'small',
-                                    type:'warning',
-                                    icon:'ios-trash',
-                                    tooltip:'',
+                                    type: 'default',
+                                    size: 'small'
                                 },
                                 on: {
                                     click: () => {
-                                        // this.deleteDataCase(item.index)
+                                        //console.log("文档")
                                     }
                                 }
-                            } ),
-                        ])
+                            }, '下载')
+                        ])  
                     }
                 }
             ],
@@ -363,7 +338,7 @@ export default {
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
                     deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                    console.log(deleteId);
+                    // console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
             }else{
@@ -371,7 +346,7 @@ export default {
             }
         }, 
         deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            console.log("删除多台哦数据内容",deleArr)
+            console.log("删除后台数据内容",deleArr)
             let _this = this;
             let tableData = _this.tableData;          //原有的数据
             tableData.forEach((item, index) => {      //对原有的数据进行遍历
