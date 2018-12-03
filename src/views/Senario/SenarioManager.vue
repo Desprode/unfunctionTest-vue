@@ -204,18 +204,44 @@
             </div>
         </Modal>
         <!--=================================监控配置模态框============================================-->
-        <Modal v-model="showWathcModal" width="800">
+        <Modal v-model="showWathcModal" width="830">
             <p slot="header" style="color:#f60" >
                 <span>监控配置</span>
             </p>
-            <Table border  ref="selection" :columns="watchColumns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
+            <Form ref="moniterValidate" :model="moniterValidate" :label-width="80">
+                <Row class="caseBoxRow">
+                    <Col span="8">
+                        <FormItem label="场景类型:" prop="inviro_type">
+                            <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
+                                <Option value="01">组件组装非功能(CPT)_南湖</Option>
+                                <Option value="02">组件组装非功能(CPT)_洋桥</Option>
+                                <Option value="03">应用组装非功能(PT1+PT2)_南湖</Option>                      
+                            </Select>
+                        </FormItem>
+                    </Col>
+                    <Col span="8">
+                        <FormItem label="物理子系统" prop="sComponent">
+                            <Input v-model="moniterValidate.sComponent">
+                            </Input>
+                        </FormItem>
+                    </Col>
+                    <Col span="6" offset="1">
+                        <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
+                        <Button @click="moniterReset('moniterValidate')">清除条件</Button>
+                    </Col>
+                </Row>
+            </Form>
+            <div align="left">
+                <Button @click="moniterSave" type="primary">保存并修改</Button>
+            </div>
+            <Table border  ref="selection" :columns="moniterColumns" :data="tableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
                 </div>
             <div slot="footer">
-                <Button color="#1c2438" @click="watchCancel()">取消</Button>
-                <Button type="primary" @click="watchOk('setValidate')">确认</Button>
+                <Button color="#1c2438" @click="moniterCancel">取消</Button>
+                <Button type="primary" @click="moniterOk('setValidate')">确认</Button>
             </div>
         </Modal>
     </div>
@@ -492,14 +518,19 @@ export default {
             },
             /**==========================监控模态框数据========================= */
             showWathcModal:false,
-            watchColumns:[
+            moniterSelectedData:[],
+            moniterValidate:{
+                inviro_type:'',
+                sComponent:'',
+            },
+            moniterColumns:[
                 {
                     type: 'selection',
                     width: 40,
                     align: 'center'
                 },
                 {
-                    title: 'ID',
+                    title: '#',
                     key: 'senario_id',
                     width: 60,
                 },
@@ -512,7 +543,7 @@ export default {
                 {
                     title: '物理子系统',
                     key: 'senario_name',
-                    width:175,
+                    width:140,
                     ellipsis: true, 
                 },
                 {
@@ -521,6 +552,33 @@ export default {
                     width:180,
                     align: 'center',
                     ellipsis: true, 
+                    render:(h,params) => {
+                        if(params.row.$isEdit){
+                            return h('input',{
+                                style: {
+                                    'text-align':'center',
+                                    width: params.column._width+'px',
+                                    height: '48px',
+                                    border: '0px',
+                                    outline:'none',
+                                    cursor: 'pointer',
+                                    // 'background-color':'#f8f8f9'
+                                },
+                                domProps: {
+                                    value: params.row.script_name,
+                                    autofocus: true
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.script_name = event.target.value
+                                    }
+                                }
+                            });
+                        }else{
+                            return h('div',params.row.script_name)
+                        }
+                        
+                    }
                 },
                 {
                     title: 'IP',
@@ -533,6 +591,52 @@ export default {
                         return h('span',_this.$Global.senarioType[params.row.senario_type])
                     }
                 },
+                {
+                    title: 'Action',
+                    key: 'action',
+                    align:'center',
+                    render: (h, params) => {
+                        if(params.row.$isEdit ){
+                        return h('div', [
+                            h('Button', {
+                                props: {
+                                    type: 'primary',
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                          this.handleSave(params.row) 
+                                    }
+                                }
+                            },'保存'),
+                        
+                        ])
+                        }else{
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'success',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.handleEdit(params.row)
+                                        }
+                                    }
+                                },'编辑'),
+                            
+                            ])
+                        }
+                                            
+                    }
+                }
+                //evnInfo:store.getters.evnList
             ],
         }
     },
@@ -638,7 +742,6 @@ export default {
         deleteCase: function () {
             //console.log("删除多条按钮");
             let selectedData = this.selectedData;      //选中要删除的数据
-            let resArr = [];
             let deleteId = [];                       //选中数据的id
             if (selectedData.length > 0) {               //如果有选中的数据
                 for (let i in selectedData) {         //进行遍历
@@ -978,11 +1081,43 @@ export default {
             console.log(this.threadList);
         },
         /**=============================监控配置事件=============================== */
-        watchCancel:function(){
+        /**取消事件 */
+        moniterCancel:function(){
+            this.showWathcModal = false;
             console.log('监控取消事件');
         },
-        watchOk:function(){
+        /**确认事件 */
+        moniterOk:function(){
             console.log('监控确认事件');
+        },
+        /**查询条件清除 */
+        moniterReset:function(name){
+            this.$refs[name].resetFields();
+        },
+        /**列表查询 */
+        moniterCase:function(){
+            
+        },
+        /**保存并修改事件 */
+        moniterSave:function(){
+            if(this.moniterSelectedData.length > 0){
+
+            }else{
+                this.$Message.error("请选择要删除的数据");
+            }
+        },
+        /**选中的数据 */
+        moniterSelectionChanged:function(data){
+            this.moniterSelectedData = data;
+            console.log("选中的数据",this.moniterSelectedData);
+        },
+
+        handleEdit:function(row) {
+            this.$set(row, '$isEdit', true)
+        },
+        handleSave:function(row) {
+            this.$set(row, '$isEdit', false)
+
         },
     }
 }
@@ -1037,12 +1172,12 @@ export default {
     .serchBtnBox{
         position: relative;
     }
-    // .actionBtn{
-    //     width: 16%;
-    // }
-    .caseBoxRow{
-        padding-bottom:10px;
+    .actionBtn{
+        width: 16%;
     }
+    // .caseBoxRow{
+    //     padding-bottom:10px;
+    // }
     .serchBtn{
         position: absolute;
         left:0;
