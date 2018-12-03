@@ -68,7 +68,7 @@
         </div>
 
 
-        <!--========================================创建场景模态框：===============================-->
+        <!--========================================创建场景模态框：=================================-->
         <Modal v-model="showAddModal" width="800">
             <p slot="header" style="color:#f60" >
                 <span>新增</span>
@@ -108,7 +108,7 @@
             </div>
         </Modal>
 
-        <!--==================================执行操作模态框：===============================-->
+        <!--=======================================执行操作模态框：===================================-->
         <Modal v-model="showExeModal" width="800">
             <p slot="header" style="color:#f60" >
                 <span>执行时间设置</span>
@@ -130,7 +130,7 @@
             </div>
         </Modal>
 
-        <!--=============================场景设置模态框============================-->
+        <!--======================================场景设置模态框======================================-->
         <Modal v-model="showSetModal" width="800">
             <p slot="header" style="color:#f60" >
                 <span>编辑场景</span>
@@ -183,7 +183,7 @@
                  <Row v-for="(threadItem,index) in threadList" :key="index">
                     <Col span="8">
                         <FormItem :label-width="10" prop="thread_name">
-                            <Checkbox v-model="threadItem.enable" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
+                            <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
                         </FormItem>
                     </Col>
                     <Col span="8" v-if="showSetType=='03'?true:false">
@@ -201,6 +201,21 @@
             <div slot="footer">
                 <Button color="#1c2438" @click="setCancel()">取消</Button>
                 <Button type="primary" @click="setOk('setValidate')">确认</Button>
+            </div>
+        </Modal>
+        <!--=================================监控配置模态框============================================-->
+        <Modal v-model="showWathcModal" width="800">
+            <p slot="header" style="color:#f60" >
+                <span>监控配置</span>
+            </p>
+            <Table border  ref="selection" :columns="watchColumns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
+                <div class="pageBox" v-if="tableData.length">
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    <p>总共{{totalPage}}页</p>
+                </div>
+            <div slot="footer">
+                <Button color="#1c2438" @click="watchCancel()">取消</Button>
+                <Button type="primary" @click="watchOk('setValidate')">确认</Button>
             </div>
         </Modal>
     </div>
@@ -331,7 +346,7 @@ export default {
                     align: 'center',
                     render: (h, item) => {
                         return h('div', [
-                            /*h('Button', {
+                            h('Button', {
                                 props: {
                                     type: 'primary',
                                     size: 'small'
@@ -341,14 +356,10 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        if (params.row.$isEdit) {
-                                            this.handleSave(params.row)
-                                        } else {
-                                            this.handleEdit(params.row)
-                                        }
+                                        this.showWathcModal = true;
                                     }
                                 }
-                            }, params.row.$isEdit ? '保存' : '编辑'),*/
+                            },  '编辑'),
                             h('Button', {
                                 props: {
                                     size: 'small',
@@ -479,6 +490,50 @@ export default {
                     {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
                 ],
             },
+            /**==========================监控模态框数据========================= */
+            showWathcModal:false,
+            watchColumns:[
+                {
+                    type: 'selection',
+                    width: 40,
+                    align: 'center'
+                },
+                {
+                    title: 'ID',
+                    key: 'senario_id',
+                    width: 60,
+                },
+                {
+                    title: '环境类型',
+                    key: 'perftask_name',
+                    ellipsis: true, 
+                    width:180,
+                },
+                {
+                    title: '物理子系统',
+                    key: 'senario_name',
+                    width:175,
+                    ellipsis: true, 
+                },
+                {
+                    title: '部署单元',
+                    key: 'script_name',
+                    width:180,
+                    align: 'center',
+                    ellipsis: true, 
+                },
+                {
+                    title: 'IP',
+                    key: 'senario_type',
+                    width:120,
+                    align: 'center',
+                    render:(h,params) =>{
+                        let _this = this;
+                        //console.log("场景类型",h,params);
+                        return h('span',_this.$Global.senarioType[params.row.senario_type])
+                    }
+                },
+            ],
         }
     },
     mounted:function () {
@@ -921,6 +976,13 @@ export default {
             console.log(checkedNum);
             console.log(unCheckedNum);
             console.log(this.threadList);
+        },
+        /**=============================监控配置事件=============================== */
+        watchCancel:function(){
+            console.log('监控取消事件');
+        },
+        watchOk:function(){
+            console.log('监控确认事件');
         },
     }
 }
