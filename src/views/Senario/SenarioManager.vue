@@ -233,10 +233,11 @@
             </Form>
             <div align="left">
                 <Button @click="moniterSave" type="primary">保存并修改</Button>
+                <Button @click="moniterAdd" type="success">新增</Button>
             </div>
-            <Table border  ref="selection" :columns="moniterColumns" :data="tableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+            <Table border  ref="selection" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>0
                     <p>总共{{totalPage}}页</p>
                 </div>
             <div slot="footer">
@@ -383,6 +384,18 @@ export default {
                                 on: {
                                     click: () => {
                                         this.showWathcModal = true;
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/monitor/list',{
+                                            header:{},
+                                            data:{
+                                                id:item.row.senario_id,
+                                            }
+                                        }).then(function(response){
+                                            _this.moniterTableData = response.data.resultList;
+                                            console.log(response.data.resultList);
+
+                                        })
                                     }
                                 }
                             },  '编辑'),
@@ -518,6 +531,34 @@ export default {
             },
             /**==========================监控模态框数据========================= */
             showWathcModal:false,
+            addList: {
+                senarioid:'4',
+                subAreaName:'4', 
+                subSysName:'4',
+                funDesc:'4',
+                prodIp:'4' 
+            },
+            moniterTableData:[
+                {
+                    id:'1',
+                    subAreaName:'1',
+                    subSysName:'1',
+                    funDesc:'1',
+                    prodIp:'1'
+                },{
+                    id:'2',
+                    subAreaName:'2',
+                    subSysName:'2',
+                    funDesc:'2',
+                    prodIp:'2'
+                },{
+                    id:'3',
+                    subAreaName:'3',
+                    subSysName:'3',
+                    funDesc:'3',
+                    prodIp:'3'
+                },
+            ],
             moniterSelectedData:[],
             moniterValidate:{
                 inviro_type:'',
@@ -531,25 +572,25 @@ export default {
                 },
                 {
                     title: '#',
-                    key: 'senario_id',
-                    width: 60,
+                    key: 'id',
+                    width: 70,
                 },
                 {
                     title: '环境类型',
-                    key: 'perftask_name',
+                    key: 'subAreaName',
                     ellipsis: true, 
                     width:180,
                 },
                 {
                     title: '物理子系统',
-                    key: 'senario_name',
+                    key: 'subSysName',
                     width:140,
                     ellipsis: true, 
                 },
                 {
                     title: '部署单元',
-                    key: 'script_name',
-                    width:180,
+                    key: 'funDesc',
+                    width:170,
                     align: 'center',
                     ellipsis: true, 
                     render:(h,params) => {
@@ -565,31 +606,26 @@ export default {
                                     // 'background-color':'#f8f8f9'
                                 },
                                 domProps: {
-                                    value: params.row.script_name,
+                                    value: params.row.funDesc,
                                     autofocus: true
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.script_name = event.target.value
+                                        params.row.funDesc = event.target.value
                                     }
                                 }
                             });
                         }else{
-                            return h('div',params.row.script_name)
+                            return h('div',params.row.funDesc)
                         }
                         
                     }
                 },
                 {
                     title: 'IP',
-                    key: 'senario_type',
-                    width:120,
+                    key: 'prodIp',
+                    width:130,
                     align: 'center',
-                    render:(h,params) =>{
-                        let _this = this;
-                        //console.log("场景类型",h,params);
-                        return h('span',_this.$Global.senarioType[params.row.senario_type])
-                    }
                 },
                 {
                     title: 'Action',
@@ -1106,6 +1142,11 @@ export default {
                 this.$Message.error("请选择要删除的数据");
             }
         },
+        moniterAdd:function(){
+            //let addList = {senarioid:'4',subAreaName:'4', subSysName:'4',funDesc:'4',prodIp:'4' };
+             this.moniterTableData.push(this.addList)
+            console.log(this.moniterTableData);
+        },
         /**选中的数据 */
         moniterSelectionChanged:function(data){
             this.moniterSelectedData = data;
@@ -1172,12 +1213,12 @@ export default {
     .serchBtnBox{
         position: relative;
     }
-    .actionBtn{
-        width: 16%;
-    }
-    // .caseBoxRow{
-    //     padding-bottom:10px;
+    // .actionBtn{
+    //     width: 16%;
     // }
+    .caseBoxRow{
+        padding-bottom:10px;
+    }
     .serchBtn{
         position: absolute;
         left:0;
