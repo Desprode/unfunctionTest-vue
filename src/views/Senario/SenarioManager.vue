@@ -204,7 +204,7 @@
             </div>
         </Modal>
         <!--=================================监控配置模态框============================================-->
-        <Modal v-model="showWathcModal" width="830">
+        <Modal v-model="showMoniterModal" width="830">
             <p slot="header" style="color:#f60" >
                 <span>监控配置</span>
             </p>
@@ -215,7 +215,9 @@
                             <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
                                 <Option value="01">组件组装非功能(CPT)_南湖</Option>
                                 <Option value="02">组件组装非功能(CPT)_洋桥</Option>
-                                <Option value="03">应用组装非功能(PT1+PT2)_南湖</Option>                      
+                                <Option value="03">应用组装非功能(PT1+PT2)_南湖</Option> 
+                                <Option value="04">应用组装非功能(PT1+PT2)_洋桥</Option>        
+                                <Option value="05">南湖搬迁专项区_洋桥</Option>               
                             </Select>
                         </FormItem>
                     </Col>
@@ -235,11 +237,13 @@
                 <Button @click="moniterSave" type="primary">保存并修改</Button>
                 <Button @click="moniterAdd" type="success">新增</Button>
             </div>
-            <Table border  ref="selection" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
-                <div class="pageBox" v-if="tableData.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>0
-                    <p>总共{{totalPage}}页</p>
-                </div>
+            <div class="tableBox">
+                <Table border  ref="selection" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                    <div class="pageBox" v-if="moniterTableData != undefined">
+                        <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                        <p>总共{{moniterTotalPage}}页</p>
+                    </div>
+            </div>
             <div slot="footer">
                 <Button color="#1c2438" @click="moniterCancel">取消</Button>
                 <Button type="primary" @click="moniterOk('setValidate')">确认</Button>
@@ -375,32 +379,6 @@ export default {
                         return h('div', [
                             h('Button', {
                                 props: {
-                                    type: 'primary',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
-                                on: {
-                                    click: () => {
-                                        this.showWathcModal = true;
-                                        let _this = this;
-                                        this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/monitor/list',{
-                                            header:{},
-                                            data:{
-                                                id:item.row.senario_id,
-                                            }
-                                        }).then(function(response){
-                                            _this.moniterTableData = response.data.resultList;
-                                            console.log(response.data.resultList);
-
-                                        })
-                                    }
-                                }
-                            },  '编辑'),
-                            h('Button', {
-                                props: {
                                     size: 'small',
                                     type:'success',
                                     icon:'ios-play',
@@ -454,6 +432,23 @@ export default {
                             }),
                             h('Button', {
                                 props: {
+                                    type: 'default',
+                                    size: 'small',
+                                    icon:'ios-desktop-outline',
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.showMoniterModal = true;
+                                        this.id = item.row.senario_id;
+                                        this.moniterListCase();
+                                    }
+                                }
+                            }),
+                            h('Button', {
+                                props: {
                                     size:'small',
                                     type:'warning',
                                     icon:'ios-trash',
@@ -464,6 +459,7 @@ export default {
                                     }
                                 }
                             } ),
+                            
                         ])
 
                     }
@@ -530,35 +526,20 @@ export default {
                 ],
             },
             /**==========================监控模态框数据========================= */
-            showWathcModal:false,
+            showMoniterModal:false,
+            id:'',                                     
+            moniterPageNo:1,
+            moniterPageSize:10,
+            moniterTotalCount:0,                         //共多少条数据
+            moniterTotalPage:0,                           //共多少页
             addList: {
-                senarioid:'4',
-                subAreaName:'4', 
-                subSysName:'4',
-                funDesc:'4',
-                prodIp:'4' 
+                senarioid:'',
+                subAreaName:'', 
+                subSysName:'',
+                funDesc:'',
+                prodIp:'' 
             },
-            moniterTableData:[
-                {
-                    id:'1',
-                    subAreaName:'1',
-                    subSysName:'1',
-                    funDesc:'1',
-                    prodIp:'1'
-                },{
-                    id:'2',
-                    subAreaName:'2',
-                    subSysName:'2',
-                    funDesc:'2',
-                    prodIp:'2'
-                },{
-                    id:'3',
-                    subAreaName:'3',
-                    subSysName:'3',
-                    funDesc:'3',
-                    prodIp:'3'
-                },
-            ],
+            moniterTableData:[],
             moniterSelectedData:[],
             moniterValidate:{
                 inviro_type:'',
@@ -1117,9 +1098,29 @@ export default {
             console.log(this.threadList);
         },
         /**=============================监控配置事件=============================== */
+        moniterListCase:function(){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/monitorSetting/list',{
+                header:{},
+                data:{
+                    id:_this.id,
+                    pageNo:_this.moniterPageNo,
+                    pageSize:_this.moniterPageSize,
+                }
+            }).then(function(response){
+                console.log(response.data.resultList);
+                _this.moniterTableData = response.data.resultList;
+                _this.moniterTotalCount = response.headers.totalcount;
+                _this.moniterTotalPage = response.headers.totalpage;
+                console.log(response);
+                console.log(_this.moniterTableData);
+
+            })
+        },
         /**取消事件 */
         moniterCancel:function(){
-            this.showWathcModal = false;
+            this.showMoniterModal = false;
             console.log('监控取消事件');
         },
         /**确认事件 */
@@ -1132,7 +1133,25 @@ export default {
         },
         /**列表查询 */
         moniterCase:function(){
-            
+            // this.$http.defaults.withCredentials = false;
+            // this.$http.post('/myapi/monitorSetting/machineMonitorSearch',{
+            //     header:{},
+            //     data:{
+
+            //     }
+            // })
+        },
+         /**切换页码 */
+        moniterPageChange:function(moniterPageNo){
+            console.log(moniterPageNo);
+            this.moniterPageNo = moniterPageNo;
+            this.moniterListCase();
+        },
+        /**切换页面大小 */
+        moniterPageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.moniterPageSize = pageSize;
+            this.moniterListCase();
         },
         /**保存并修改事件 */
         moniterSave:function(){
@@ -1144,8 +1163,8 @@ export default {
         },
         moniterAdd:function(){
             //let addList = {senarioid:'4',subAreaName:'4', subSysName:'4',funDesc:'4',prodIp:'4' };
-             this.moniterTableData.push(this.addList)
-            console.log(this.moniterTableData);
+             //this.moniterTableData.push(this.addList)
+            //console.log(this.moniterTableData);
         },
         /**选中的数据 */
         moniterSelectionChanged:function(data){
@@ -1158,6 +1177,18 @@ export default {
         },
         handleSave:function(row) {
             this.$set(row, '$isEdit', false)
+            console.log(row);
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/monitorSetting/machineMonitorUpdate',{
+                header:{},
+                data:{
+                    id:row.id,
+                    funDesc:row.funDesc,
+                }
+            }).then(function(response){
+                _this.$Message.info("修改成功")
+            })
 
         },
     }
