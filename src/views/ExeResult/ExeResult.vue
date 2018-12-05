@@ -30,7 +30,7 @@
                         <Row :gutter="16" v-show="isShowMoreShow">
                             <Col span="2" class="searchLable">执行状态</Col>
                             <Col span="5">
-                                    <Select v-model="exe_status" >
+                                <Select v-model="exe_status" >
                                     <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </Col>
@@ -69,9 +69,8 @@
                         <Icon type="chevron-down" color="#fff" ></Icon>
                     </div>
                 </Form>
-                
                 <div align="left">
-                    <Button type="success" @click="" >聚合报告</Button>
+                    <Button @click="aggregCase" type="success"  >聚合报告</Button>
                     <Button @click="deleteCase" type="error">删除结果</Button>
                 </div>
                 <div class="tableBox">
@@ -82,6 +81,67 @@
                     </div>
                 </div>
             </div>
+            <!-- ========================================聚合报告===================================================== -->
+            <Modal v-model="showAddModal" width="1100px">
+                <p slot="header" style="color:#f60" >
+                    <span>生成聚合报告预编译</span>
+                </p>
+                <div style="text-align:center;height:240px" >
+                    <Form label-width="80">
+                        <FormItem label="报告名称" align="left">
+                            <Input placeholder="Enter something..." style="width:400px"></Input>
+                        </FormItem>
+                    </Form>
+                    <div style="float:left;width:100px">
+                        <Button color="#1c2438"  @click="">上移</Button><br/>
+                        <Button color="#1c2438"  @click="">下移</Button>
+                    </div>
+                    <div style="float:left;width:900px">
+                        <Form >
+                            <FormItem label="场景名称" align="left" >
+                                <Input placeholder="Enter something..." style="width:300px"></Input>
+                            </FormItem>
+                            <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
+                                执行是否成功：
+                                <Select style="width:80px">
+                                    <Option value="beijing">New York</Option>
+                                    <Option value="shanghai">London</Option>
+                                    <Option value="shenzhen">Sydney</Option>
+                                </Select>
+                                测试结果分析描述：
+                                <Input placeholder="Enter something..." style="width:400px"></Input>
+                            </FormItem>
+                            <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
+                                显示性能数据表：
+                                <Select style="width:80px">
+                                    <Option value="beijing">否</Option>
+                                    <Option value="shanghai">是</Option>
+                                </Select>
+                                显示性能曲线图：
+                                <Select style="width:80px">
+                                    <Option value="beijing">否</Option>
+                                    <Option value="shanghai">是</Option>
+                                </Select>
+                                显示资源监控图：
+                                <Select style="width:80px">
+                                    <Option value="beijing">否</Option>
+                                    <Option value="shanghai">是</Option>
+                                </Select>
+                                显示失败事务分析：
+                                <Select style="width:80px">
+                                    <Option value="beijing">否</Option>
+                                    <Option value="shanghai">是</Option>
+                                </Select>
+                            </FormItem>
+                        </Form>
+                    </div>
+                </div>
+                <Table border  ref="index" :columns="columnss" :data="tableDatas" class="myTable"></Table>
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="cancel">取消</Button>
+                    <Button type="primary" @click="handleSubmit('addValidate')">生成报告</Button>
+                </div>
+            </Modal>
     </div>
 </template>
 
@@ -93,7 +153,7 @@ export default {
             isShowMoreShow:false,               //是否显示更多查询条件
             srchCmploading: false,
             exeStatusList: this.$Global.exeStatusList,  
-            
+            showAddModal:false,                 //聚合窗口
             executor_id:'',                     //执行编号
             component_name:'',                  //物理子系统
             task_name:'',                       //关联任务
@@ -103,11 +163,18 @@ export default {
             exe_status:'',                      //执行状态
             start_time:'',                      //开始日期
             end_time:'',                        //结束日期
+            //执行结果信息展示
             columns: [
             	{
+                    title: '#',
+                    type: 'index',
+                    align: 'center',
+                    width: 50,
+                },
+                {
                     type: 'selection',
-                    width: 60,
-                    align: 'center'
+                    width: 50,
+                    align: 'center',
                 },
                 {
                     title: '执行编号',
@@ -144,31 +211,20 @@ export default {
                     title: '执行状态',
                     key: 'exe_status',
                     width:100,
-                    render: (h, params) => {
+                    render:(h,params) =>{
                         let _this = this;
-                        let texts='';
-                        if(params.row.exe_status=='10'){
-                            texts = '执行完成'
-                        }else if(params.row.exe_status=='00'){
-                            texts = '执行异常'
-                        }else if(params.row.exe_status=='11'){
-                            texts = '执行停止'
-                        }
-                        return h('div',{
-                            props:{
-                            },
-                        },texts)
-                    },
+                        return h('span',_this.$Global.exeStatusMap[params.row.exe_status])
+                    }
                 },
                 {
                     title: '开始日期',
                     key: 'start_time',
-                    width:148,
+                    width:150,
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
-                    width:148,
+                    width:150,
                 },
                 {
                     title: '操作',
@@ -193,6 +249,38 @@ export default {
                 }
             ],
             tableData: [],
+            //聚合报告信息展示
+            columnss:[
+                {
+                    title: '序号',
+                    type: 'index',
+                    align: 'center',
+                    width: 80
+                },
+                {
+                    title: '测试需求描述',
+                    key: 'name',
+                    align: 'center',
+                },
+                {
+                    title: '是否满足需求',
+                    key: 'type',
+                    align: 'center',
+                },
+                {
+                    title: '备注描述',
+                    key: 'age',
+                    align: 'center',
+                    ellipsis: true
+                },
+            ],
+            tableDatas:[
+                {
+                    name:'json',
+                    type:'1',
+                    age:'11'
+                }
+            ],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],                    //选中的项的数组
@@ -207,36 +295,45 @@ export default {
     },
     methods: {
         /*删除按钮功能*/
-        deleteCase: function() {
-            console.log("删除多条按钮");
-            let selectedData=this.selectedData;      //选中要删除的数据
-            let resArr = [];                         
+        deleteCase: function () {
+            //console.log("删除多条按钮");
+            let selectedData = this.selectedData;      //选中要删除的数据
+            let resArr = [];
             let deleteId = [];                       //选中数据的id
-            if(selectedData.length>0){               //如果有选中的数据
-                for(let i in selectedData){         //进行遍历
+            if (selectedData.length > 0) {               //如果有选中的数据
+                for (let i in selectedData) {         //进行遍历
                     deleteId.push(selectedData[i].executor_id);  //将选中的而数据的id放入要删除的集合中
-                    console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-                } 
-            }else{
-                    this.$Message.error("请选择要删除的数据")
+                }
+            } else {
+                this.$Message.error("请选择要删除的数据")
             }
-        }, 
-        deleteData(deleArr) {                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
+        },
+        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
+            console.log("删除多条数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
             tableData.forEach((item, index) => {      //对原有的数据进行遍历
                 if (deleArr.includes(item.executor_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                    this.$Modal.confirm({
-                    title:'确认',
-                    content: '是否删除该数据',
-                    onOk: () => {
-                        tableData.splice(index, 1);        //即删除该数据上
-                        this.$Message.info('删除成功');
-                    },
-                    onCancel: () => {
-                        this.$Message.info('删除失败');
-                    }
-                }); 
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/testresult/del",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即删除该数据上
+                                _this.$Message.info('删除成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
                    
                 }
             });
@@ -262,6 +359,29 @@ export default {
                 
             })
         },
+        //聚合报告
+        aggregCase:function(){
+            let _this = this;
+            let selectedData = this.selectedData;      //选中要聚合的数据
+            let resArr = [];
+            let deleteId = [];                       //选中数据的id
+            if (selectedData.length > 0) {               //如果有选中的数据
+                for (let i in selectedData) {         //进行遍历
+                    //deleteId.push(selectedData[i].executor_id);  //将选中的而数据的id放入集合中
+                    //this.$http.post('/myapi/testresult/mergeReport', {
+                    //    data: {
+                    //        executor_id:_this.selectedData[i].executor_id,
+                    //    },
+                    //}).then(function (response) {
+                    //    _this.tableData =  response.data.resultList;                      
+                    //}),
+                    this.showAddModal = true;
+                }
+            } else {
+                this.$Message.error("请选择要聚合的数据")
+            }
+        },
+       
         /**切换页码 */
         pageChange:function(pageNo){
             console.log(pageNo);
@@ -296,32 +416,13 @@ export default {
                 query:{executor_id:tableData[index].executor_id}
             });
         },
-        /**删除一条数据 */
-        remove(index){
-            this.tableData.splice(index,1);
-            console.log("这是删除一条数据",row);
-        },
-        /***模态框弹出时确定事件: 验证表单提交 */
-        handleSubmit (name) {
-            console.log(this.addValidate);
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    this.$Message.success('聚合成功!');
-                     this.Deletips = false;
-                     //this.$refs.addValidate.$el.input.value = ''
-                   console.log("确认按钮之后", this.$refs.addValidate.$el)
-                } else {
-                    this.$Message.error('报告聚合失败!');
-                }
-            });
-        },     
+           
         /**模态框弹出取消事件 */
-        cancel () {
-            this.$Message.info('点击了取消');
-            this.Deletips = false;
+        cancel:function () {
+            this.showAddModal = false;
         },
         /**清除搜索条件 */
-        handleReset (name) {
+        handleReset:function (name) {
             console.log(this.$refs)
             this.$refs[name].listCase();
         }
