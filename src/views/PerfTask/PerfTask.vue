@@ -90,37 +90,29 @@
                 
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <Button type="success" @click="addCase" >新建任务</Button>
-                        <Button type="warning" @click="deleteCase">测试需求</Button>
+                        <Button type="success" @click="addPTask" >新建任务</Button>
+                        <Button type="warning" @click="listPTask">测试需求</Button>
                         <Button type="primary" @click="listPTask">测试指标</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button @click="delPTask" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <!-- @on-row-dblclick="onRowDblClick" -->
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalcount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <!-- <p>总共{{totalcount}}条记录</p> -->
                     </div>
                 </div>
-
-                <!-- <Modal v-model="addModal" 
-                    title="Common Modal dialog box title" 
-                    @on-ok="ok()" 
-                    @on-cancle="cancle()">
-                    <p>Content of dialog</p>
-                </Modal> -->
             </div>
 
 
-            <!--=================================== S 新建任务时弹出的对话框 S ===================================-->
-            <Modal v-model="AddPTask" width="800">
+            <!--=================================== 新建任务的对话框 ===================================-->
+            <Modal v-model="addPTaskModal" width="800">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle-outline"></Icon>
                     <span>添加任务</span>
                 </p>
                 <div style="text-align:center">
-                    <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="right">
-                        <!-- <Row>
-                            <i-col span="24"> -->
+                    <Form ref="addValidate" :model="addValidate" :rules="addRuleValidate" :label-width="100" label-position="right">
                         <Form-item label="物理子系统" prop="component_name">
                             <i-select v-model="addValidate.component_name" 
                                 placeholder="输入物理子系统中文名称或英文简称" 
@@ -134,15 +126,9 @@
                                 <i-option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</i-option>
                             </i-select>
                         </Form-item>
-                            <!-- </i-col>
-                        </Row> -->
-                        <!-- <Row>
-                            <i-col span="24"> -->
                         <Form-item label="任务名称" prop="task_name">
                             <i-input v-model="addValidate.task_name"></i-input>
                         </Form-item>
-                            <!-- </i-col>
-                        </Row> -->
                         <Row>
                             <i-col span="8">
                                 <Form-item label="任务开始日期" prop="perftask_begin_date">
@@ -161,18 +147,87 @@
                                     <Date-picker type="date" placeholder="选择日期" v-model="addValidate.online_date" format="yyyy-MM-dd"></Date-picker>
                                 </Form-item>
                             </i-col>
-
-                            <!-- <i-col span="3"></i-col> -->
                         </Row>
-                    
                     </Form>
                 </div>
                 <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
+                    <Button color="#1c2438" @click="cancel()">取消</Button>
+                    <Button type="primary" @click="handleSubmit('addValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--=================================== F 新建任务时弹出的对话框 F ===================================-->
+
+
+            <!--=================================== 任务编辑的对话框 ===================================-->
+            <Modal v-model="editPTaskModal" width="800">
+                <p slot="header" style="text-align:center" >
+                    <span>任务编辑</span>
+                </p>
+                <Form ref="editPTaskValidate" :model="editPTaskValidate" :rules="editPTaskRuleVldt" :label-width="120">
+                    <FormItem label="物理子系统:" prop="component_name">
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{editPTaskValidate.component_name}}</div>
+                    </FormItem>
+                    <FormItem label="任务名称:" prop="perftask_name">
+                        <Input  v-model="editPTaskValidate.perftask_name"></Input>
+                    </FormItem>
+                    <Row>
+                        <Col span="8">
+                            <FormItem label="任务开始日期：" prop="perftask_begin_date">
+                                <Date-picker type="date" placeholder="选择日期" v-model="editPTaskValidate.perftask_begin_date" format="yyyy-MM-dd"></Date-picker>
+                            </FormItem>
+                        </Col>
+                        <Col span="8">
+                            <FormItem label="任务结束日期：" prop="perftask_end_date">
+                                <Date-picker type="date" placeholder="选择日期" v-model="editPTaskValidate.perftask_end_date" format="yyyy-MM-dd"></Date-picker>
+                            </FormItem>
+                        </Col>
+                        <Col span="8">
+                            <FormItem label="投产日期" prop="online_date">
+                                <Date-picker type="date" placeholder="选择日期" v-model="editPTaskValidate.online_date" format="yyyy-MM-dd"></Date-picker>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span="24">
+                            <FormItem label="任务状态：" prop="perftask_status">
+                                <Select clearable v-model="editPTaskValidate.perftask_status">
+                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                                </Select>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="editCancel()">取消</Button>
+                    <Button type="primary" @click="handleEditPTaskSubmit('editPTaskValidate')">确认</Button>
+                </div>
+            </Modal>
+            
+
+            <!--=================================== 删除任务的对话框 ===================================-->
+            <Modal v-model="delPTaskModal" width="800">
+                <p slot="header" style="text-align:center" >
+                    <span>请确认是否删除以下任务</span>
+                </p>
+                <Form ref="delPTaskValidate" :model="delPTaskValidate" :label-width="120">
+                    <!-- <ul type="circle"> -->
+                    <Row v-for="(pTaskItem,index) in delPTaskValidate.delPTaskList" :key="index">
+                        <!-- <li> -->
+                        <Col span="3" class="delShowTitle"><Icon type="ios-close" /></Col>
+                        <Col span="2" class="delShowTitle">id: </Col>
+                        <Col span="1">{{pTaskItem.id}}</Col>
+                        <Col span="3" class="delShowTitle">任务名称: </Col>
+                        <Col span="13">{{pTaskItem.perftask_name}}</Col>
+                        <Col span="2"></Col>
+                        <!-- <Divider></Divider> -->
+                        <!-- </li> -->
+                    </Row>
+                    <!-- </ul> -->
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="delCancel()">取消</Button>
+                    <Button type="primary" @click="handleDelPTaskSubmit('delPTaskValidate')">确认</Button>
+                </div>
+            </Modal>
         </Card>
     </div>
 </template>
@@ -182,6 +237,7 @@ export default {
 	name: 'TestCase',
     data () {
         return {
+            /**==================== 搜索框数据 ====================*/
             isShowMoreShow:false,
             sComponent:'',          // 物理子系统
             srchCmploading: false,
@@ -197,9 +253,9 @@ export default {
             endDate_f:'',
             sTaskSource:'',         // 任务来源
             onlineDate_s:'',        // 投产日期
-            onlineDate_f:'',
-            createUser:'',  
-            addModal: false,    
+            onlineDate_f:'',  
+
+            /**==================== 列表数据 ====================*/
             columns: [
             	{
                     type: 'selection',
@@ -214,14 +270,45 @@ export default {
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    width: 220,
-                    // ellipsis: true, 
-                    tooltip: true, 
+                    width: 210, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.component_name
+                                }
+                            }, params.row.component_name)
+                        ]);
+                    }
                 },
                 {
                     title: '任务名称',
-                    width: 220,
-                    key: 'perftask_name'
+                    width: 210,
+                    key: 'perftask_name', 
+                    // ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.perftask_name
+                                }
+                            }, params.row.perftask_name)
+                        ]);
+                    }
                 },
                 {
                     title: '投产日期',
@@ -275,50 +362,66 @@ export default {
                     width:130,
                     render: (h, params) => {
                         return h('div', [
-                        h('Button', {
-                                        props: {
-                                            type: 'primary',
-                                            size: 'small'
-                                        },
-                                        style: {
-                                            marginRight: '5px'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                    if (params.row.$isEdit) {
-                                                        this.handleSave(params.row);
-                                                    } else {
-                                                        this.handleEdit(params.row);
-                                                    }
-                                            }
-                                        }
-                                    },params.row.$isEdit ? '保存' : '编辑'),
-                        // h('Button', {
-                        //                 props: {
-                        //                     type: 'error',
-                        //                     size: 'small'
-                        //                 },
-                        //                 style: {
-                        //                     marginRight: '5px'
-                        //                 },
-                        //                 on: {
-                        //                     click: () => {
-                        //                         this.remove(params.index);
-                        //                         //console.log(params)
-                        //                     }
-                        //                 }
-                        //             }, '删除'),
-                        h('Button', {
-                                        props: {
-                                            type: 'default',
-                                            size: 'small'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                //console.log("文档")
-                                            }
-                                        }
-                                    }, '文档')
+                            h('Button', {
+                                props: {
+                                    type: 'primary',
+                                    size: 'small'
+                                    // type: 'text', 
+                                    // size: 'small', 
+                                    // icon: 'ios-create-outline', 
+                                    // icon: 'ios-paper-outline', 
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                    // content-size:
+                                },
+                                on: {
+                                    click: () => {
+                                        this.editPTaskModal = true;
+                                        // console.log('params.row: ', params.row);
+                                        this.editPTaskValidate.index = params.row._index;
+                                        this.editPTaskValidate.id = params.row.id;
+                                        this.editPTaskValidate.component_name = params.row.component_name;
+                                        this.editPTaskValidate.perftask_name = params.row.perftask_name;
+                                        this.editPTaskValidate.perftask_begin_date = params.row.perftask_begin_date;
+                                        this.editPTaskValidate.perftask_end_date = params.row.perftask_end_date;
+                                        this.editPTaskValidate.online_date = params.row.online_date;
+                                        this.editPTaskValidate.perftask_status = params.row.perftask_status;
+                                        this.editPTaskValidate.ptask_source = params.row.ptask_source;
+                                            // if (params.row.$isEdit) {
+                                            //     this.handleSave(params.row);
+                                            // } else {
+                                            //     this.handleEdit(params.row);
+                                            // }
+                                    }
+                                }
+                            }, '编辑'),        // params.row.$isEdit ? '保存' : '编辑'
+                            // h('Button', {
+                            //                 props: {
+                            //                     type: 'error',
+                            //                     size: 'small'
+                            //                 },
+                            //                 style: {
+                            //                     marginRight: '5px'
+                            //                 },
+                            //                 on: {
+                            //                     click: () => {
+                            //                         this.remove(params.index);
+                            //                         //console.log(params)
+                            //                     }
+                            //                 }
+                            //             }, '删除'),
+                            h('Button', {
+                                props: {
+                                    type: 'default',
+                                    size: 'small'
+                                },
+                                on: {
+                                    click: () => {
+                                        //console.log("文档")
+                                    }
+                                }
+                            }, '文档')
                         ])
                                             
                     }
@@ -329,18 +432,17 @@ export default {
             pageno:1,                   // 当前页
             pagesize:10,                // 每页显示多少条数据
             selectedData:[],
-
             
-            /**=================================== S 模态框表单验证数据 S ===================================*/
-            AddPTask:false, 
+            /**==================== 新建任务弹出框数据 ====================*/
+            addPTaskModal:false, 
             addValidate: {
-                    component_name: '', 
-                    task_name: '', 
-                    perftask_begin_date: '', 
-                    perftask_end_date: '', 
-                    online_date: '', 
-                },
-            ruleValidate: {
+                component_name: '',         // 物理子系统
+                task_name: '',              // 任务名称
+                perftask_begin_date: '',    // 任务开始日期
+                perftask_end_date: '',      // 任务结束日期
+                online_date: '',            // 投产日期
+            },
+            addRuleValidate: {
                 task_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ], 
@@ -357,7 +459,43 @@ export default {
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
             },
-            /**=================================== F 模态框表单验证数据 F ===================================*/
+
+            /**==================== 任务编辑弹出框数据 ====================*/
+            editPTaskModal: false, 
+            editPTaskValidate: {
+                index: '',                  // 列表中的索引号
+                id: '',                     // 任务编号
+                component_name: '',         // 物理子系统
+                perftask_name: '',          // 任务名称——可编辑
+                perftask_begin_date: '',    // 任务开始日期——可编辑
+                perftask_end_date: '',      // 任务结束日期——可编辑
+                online_date: '',            // 投产日期——可编辑
+                perftask_status: '',        // 任务状态——可编辑
+                ptask_source: '',           // 任务来源
+            },
+            editPTaskRuleVldt: {
+                task_name: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ], 
+                perftask_begin_date: [
+                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                ], 
+                perftask_end_date: [
+                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                ], 
+                online_date: [
+                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                ],
+                perftask_status: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ],
+            },
+
+            /**==================== 删除任务弹出框数据 ====================*/
+            delPTaskModal: false, 
+            delPTaskValidate: {
+                delPTaskList: [],                  // 待删除的任务列表
+            },
         }
     },
     created(){
@@ -367,6 +505,8 @@ export default {
         show:function(ev){
             alert(ev.keyCode)
         },
+
+        /**==================== 物理子系统检索 ====================*/
         srchComponent:function(query){
             // console.log("now in srchComponent, this is ", this);
             this.cmpOpts = [];
@@ -400,49 +540,9 @@ export default {
         },
         
 
-        /* add by xin */
-        /*删除按钮功能*/
-        deleteCase: function() {
-            //console.log("删除多条按钮");
-            let selectedData=this.selectedData;      //选中要删除的数据
-            let resArr = [];                         
-            let deleteId = [];                       //选中数据的id
-            if(selectedData.length>0){               //如果有选中的数据
-                for(let i in selectedData){         //进行遍历
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                   
-                    //console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-                } 
-            }else{
-                    this.$Message.error("请选择要删除的数据")
-            }
-        }, 
-        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            let tableData = this.tableData;          //原有的数据
-            tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                if(deleArr.includes(item.id)){       //当原有的数据与要删除的数据中有相同的数据时，
-                   this.$Modal.confirm({
-                        title:'确认',
-                        content: '是否删除该数据',
-                        onOk: () => {
-                            tableData.splice(index, 1);        //即删除该数据上
-                            this.$Message.info('删除成功');
-                        },
-                        onCancel: () => {
-                            this.$Message.info('删除失败');
-                        }
-                    });
-                }
-            });
-        },
-        /**加载表格中的数据 */
+        /**==================== 任务列表相关事件 ====================*/
         listPTask: function() {
             let _this = this;
-            //console.log('listPerfTask');
-            // console.log('物理子系统:', _this.sComponent);
-            // console.log("任务名称",_this.sTaskName);
-            // console.log("任务状态",_this.sTaskStatus);
             console.log("任务来源:", _this.sTaskSource);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
@@ -456,11 +556,11 @@ export default {
                     perftask_end_date_f: _this.endDate_f,
                     online_date_s: _this.onlineDate_s,
                     online_date_f: _this.onlineDate_f,
-                    perftask_status: _this.sTaskStatus,         //任务状态
-                    ptask_source: _this.sTaskSource,
+                    perftask_status: _this.sTaskStatus,         // 任务状态
+                    ptask_source: _this.sTaskSource,            // 任务来源
 
-                    pageno:this.pageno,                         //当前页码
-                    pagesize:this.pagesize                      //当前页面大小
+                    pageno:this.pageno,                         // 当前页码
+                    pagesize:this.pagesize                      // 当前页面大小
                     
                 }
             }).then(function (response) {
@@ -473,6 +573,8 @@ export default {
                 }
                 _this.totalcount = response.headers.totalcount               //将总的数据条数赋值后渲染
                 _this.tableData = response.data.resultList;
+                // console.log("*****************_this.tableData: ", _this.tableData);
+                // console.log("~~~~~~~~~~~~~~~~~~~columns: ", _this.columns);
             })
         },
         /**分页查询功能----切换每页大小 */
@@ -516,40 +618,34 @@ export default {
             //console.log(data)
         },
 
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{id:row.id}});
-        },
+        // onRowDblClick: function(row) {
+        //     this.$router.push({path:'/addCase',query:{id:row.id}});
+        // },
+        
+        // /**点击保存之后的事件 */
+        // handleSave(row){
+        //     //console.log("这是保存",row)
+        // },
+        // /**点击编辑之后的事件 */
+        // handleEdit(row){
+        //     //console.log("这是编辑",row)
+        // },
 
+        // /**删除一条数据 */
+        // remove(index){
+        //     this.tableData.splice(index,1);
+        //     //console.log("这是删除一条数据",row);
+        // },
 
+        /**==================== 新建任务相关事件 ====================*/
         /**添加新数据弹出模态框 */
-        addCase:function(){
-            this.AddPTask = true;
-            //console.log("显示模态框");
+        addPTask:function(){
+            this.addPTaskModal = true;
         },
-        /**点击保存之后的事件 */
-        handleSave(row){
-            //console.log("这是保存",row)
-        },
-        /**点击编辑之后的事件 */
-        handleEdit(row){
-            //console.log("这是编辑",row)
-        },
-        /**删除一条数据 */
-        remove(index){
-            this.tableData.splice(index,1);
-            //console.log("这是删除一条数据",row);
-        },
-
-        /***==========模态框弹出时确定事件: 验证表单提交 ===================*/
         handleSubmit (name) {
             let _this = this;
-            console.log("**********************this: ", _this);
+            // console.log("**********************this: ", _this);
             
-            // console.log(_this.addValidate.component_name);
-            // console.log(_this.addValidate.task_name);
-            // console.log(_this.addValidate.perftask_begin_date);
-            // console.log(_this.addValidate.perftask_end_date);
-            // console.log(_this.addValidate.online_date);
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     this.$http.defaults.withCredentials = false;
@@ -564,31 +660,145 @@ export default {
                             perftask_source: "2",
                         }
                     }).then(function (response) {
-                        console.log("**********************addValidate: ", _this.addValidate);
-                        console.log('response: ', response)
-                        console.log('response.data.resultMap: ', response.data.resultMap);
-                        _this.addValidate.perftask_name = _this.addValidate.task_name;
-                        _this.addValidate.id = response.data.resultMap.id;
-                        _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
-                        console.log("**********************addValidate: ", _this.addValidate);
-                        _this.$Message.success('提交成功!');
-                        _this.AddPTask = false;
-                        console.log('tableData before: ', _this.tableData);
-                        _this.tableData.push(_this.addValidate);
-                        console.log('tableData after: ', _this.tableData);
+                        if (response.data.result == "fail") {
+                            let errDesc = "";
+                            if (response.data.err_code != null) {
+                                errDesc = errDesc + "errCode: " + response.data.err_code;
+                            } else {
+                                errDesc = "no errCode";
+                            }
+
+                            if (response.data.err_desc != null) {
+                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
+                            } else {
+                                errDesc = errDesc + " —— no errDesc";
+                            }
+
+                            _this.$Message.error(errDesc);
+                            _this.addPTaskModal = false;
+                        } else if (response.data.result == "ok") {
+                            // console.log("**********************addValidate: ", _this.addValidate);
+                            _this.addValidate.perftask_name = _this.addValidate.task_name;
+                            _this.addValidate.id = response.data.resultMap.id;
+                            _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
+                            _this.addValidate.ptask_source = '2';
+                            console.log("**********************addValidate: ", _this.addValidate);
+                            _this.$Message.success('提交成功!');
+                            _this.addPTaskModal = false;
+                            _this.tableData.push(_this.addValidate);
+                            // console.log('tableData after: ', _this.tableData);
+                        }
                     })
-                     //this.$refs.addValidate.$el.input.value = ''
-                   //console.log("确认按钮之后", this.$refs.addValidate.$el)
                 } else {
                     _this.$Message.error('表单验证失败!');
                 }
             });
         },     
-        /**模态框弹出取消事件 */
         cancel () {
             this.$Message.info('点击了取消');
-            this.AddPTask = false;
+            this.addPTaskModal = false;
         },
+
+        /**==================== 编辑任务相关事件 ====================*/
+        handleEditPTaskSubmit (editPTaskData) {
+            let _this = this;
+            // console.log("**********************this: ", _this);
+            // console.log("perftask_name: ", _this.editPTaskValidate.perftask_name);
+            
+            this.$refs[editPTaskData].validate((valid) => {
+                if (valid) {
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/perftask/edit', {
+                        header: {},
+                        data: {
+                            id: _this.editPTaskValidate.id, 
+                            perftask_name: _this.editPTaskValidate.perftask_name,
+                            perftask_begin_date: _this.editPTaskValidate.perftask_begin_date,
+                            perftask_end_date: _this.editPTaskValidate.perftask_end_date,
+                            online_date: _this.editPTaskValidate.online_date,
+                            perftask_status: _this.editPTaskValidate.perftask_status, 
+                        }
+                    }).then(function (response) {
+                        _this.$Message.success('提交成功!');
+                        _this.editPTaskModal = false;
+                        // console.log('tableData before: ', _this.tableData);
+                        // console.log('index: ', _this.editPTaskValidate.index);
+                        _this.$set(_this.tableData, _this.editPTaskValidate.index, _this.editPTaskValidate);
+                        // console.log('tableData after: ', _this.tableData);
+                    })
+                } else {
+                    _this.$Message.error('表单验证失败!');
+                }
+            });
+        }, 
+        editCancel () {
+            this.$Message.info('点击了取消');
+            this.editPTaskModal = false;
+        }, 
+
+        /**==================== 删除任务相关事件 ====================*/
+        /*删除按钮功能*/
+        delPTask: function() {
+            let selectedData=this.selectedData;      //选中要删除的数据
+            console.log("selectedData", selectedData);
+
+            if(selectedData.length>0){               //如果有选中的数据
+                this.delPTaskModal = true;
+                console.log("***********");
+                console.log("before: ", this.delPTaskValidate);
+                this.delPTaskValidate.delPTaskList = selectedData;
+                console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
+            }else{
+                    this.$Message.error("请选择要删除的数据")
+            }
+        }, 
+        handleDelPTaskSubmit (delPTaskData) {
+            let _this = this;
+            let tableData = _this.tableData;
+            let delList = _this.delPTaskValidate.delPTaskList;
+            // console.log("== delList: ", delList);
+            let delIds = [];
+
+            for (let i in delList) {
+                // console.log("~~ i: ", i);
+                // console.log("^^ delitem id : ", delList[i].id);
+                delIds.push(delList[i].id);  //将选中的而数据的id放入要删除的集合中
+            }
+            // console.log("** delIds: ", delIds);
+            
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/perftask/del', {
+                header: {},
+                data: {
+                    ids: delIds
+                }
+            }).then(function (response) {
+                _this.$Message.success('删除成功!');
+                _this.delPTaskModal = false;
+                for (let i in delIds) {
+                    // console.log("delIds[i]: ", delIds[i]);
+                    for (let index in tableData) {
+                        // console.log("tableData[index].id: ", tableData[index].id);
+                        if (tableData[index].id == delIds[i]) {
+                            // console.log("==now equal==");
+                            tableData.splice(index, 1);        //删除表格中展示的数据
+                            break;
+                        }
+                    }
+                    // tableData.forEach((item,index) => {      //对原有的数据进行遍历
+                    //     if(item.id == id){       //当原有的数据与要删除的数据中有相同的数据时，
+                    //         // console.log("tableData index:", index);
+                    //         tableData.splice(index, 1);        //删除表格中展示的数据
+                    //     }
+                    // });
+                }
+            })
+        }, 
+        delCancel () {
+            this.$Message.info('点击了取消');
+            this.delPTaskModal = false;
+        },
+
         /**清除搜索条件 */
         handleReset (name) {
             //console.log(this.$refs)
@@ -750,6 +960,25 @@ export default {
 .lineBtwTimes {
     text-align: center; 
     padding: 9px 0px
+}
+
+.editStaticDiv {
+    font-size: 12px;
+    padding-top: 6px;
+}
+
+.delStaticDiv {
+    font-size: 12px;
+    padding-top: 8px;
+}
+
+.delShowTitle {
+    // padding-left: 40px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 /* add by xin */
