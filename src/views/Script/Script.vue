@@ -59,6 +59,13 @@
                                 </CheckboxGroup>
                             </i-col>
                         </Row>
+                        <!-- <Row v-for="(csvItem,index) in csvinfo" :key="index">
+                            <Col span="8">
+                                <FormItem :label-width="10" prop="thread_name">
+                                    <Checkbox v-model="csvItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{csvItem.key}}</Checkbox>  
+                                </FormItem>
+                            </Col>
+                        </Row> -->
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -199,7 +206,7 @@ export default {
             script_filepath:'',
             script_id:'',
             filesize:'',
-
+            csvinfo:[],
 
             app_name:'',
             creater:'',
@@ -254,7 +261,7 @@ export default {
                     title: '操作',
                     key: 'opration',
                     width:200,
-                    render: (h, params) => {
+                    render: (h, item) => {
                         return h('div', [
                             h('Button', {
                                 props: {
@@ -268,27 +275,20 @@ export default {
                                     click: () => {
                                         this.showSetScript = true;
                                         console.log(item.row);
-                                        //this.showSetType =  item.row.senario_type;
                                         let _this = this;
                                         this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/scripts/view',{
-                                            header:{},
+                                        this.$http.post('/myapi/scripts/checkEdit',{
                                             data:{
-                                                //senario_id:item.row.senario_id,
+                                                id:item.row.id,
                                             }
                                         }).then(function(response){
                                             console.log("script编辑接口",response.data);
-                                            // _this.setValidate.senario_name= response.data.resultMap.senario_name;
-                                            // _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
-                                            // _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
-                                            // _this.setValidate.duration = response.data.resultMap.duration;
-                                            // _this.setValidate.per_threads = response.data.resultMap.threads_total;
-                                            // _this.setValidate.per_duration = response.data.resultMap.duration;
-                                            // _this.setValidate.base_pacing = response.data.resultMap.pacing;
-                                            // _this.setValidate.thread_groups_num = response.data.resultMap.thread_groups_num;
-                                            // _this.setValidate.senario_type = response.data.resultMap.senario_type;
-                                            // _this.setValidate.senario_id = response.data.resultMap.senario_id;
-                                            // _this.threadList = response.data.resultList;
+                                            _this.setValidate.script_name= response.data.resultList[0].script_name;
+                                            _this.setValidate.script_id= response.data.resultList[0].script_id;
+                                            _this.setValidate.app_name= response.data.resultList[0].app_name;
+                                            _this.setValidate.memo= response.data.resultList[0].memo;
+                                            _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                            _this.setValidate.script_filename= response.data.resultList[0].script_filename;
                                         })
                                     }
                                 }
@@ -303,7 +303,23 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showParamStatus = true ;
+                                        this.showParamStatus = true;
+                                        console.log(item.row);
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/scripts/checkEdit',{
+                                            data:{
+                                                id:item.row.id,
+                                            }
+                                        }).then(function(response){
+                                            // console.log("script编辑接口1",response.data);
+                                            _this.csvinfo= response.data.resultList[0].csvinfo.CsvInfo;
+                                            //var obj = _this.csvinfo.parseJSON();
+                                            console.log("script编辑接口",response.data.resultList[0].csvinfo);
+                                            console.log("script编辑接口",_this.csvinfo);
+
+
+                                        })
                                     }
                                 }
                             },'参数设置'),
