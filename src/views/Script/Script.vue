@@ -32,8 +32,8 @@
                 </Form>
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
-                        <Button @click="addCase"  type="primary">新增</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button @click="addScript"  type="primary">新增</Button>
+                        <Button @click="deleteScript" type="error">删除</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -43,14 +43,13 @@
                 </div>
             </div>
             <!-- 参数化设置对话框 -->
-            <Modal v-model="paramStatus" width="800" >
+            <Modal v-model="showParamStatus" width="800" >
                 <p slot="header" style="color:rgba(184, 124, 13, 0.637)" >
                     <span>参数化文件设置</span>
                 </p>
                 <div style="text-align:center">
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
                         <h3>请勾选可以拆分的参数化文件：</h3>
-                        <br>
                         <Row>
                             <i-col span="60">
                                 <CheckboxGroup v-model="param">
@@ -58,18 +57,17 @@
                                     <Checkbox label="文件2"></Checkbox>
                                     <Checkbox label="文件3"></Checkbox>
                                 </CheckboxGroup>
-                                </Form-item>
                             </i-col>
                         </Row>
                     </i-form>
                 </div>
                 <div slot="footer">
-                        <Button color="#1c2438"  @click="cancel()">取消</Button>
+                        <Button color="#1c2438"  @click="cancelParamWin()">取消</Button>
                         <Button type="primary" @click="handleParamSubmit('addValidate')">确认</Button>
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框-->
-            <Modal v-model="showDialog" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
+            <Modal v-model="showDialog" width="800" >
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加脚本</span>
@@ -86,7 +84,6 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="物理子系统" >
-                                    <!-- <i-input v-model="addValidate.app_name" placeholder="请输入物理子系统"></i-input>  -->
                                     <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" filterable remote 
                                         :remote-method="searchAppname" :loading="srchCmploading">
                                     <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
@@ -101,9 +98,6 @@
                                 </Form-item>
                             </i-col>                            
                         </Row>
-                        <!-- <Row>
-                            <input v-show="addValidate.script_filename" id="addValidate.script_filename" name="addValidate.script_filename"  type="file"/>
-                        </Row>  -->
                         <Row>
                             <i-col span="20">
                                 <Form-item label="上传文件：" prop="script_filename">
@@ -125,7 +119,57 @@
                         </Row>
                     </i-form>
                 </div>
-
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="cancelAdd()">取消</Button>
+                    <Button type="primary" @click="submitScript('addValidate')">确认</Button>
+                </div>
+            </Modal>
+            <!--=============================脚本设置模态框============================-->
+            <Modal v-model="showSetScript" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>编辑脚本</span>
+                </p>
+                <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
+                    <FormItem label="脚本ID:" prop="script_id">                      
+                        <Input v-model="setValidate.script_id"></Input>
+                    </FormItem>
+                    <FormItem label="脚本名称:" prop="script_name">                      
+                    <Input v-model="setValidate.script_name"></Input>
+                    </FormItem>
+                    <FormItem label="物理子系统:" prop="app_name">                      
+                        <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
+                            :remote-method="searchAppname" :loading="srchCmploading">
+                        <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
+                        </Select>
+                    </FormItem>
+                    <FormItem label="脚本说明:" prop="memo">                      
+                        <Input v-model="setValidate.memo"></Input>
+                    </FormItem>
+                    <FormItem label="创建时间:" prop="create_time">                      
+                        <Input v-model="setValidate.create_time"></Input>
+                    </FormItem>
+                    <i-col span="20">
+                        <Form-item label="更新脚本：" prop="script_filename">
+                            <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)"></i-input>
+                        </Form-item>                                
+                    </i-col>        
+                    <i-col span=4 >
+                        <Upload ref="upload"
+                                name="file"
+                                action="/myapi/scripts/upload" 
+                                :before-upload="handleUpload" 
+                                :format="['zip']" 
+                                :on-success="uploadSuccess"
+                                :on-format-error="handleFormatError"
+                                v-model="setValidate.script_filename">
+                            <Button icon="ios-cloud-upload-outline">上传文件</Button>
+                        </Upload>
+                    </i-col> 
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="setCancel()">取消</Button>
+                    <Button type="primary" @click="setOk('setValidate')">确认</Button>
+                </div>
             </Modal>
         </Card>
     </div>
@@ -136,6 +180,11 @@ export default {
 	name: 'TestCase',
     data () {
         return {
+            /* 窗口设置开关 */
+            showParamStatus:false,
+            showDialog:false,
+            showSetScript:false,
+
             srchCmploading: false,
             cmpOpts: [],
             appNameOpts: [],
@@ -159,7 +208,6 @@ export default {
             endTime:'',
             createUser:'',
             pageNo:'',
-            
             columns: [
                 {
                     title: '#',
@@ -218,30 +266,30 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showDialog = true;
-                                        // console.log(item.row);
-                                        // this.showSetType =  item.row.senario_type;
-                                        // let _this = this;
-                                        // this.$http.defaults.withCredentials = false;
-                                        // this.$http.post('/myapi/senario/view',{
-                                        //     header:{},
-                                        //     data:{
-                                        //         senario_id:item.row.senario_id,
-                                        //     }
-                                        // }).then(function(response){
-                                        //     console.log("view接口",response.data);
-                                        //     _this.setValidate.senario_name= response.data.resultMap.senario_name;
-                                        //     _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
-                                        //     _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
-                                        //     _this.setValidate.duration = response.data.resultMap.duration;
-                                        //     _this.setValidate.per_threads = response.data.resultMap.threads_total;
-                                        //     _this.setValidate.per_duration = response.data.resultMap.duration;
-                                        //     _this.setValidate.base_pacing = response.data.resultMap.pacing;
-                                        //     _this.setValidate.thread_groups_num = response.data.resultMap.thread_groups_num;
-                                        //     _this.setValidate.senario_type = response.data.resultMap.senario_type;
-                                        //     _this.setValidate.senario_id = response.data.resultMap.senario_id;
-                                        //     _this.threadList = response.data.resultList;
-                                        // })
+                                        this.showSetScript = true;
+                                        console.log(item.row);
+                                        //this.showSetType =  item.row.senario_type;
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/scripts/view',{
+                                            header:{},
+                                            data:{
+                                                //senario_id:item.row.senario_id,
+                                            }
+                                        }).then(function(response){
+                                            console.log("script编辑接口",response.data);
+                                            // _this.setValidate.senario_name= response.data.resultMap.senario_name;
+                                            // _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
+                                            // _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
+                                            // _this.setValidate.duration = response.data.resultMap.duration;
+                                            // _this.setValidate.per_threads = response.data.resultMap.threads_total;
+                                            // _this.setValidate.per_duration = response.data.resultMap.duration;
+                                            // _this.setValidate.base_pacing = response.data.resultMap.pacing;
+                                            // _this.setValidate.thread_groups_num = response.data.resultMap.thread_groups_num;
+                                            // _this.setValidate.senario_type = response.data.resultMap.senario_type;
+                                            // _this.setValidate.senario_id = response.data.resultMap.senario_id;
+                                            // _this.threadList = response.data.resultList;
+                                        })
                                     }
                                 }
                             },'编辑'),
@@ -255,7 +303,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.paramStatus = true ;
+                                        this.showParamStatus = true ;
                                     }
                                 }
                             },'参数设置'),
@@ -278,10 +326,6 @@ export default {
             tableDAtaTatol:0,
             tableDAtaPageLine:0,
             selectedData:[],
-            /* 参数化设置开关 */
-            paramStatus:false,
-            /* add by xin */
-            showDialog:false, 
             formValidate: {
 
             },
@@ -305,6 +349,34 @@ export default {
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ]
             },
+            setValidate:{
+                script_id:'',
+                script_name:'',
+                app_name:'',
+                memo:'',                                
+                create_time:'',                                       
+                script_filename:'',                                       
+            },
+            setRuleValidate:{
+                script_id:[
+                    {required:true,message:"这是必输字段",trigger:'blur'}
+                ],
+                script_name:[
+                    {required:false,message:'',trigger:'blur'}
+                ],
+                app_name:[
+                    {type:'number',required:true,message:'',trigger:'blur'}
+                ],
+                memo:[
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                create_time:[
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+                script_filename:[
+                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
+                ],
+            },
         }
     },
     created(){
@@ -326,7 +398,7 @@ export default {
         },
         uploadSuccess:function(res,file) {
             console.log(res)
-            if(res.result == "succese"){
+            if(res.result == "success"){
                 this.filesize = res.resultList[0].filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
@@ -410,7 +482,7 @@ export default {
 
         /* add by xin */
         /*删除按钮功能*/
-        deleteCase: function() {
+        deleteScript: function() {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
@@ -440,11 +512,10 @@ export default {
                         content: '是否删除该数据',
                         onOk: () => {
                             this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/scripts/del",{
-                                header:{},
+                            this.$http.post("/myapi/scripts/delete",{
                                 data:{
                                    // ids:deleArr,
-                                    ids:[deleArr],
+                                    id:deleArr[0],
                                 }
                             }).then(function(){
                                 tableData.splice(index, 1);        //即删除该数据上
@@ -560,20 +631,15 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            //this.$router.push({path:'/addCase',query:{id:row.id}});
+            //this.$router.push({path:'/addScript',query:{id:row.id}});
         },
 
         
         /**添加新数据弹出模态框 */
-        addCase:function(){
+        addScript:function(){
             this.showDialog = true;
             console.log("显示模态框");
         },
-        setParam:function(){
-            this.paramStatus = true;
-            console.log("参数化设置!");
-        },
-
         /**点击保存之后的事件 */
         handleSave(row){
             console.log("这是保存",row)
@@ -608,20 +674,24 @@ export default {
         handleParamSubmit (name) {
         },
         /***模态框弹出时确定事件: 验证表单提交 */
-        handleSubmit (name) {
+        submitScript (name) {
             let _this = this;
             console.log(this.addValidate);
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
+                    console.log("app_name0000000"+_this.addValidate.app_name);
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/script/add',{
+                    this.$http.post('/myapi/scripts/add',{
                         data:{
                             script_name:_this.addValidate.script_name,
                             app_name:_this.addValidate.app_name,
                             memo:_this.addValidate.memo,
                             script_filename:_this.addValidate.script_filename,
+                            filesize:_this.filesize,
+                            script_filepath:_this.script_filepath,
+                            script_id:_this.script_id,
                         }
                     }).then(function(response){
                         console.log("响应回来的数据",response);
@@ -637,13 +707,17 @@ export default {
         },     
         
         /**模态框弹出取消事件 */
-        cancel () {
+        cancelAdd () {
             this.$Message.info('您取消了添加脚本!');
             this.showDialog = false;
         },
-        cancelParamWin(){
-            this.$Message.info("您取消了参数化文件设置!");
-            this.paramStatus = false;
+        cancelParamWin () {
+            this.$Message.info('您取消了参数化设置!');
+            this.showParamStatus = false;
+        },
+        //取消脚本编辑
+        setCancel:function(){
+            this.showSetScript = false;
         },
         /**清除搜索条件 */
         handleReset (name) {
