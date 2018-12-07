@@ -43,7 +43,7 @@
                 </div>
             </div>
             <!-- 参数化设置对话框 -->
-            <Modal v-model="paramStatus" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancelParamWin()">
+            <Modal v-model="paramStatus" width="800" >
                 <p slot="header" style="color:rgba(184, 124, 13, 0.637)" >
                     <span>参数化文件设置</span>
                 </p>
@@ -63,6 +63,10 @@
                         </Row>
                     </i-form>
                 </div>
+                <div slot="footer">
+                        <Button color="#1c2438"  @click="cancel()">取消</Button>
+                        <Button type="primary" @click="handleParamSubmit('addValidate')">确认</Button>
+                </div>
             </Modal>
             <!--新建脚本时弹出的对话框-->
             <Modal v-model="showDialog" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
@@ -75,17 +79,18 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称"></i-input>
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" on-blur="checkScriptName();"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="物理子系统" prop="app_name">
+                                <Form-item label="物理子系统" >
+                                    <!-- <i-input v-model="addValidate.app_name" placeholder="请输入物理子系统"></i-input>  -->
                                     <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" filterable remote 
                                         :remote-method="searchAppname" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in app_name" :value="option.value" :key="index">{{ option.label }}</Option>
-                                </Select>
+                                    <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
+                                    </Select>
                                 </Form-item>
                             </i-col>
                         </Row>
@@ -96,6 +101,9 @@
                                 </Form-item>
                             </i-col>                            
                         </Row>
+                        <!-- <Row>
+                            <input v-show="addValidate.script_filename" id="addValidate.script_filename" name="addValidate.script_filename"  type="file"/>
+                        </Row>  -->
                         <Row>
                             <i-col span="20">
                                 <Form-item label="上传文件：" prop="script_filename">
@@ -103,9 +111,12 @@
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
-                                <Upload action="/myapi/upload" 
+                                <Upload ref="upload"
+                                        name="file"
+                                        action="/myapi/scripts/upload" 
                                         :before-upload="handleUpload" 
                                         :format="['zip']" 
+                                        :on-success="uploadSuccess"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -114,6 +125,7 @@
                         </Row>
                     </i-form>
                 </div>
+
             </Modal>
         </Card>
     </div>
@@ -126,12 +138,20 @@ export default {
         return {
             srchCmploading: false,
             cmpOpts: [],
+            appNameOpts: [],
             list: [], 
             sTaskStatus:'',
             taskStatusList: this.$Global.taskStatusList,  
             interfaceId:'',
             sTaskName:'',
             script_name:'',
+            //脚本信息
+            script_filename:'',
+            script_filepath:'',
+            script_id:'',
+            filesize:'',
+
+
             app_name:'',
             creater:'',
             param:'',
@@ -274,14 +294,14 @@ export default {
                 script_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                app_name: [
-                    { required: true, message: '此项为必填项', trigger: 'change' }
-                ],
+                // app_name: [
+                //     { required: true, message: '此项为必填项', trigger: 'blur' }
+                // ],
                 memo: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
                 script_filename: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
                 ]
             },
         }
@@ -302,9 +322,54 @@ export default {
             }
             let _this = this;
             _this.addValidate.script_filename=file.name;
-            console.log('111'+_this.addValidate.script_filename)
+        },
+        uploadSuccess:function(res,file) {
+            console.log(res)
+            if(res.result == "succese"){
+                this.filesize = res.resultList[0].filesize;
+                this.script_filename = res.resultList[0].script_filename;
+                this.script_filepath = res.resultList[0].script_filepath;
+                this.script_id = res.resultList[0].script_id;
+                console.log(this.filesize)
+                console.log(this.script_filename)
+                console.log(this.script_filepath)
+                console.log(this.script_id)
+            }
         },
         searchAppname: function(query){
+            this.appNameOpts = [];
+            if (query !== '') {
+                this.srchCmploading = true;
+                setTimeout(() => {
+                    this.srchCmploading = false;
+                    let _this = this
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/component/search', 
+                    {
+                        headers: {
+                        },
+                        data: {
+                            name: _this.addValidate.app_name,                            
+                        },                        
+                    }
+                    ).then(function (response) {
+                        console.log('response:', response);
+                        console.log('response.data: ', response.data);
+                        _this.list = response.data.resultList;
+                        console.log('list-after: ', _this.list);
+                        const list = _this.list.map(item => {
+                            return {
+                                value: item.id,
+                                label: item.name
+                            };
+                        });
+                        _this.appNameOpts = list
+                        console.log('this.appNameOpts:', _this.appNameOpts);
+                    })
+                }, 200);
+            } else {
+                this.appNameOpts = [];
+            }
         },
         searchCreater: function(query) {
             this.cmpOpts = [];
@@ -348,13 +413,17 @@ export default {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
-            let deleteId = [];                       //选中数据的id
+            let deleteId = [];                     //选中数据的id
+            //let idstr = '';
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
+                    //idstr = selectedData[i].id +",";
                     deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
                     console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
+
+
             }else{
                     this.$Message.error("请选择要删除的数据")
             }
@@ -373,7 +442,8 @@ export default {
                             this.$http.post("/myapi/scripts/del",{
                                 header:{},
                                 data:{
-                                    ids:deleArr,
+                                   // ids:deleArr,
+                                    ids:[deleArr],
                                 }
                             }).then(function(){
                                 tableData.splice(index, 1);        //即删除该数据上
@@ -410,10 +480,10 @@ export default {
                 _this.tableDAtaPageLine = response.data.pagination.pageSize
             })
         },
-        handlePage:function(value){
+        handlePage:function(val){
             let _this = this;
-            _this.pageNo = value;
-            console.log(value);
+            _this.pageNo = val;
+            console.log(val);
             _this.listCase();
         },
 
@@ -461,6 +531,27 @@ export default {
                 }
             })           
         },
+        checkScriptName: function() {
+            let _this = this;
+             //检查脚本名称是否重复
+            console.log("开始验证脚本名称");
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/scripts/checkName',{
+                data:{
+                    script_name:_this.addValidate.script_name,
+                }
+            }).then(function(response){
+                console.log("检查脚本响应数据",response);
+                var flag = response.data.result;
+                console.log("检查脚本响应数据flag",flag);
+                if("fail" == flag){
+                    console.log("检查脚本响应数据flag22",flag);
+                    _this.$Message.error('脚本名称重复!');
+                    return ;
+                }
+               
+            })
+        },
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
@@ -470,6 +561,8 @@ export default {
         onRowDblClick: function(row) {
             //this.$router.push({path:'/addCase',query:{id:row.id}});
         },
+
+        
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.showDialog = true;
@@ -479,6 +572,7 @@ export default {
             this.paramStatus = true;
             console.log("参数化设置!");
         },
+
         /**点击保存之后的事件 */
         handleSave(row){
             console.log("这是保存",row)
@@ -509,9 +603,14 @@ export default {
             this.tableData.splice(index,1);
             console.log("这是删除一条数据",row);
         },
+        //参数化设置提交
+        handleParamSubmit (name) {
+        },
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
+            let _this = this;
             console.log(this.addValidate);
+            //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
@@ -535,6 +634,7 @@ export default {
                 }
             });
         },     
+        
         /**模态框弹出取消事件 */
         cancel () {
             this.$Message.info('您取消了添加脚本!');

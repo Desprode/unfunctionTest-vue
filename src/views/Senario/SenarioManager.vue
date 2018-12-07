@@ -1186,6 +1186,7 @@ export default {
         moniterCancel:function(){
             this.showMoniterModal = false;
             this.editCount = 0;
+            console.log('监控取消事件');
         },
         /**确认事件 */
         moniterOk:function(){
