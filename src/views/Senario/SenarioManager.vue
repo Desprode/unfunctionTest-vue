@@ -68,7 +68,40 @@
                 </div>
             </div>
 
-
+        <!--============================================删除任务模态框==================================-->
+            <Modal v-model="delSenarioModal" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>请确认是否删除以下任务</span>
+                </p>
+                <!--<Form ref="delPTaskValidate" :model="delPTaskValidate" :label-width="120">-->
+                    <Row v-for="(Item,index) in deleteDataList" :key="index">
+                        <Col span="3" class="delShowTitle"><Icon type="ios-close" /></Col>
+                        <Col span="2" class="delShowTitle">id: </Col>
+                        <Col span="1">{{Item.senario_id}}</Col>
+                        <Col span="3" class="delShowTitle">任务名称: </Col>
+                        <Col span="13">{{Item.senario_name}}</Col>
+                        <Col span="2"></Col>
+                    </Row>
+                <!--</Form>-->
+                <div slot="footer">
+                    <Button color="#1c2438" @click="delMonitorCancel">取消</Button>
+                    <Button type="primary" @click="delMonitorOk">确认</Button>
+                </div>
+            </Modal>
+            <!--=========================未删除成功模态框======================================-->
+             <Modal v-model="noDeleteModal" width="800">
+                <p slot="header" style="text-align:center" >
+                    <span>以下任务在进行中，未删除成功</span>
+                </p>
+                    <Row v-for="(Item,index) in notDeleteList" :key="index">
+                        <Col span="3" class="delShowTitle"><Icon type="ios-close" /></Col>
+                        <Col span="2" class="delShowTitle">id: </Col>
+                        <Col span="1">{{Item.id}}</Col>
+                        <Col span="3" class="delShowTitle">任务名称: </Col>
+                        <Col span="13">{{Item.senario_name}}</Col>
+                        <Col span="2"></Col>
+                    </Row>
+            </Modal>
         <!--========================================创建场景模态框：=================================-->
             <Modal v-model="showAddModal" width="800">
                 <p slot="header" style="color:#f60" >
@@ -310,6 +343,12 @@ export default {
             isShowMore:false,                                   //是否显示更多查询条件
             searchOpts:[],
             searchList:[],
+            /**============删除模态框数据========= */
+            delSenarioModal:false,
+            deleteDataList:[],
+            noDeleted:[],
+            noDeleteModal:false,
+            notDeleteList:[],
             /**============新增模态框数据=========== */
             showAddModal:false,                  //新建窗口
             perftaskOpts:[],                     //关联任务下拉选项
@@ -499,7 +538,12 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.deleteDataCase(item.index)
+                                        // this.deleteDataCase(item.index);
+                                        this.delSenarioModal = true;
+                                        console.log(item);
+                                        this.deleteDataList = [item.row];
+                                        console.log(this.deleteDataList);
+                                        this.deleteId = [item.row.senario_id]
                                     }
                                 }
                             } ),
@@ -513,6 +557,7 @@ export default {
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],                    //选中的项的数组
+            deleteId:[],                       //选中删除数据的id
             totalCount:0,                         //共多少条数据
             pageNo:1,                            //当前页
             pageSize:10,                           //每页显示多少条数据
@@ -734,7 +779,7 @@ export default {
         /**========================================加载列表中的数据======================================= */
         listCase: function() {
             let _this = this;
-            console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
+            // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list', {
                 data: {
@@ -819,51 +864,85 @@ export default {
         /**============================删除多条数据========================= */
         deleteCase: function () {
             //console.log("删除多条按钮");
-            let selectedData = this.selectedData;      //选中要删除的数据
+            this.deleteDataList = this.selectedData;      //选中要删除的数据
             let deleteId = [];                       //选中数据的id
-            if (selectedData.length > 0) {               //如果有选中的数据
-                for (let i in selectedData) {         //进行遍历
-                    deleteId.push(selectedData[i].senario_id);  //将选中的而数据的id放入要删除的集合中
-                    //console.log(selectedData[i].id);
-                    //console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
+            if (this.selectedData.length > 0) {               //如果有选中的数据
+                this.delSenarioModal = true;
+                for (let i in this.deleteDataList) {         //进行遍历
+                    deleteId.push(this.selectedData[i].senario_id);  //将选中的而数据的id放入要删除的集合中
+                    //this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 }
+                this.deleteId = deleteId;
                 console.log("删除多条的id",deleteId);
             } else {
                 this.$Message.error("请选择要删除的数据")
             }
         }, 
-        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
-            console.log("删除多台哦数据内容",deleArr)
+        /**确认删除 */
+        delMonitorOk:function(){
+            console.log(this.deleteId);
             let _this = this;
-            let tableData = _this.tableData;          //原有的数据
-            tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                if (deleArr.includes(item.senario_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                    _this.$Modal.confirm({
-                        title:'确认',
-                        content: '是否删除该数据',
-                        onOk: () => {
-                            this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/senario/del",{
-                                header:{},
-                                data:{
-                                    ids:deleArr,
-                                }
-                            }).then(function(response){
-                                tableData.splice(index, 1);        //即删除该数据上
-                                _this.$Message.info('删除成功');
-                                _this.listCase();
-                                console.log(response);
-                            })
-                        },
-                        onCancel: () => {
-                            _this.$Message.info('删除失败');
-                        }
-                    }); 
-                   
+            this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/senario/del",{
+                header:{},
+                data:{
+                    ids:_this.deleteId,
                 }
-            });
+            }).then(function(response){
+                console.log(response.data.resultMap.noDeleted);
+                _this.tableData.forEach((item,index) => {
+                    if(_this.deleteId.includes(item.senario_id)){
+                        _this.tableData.splice(index, 1);        //即删除该数据上
+                    }
+                });
+                _this.delSenarioModal = false;
+                _this.selectedData = [];
+                if(response.data.resultMap.noDeleted){
+                    _this.notDeleteList = response.data.resultMap.noDeleted;
+                    _this.noDeleteModal = true;
+                    _this.listCase();
+                }else{
+                    _this.$Message.info('删除成功');
+                    _this.listCase()
+                }
+            })
+             ;
         },
+        /**取消删除 */
+        delMonitorCancel:function(){
+            this.delSenarioModal = false;
+        }, 
+        //deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
+            // console.log("删除多台哦数据内容",deleArr)
+            // let _this = this;
+            // let tableData = _this.tableData;          //原有的数据
+            // tableData.forEach((item, index) => {      //对原有的数据进行遍历
+            //     if (deleArr.includes(item.senario_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+            //         _this.$Modal.confirm({
+            //             title:'确认',
+            //             content: '是否删除该数据',
+            //             onOk: () => {
+            //                 this.$http.defaults.withCredentials = false;
+            //                 this.$http.post("/myapi/senario/del",{
+            //                     header:{},
+            //                     data:{
+            //                         ids:deleArr,
+            //                     }
+            //                 }).then(function(response){
+            //                     tableData.splice(index, 1);        //即删除该数据上
+            //                     _this.$Message.info('删除成功');
+            //                     _this.listCase();
+            //                     console.log(response);
+            //                 })
+            //             },
+            //             onCancel: () => {
+            //                 _this.$Message.info('删除失败');
+            //             }
+            //         }); 
+                   
+            //     }
+            // });
+        //,
             /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
@@ -872,32 +951,34 @@ export default {
         },
         
         /**================================删除一条数据================================ */
-        deleteDataCase:function (index){      
-            //console.log("删除单条按钮");
-            let _this = this;
-            let tableData = _this.tableData;
-            console.log(tableData[index]);
-            _this.$Modal.confirm({
-                title:'确认',
-                content: `是否删除该数据`,
-                onOk: () => {
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/senario/del",{
-                        header:{},
-                        data:{
-                            ids:[tableData[index].senario_id],
-                        }
-                    }).then(function(){
-                        tableData.splice(index, 1);
-                        _this.$Message.info('删除成功');
-                    })
-                },
-                onCancel:() => {
-                    _this.$Message.info('删除失败');
-                }
-            });       
+        // deleteDataCase:function (index){      
+        //     //console.log("删除单条按钮");
+        //     let _this = this;
+        //     _this.deleteDataList = _this.tableData[index];
+
+        //     console.log(_this.deleteDataList);
+        //     this.delSenarioModal = true;
+            // _this.$Modal.confirm({
+            //     title:'确认',
+            //     content: `是否删除该数据`,
+            //     onOk: () => {
+            //         this.$http.defaults.withCredentials = false;
+            //         this.$http.post("/myapi/senario/del",{
+            //             header:{},
+            //             data:{
+            //                 ids:[tableData[index].senario_id],
+            //             }
+            //         }).then(function(){
+            //             tableData.splice(index, 1);
+            //             _this.$Message.info('删除成功');
+            //         })
+            //     },
+            //     onCancel:() => {
+            //         _this.$Message.info('删除失败');
+            //     }
+            // });       
             
-        },
+        //},
 
        
         /**添加新数据弹出模态框 */
@@ -1425,6 +1506,13 @@ export default {
         -ms-transform: translate(-50%, -20%);
         -webkit-transform: translate(-50%, -20%);
     }
-
+    .delShowTitle {
+        // padding-left: 40px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+        text-align: right;
+        font-size: 12px;
+        font-weight: bold;
+    }
    
 </style>
