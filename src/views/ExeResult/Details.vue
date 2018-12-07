@@ -5,12 +5,15 @@
         </div></br>
     <Tabs type="line">
         <Tab-pane label="测试报告" >
-            <div>
-                <iframe src="" width="100%" height="600" frameborder="0" scrolling="auto"></iframe>
+            <div align="left">
+                <Button @click="aggregCase" type="primary">下载报告</Button>
+                <!-- <a href="../report/1543825966538/report.xlsx" download="111.xlsx">111</a> -->
             </div>
+            <!-- 页面渲染   -->
+            <div v-html='content'></div>
         </Tab-pane>
         <!---------------------分割线-------------------------->
-        <Tab-pane label="压力机日志" id="">
+        <Tab-pane label="压力机日志">
             <Table border  ref="selection" :columns="columns"  :data="tableData" class="myTable"></Table>
         </Tab-pane>
         <!---------------------分割线-------------------------->
@@ -116,7 +119,7 @@
                 tableDatas: [],
                 /** ============================执行结果============================ */
                 showSetType:'',
-                
+                content:'',
                 result_is_pass:'',  //执行结果是否通过：
                 result_desc:'',     //测试结论分析描述：
         
@@ -142,7 +145,7 @@
                     }
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;
-                    
+                    _this.content   =  response.data.resultList[0].content;
                 })
                 console.log("测试报告");
             },
@@ -191,6 +194,24 @@
                     console.log("是否通过", _this.result_is_pass);
                 })
                 console.log("执行结果");
+            },
+            /**下载功能*/
+            aggregCase:function(){
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/testresult/search', {
+                    data: {
+                        //executor_id:executor_id,
+                    }
+                }).then(function (response) {
+                    //_this.tableDatas =  response.data.resultList;
+                    //_this.file_path  = response.data.resultList.file_path;
+                    //window.open(_this.file_path)
+                    //console.log("111111",_this.file_path);
+                })
+                alert("还不好使");
+                console.log("下载测试");
             },
         }
     }
