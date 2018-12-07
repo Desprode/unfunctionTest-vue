@@ -1,249 +1,297 @@
 <template>
 	<div class="pageContent">
-        <div class="caseBox">
-            <h3 class="Title">
-                <span>场景管理</span>
-            </h3>
-           <!--==================================form 表单============================================-->
-            <Form ref="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
-                <div class="rowbox">
-                    <Row class="caseBoxRow">
-                        <Col span="7">
-                            <FormItem label="场景类型:">
-                                <Select v-model="senario_type" clearable>
-                                    <Option  value="01">单交易基准</Option>
-                                    <Option  value="02">单交易负载</Option>
-                                    <Option  value="03">混合场景</Option>
-                                </Select>
-                            </FormItem>
-                        </Col>
-                        <Col span="7">
-                            <FormItem label="场景名称:">
-                                <Input v-model="senario_name" placeholder="输入场景名称"></Input>
-                            </FormItem>
-                        </Col>
-                        <Col span="7">
-                            <FormItem label="创建人:">
-                               <Input v-model="senario_creator" placeholder="输入场景创建人"></Input>
-                            </FormItem>
-                        </Col>
-                        <Col span="3">
-                            <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
-                        </Col>
-                    </Row>
-                    <Row class="caseBoxRow" v-show="isShowMore">
-                        <Col span="8">
-                            <FormItem label="关联任务:">
-                                <Select v-model="perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
-                                    <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
-                                </Select>
-                                <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
-                            </FormItem>
-                        </Col>
-                        <Col span="8">
-                            <FormItem label="关联脚本:">
-                                <Select v-model="script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
-                                    <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
-                                </Select>
-                            </FormItem>
-                        </Col>
-                    </Row>  
+        <Card>
+            <div class="caseBox">
+                <h3 class="Title">
+                    <span>场景管理</span>
+                </h3>
+            <!--==================================form 表单============================================-->
+                <Form ref="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
+                    <div class="rowbox">
+                        <Row class="caseBoxRow">
+                            <Col span="7">
+                                <FormItem label="场景类型:">
+                                    <Select v-model="senario_type" clearable>
+                                        <Option  value="01">单交易基准</Option>
+                                        <Option  value="02">单交易负载</Option>
+                                        <Option  value="03">混合场景</Option>
+                                    </Select>
+                                </FormItem>
+                            </Col>
+                            <Col span="7">
+                                <FormItem label="场景名称:">
+                                    <Input v-model="senario_name" placeholder="输入场景名称"></Input>
+                                </FormItem>
+                            </Col>
+                            <Col span="7">
+                                <FormItem label="创建人:">
+                                <Input v-model="senario_creator" placeholder="输入场景创建人"></Input>
+                                </FormItem>
+                            </Col>
+                            <Col span="3">
+                                <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
+                            </Col>
+                        </Row>
+                        <Row class="caseBoxRow" v-show="isShowMore">
+                            <Col span="8">
+                                <FormItem label="关联任务:">
+                                    <Select v-model="perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
+                                        <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
+                                    </Select>
+                                    <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
+                                </FormItem>
+                            </Col>
+                            <Col span="8">
+                                <FormItem label="关联脚本:">
+                                    <Select v-model="script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
+                                        <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
+                                    </Select>
+                                </FormItem>
+                            </Col>
+                        </Row>  
+                    </div>
+                    <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                    </div>
+                </Form>
+                <div align="left">
+                    <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
+                    <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
                 </div>
-                <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
-                    <Icon type="chevron-down" color="#fff" ></Icon>
-                    <Icon type="chevron-down" color="#fff" ></Icon>
+                <div class="tableBox">
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
+                    <div class="pageBox" v-if="tableData.length">
+                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                        <p>总共{{totalPage}}页</p>
+                    </div>
                 </div>
-            </Form>
-            <div align="left">
-                <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
-                <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
             </div>
-            <div class="tableBox">
-                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
-                <div class="pageBox" v-if="tableData.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
-                    <p>总共{{totalPage}}页</p>
-                </div>
-            </div>
-        </div>
 
 
         <!--========================================创建场景模态框：=================================-->
-        <Modal v-model="showAddModal" width="800">
-            <p slot="header" style="color:#f60" >
-                <span>新增</span>
-            </p>
-            <div style="text-align:center">
-            <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
-                <FormItem label="场景类型:" prop="senario_type">
-                   <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable>
-                        <Option value="01">单交易基准</Option>
-                        <Option value="02">单交易负载</Option>
-                        <Option value="03">混合场景</Option>                      
-                    </Select>
-                </FormItem>
-                <FormItem label="场景名称:" prop="senario_name">                      
-                   <Input v-model="addValidate.senario_name" placeholder="请输入场景名称"></Input>
-                </FormItem>
-                <FormItem label="场景描述:" prop="fie">
-                    <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
-                </FormItem>
-                <FormItem label="关联任务:" prop="ref_task_name">
-                    <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
-                        <Scroll :on-reach-bottom="perftaskReachBottom">
-                            <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
-                        </Scroll>                
-                    </Select>
-                </FormItem>
-                <FormItem label="关联脚本:" prop="ref_script_name">
-                   <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
-                            <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
-                    </Select>
-                </FormItem>
-            </Form>
-            </div>
-            <div slot="footer">
-                <Button color="#1c2438"  @click="Addcancel()">取消</Button>
-                <Button type="primary" @click="handleSubmit('addValidate')">确认</Button>
-            </div>
-        </Modal>
+            <Modal v-model="showAddModal" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>新增</span>
+                </p>
+                <div style="text-align:center">
+                <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
+                    <FormItem label="场景类型:" prop="senario_type">
+                    <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable>
+                            <Option value="01">单交易基准</Option>
+                            <Option value="02">单交易负载</Option>
+                            <Option value="03">混合场景</Option>                      
+                        </Select>
+                    </FormItem>
+                    <FormItem label="场景名称:" prop="senario_name">                      
+                    <Input v-model="addValidate.senario_name" placeholder="请输入场景名称"></Input>
+                    </FormItem>
+                    <FormItem label="场景描述:" prop="fie">
+                        <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
+                    </FormItem>
+                    <FormItem label="关联任务:" prop="ref_task_name">
+                        <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
+                            <Scroll :on-reach-bottom="perftaskReachBottom">
+                                <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
+                            </Scroll>                
+                        </Select>
+                    </FormItem>
+                    <FormItem label="关联脚本:" prop="ref_script_name">
+                    <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
+                                <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
+                        </Select>
+                    </FormItem>
+                </Form>
+                </div>
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="Addcancel()">取消</Button>
+                    <Button type="primary" @click="handleSubmit('addValidate')">确认</Button>
+                </div>
+            </Modal>
 
         <!--=======================================执行操作模态框：===================================-->
-        <Modal v-model="showExeModal" width="800">
-            <p slot="header" style="color:#f60" >
-                <span>执行时间设置</span>
-            </p>
-            <Form ref="eveValidate" :model="eveValidate" :rules="eveRuleValidate" :label-width="100" label-position="left">
-                <FormItem label="执行类型" prop="exeType">
-                    <RadioGroup v-model="eveValidate.exeType" vertical >
-                        <Radio label="00" checked>立即执行</Radio>
-                        <Radio label="01">定时执行</Radio>
-                    </RadioGroup>
-                </FormItem>
-                <FormItem label="预设启动时间" v-show="eveValidate.exeType=='01'?true:false">
-                    <DatePicker type="datetime" placeholder="选择日期" v-model="eveValidate.exeDateTime"></DatePicker>
-                </FormItem>
-            </Form>
-            <div slot="footer">
-                <Button color="#1c2438" @click="exeCancel()">取消</Button>
-                <Button type="primary" @click="exeOk()">确认</Button>
-            </div>
-        </Modal>
+            <Modal v-model="showExeModal" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>执行时间设置</span>
+                </p>
+                <Form ref="eveValidate" :model="eveValidate" :rules="eveRuleValidate" :label-width="100" label-position="left">
+                    <FormItem label="执行类型" prop="exeType">
+                        <RadioGroup v-model="eveValidate.exeType" vertical >
+                            <Radio label="00" checked>立即执行</Radio>
+                            <Radio label="01">定时执行</Radio>
+                        </RadioGroup>
+                    </FormItem>
+                    <FormItem label="预设启动时间" v-show="eveValidate.exeType=='01'?true:false">
+                        <DatePicker type="datetime" placeholder="选择日期" v-model="eveValidate.exeDateTime"></DatePicker>
+                    </FormItem>
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="exeCancel()">取消</Button>
+                    <Button type="primary" @click="exeOk()">确认</Button>
+                </div>
+            </Modal>
 
         <!--======================================场景设置模态框======================================-->
-        <Modal v-model="showSetModal" width="800">
-            <p slot="header" style="color:#f60" >
-                <span>编辑场景</span>
-            </p>
-            <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                <h2>基本属性</h2>
-                <FormItem label="场景名称:" prop="senario_name">                      
-                   <Input v-model="setValidate.senario_name"></Input>
-                </FormItem>
-                <FormItem label="场景描述:" prop="senario_desc">
-                    <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
-                </FormItem>
-                <h2>压力机配置</h2> 
-                <FormItem label="每台压力机最大并发用户数：" prop="max_conusrs_perpm">
-                    <Input v-model="setValidate.max_conusrs_perpm" :number="true"></Input>
-                </FormItem>
-                <h2>运行设置</h2>
-                <FormItem label="持续时长（分钟）：" prop="duration" v-if="showSetType=='03'?true:false">
-                    <Input v-model="setValidate.duration" :number="true"></Input>
-                </FormItem>
-                <Row>
-                    <Col span="10"  v-if="showSetType =='02'?true:false">
-                        <FormItem label="每个线程组并发数：" prop="per_threads">
-                            <Input v-model="setValidate.per_threads" :number="true"></Input>
-                        </FormItem>
-                    </Col>
-                    <Col span="10"  v-if="showSetType !='03'?true:false">
-                        <FormItem label="每个线程组运行时常：" prop="per_duration">
-                            <Input v-model="setValidate.per_duration" :number="true"></Input>
-                        </FormItem>
-                    </Col>
-                    <Col span="10"  v-if="showSetType =='01'?true:false">
-                        <FormItem label="间隔(毫秒)" prop="base_pacing">
-                            <Input v-model="setValidate.base_pacing" :number="true"></Input>
-                        </FormItem>
-                    </Col>
-                </Row>
-                <Row v-if="showSetType !='03'?true:false">
-                    <Col span="10" offset="2">
-                        <span>线程组个数：</span>
-                        <span>{{setValidate.thread_groups_num}}</span>
-                    </Col>
-                    <Col span="10">
-                        <span>运行时长:</span>
-                        <span>{{totalTime}}</span>
-                    </Col>
-                </Row>
-                <h2>线程组配置</h2>
-                <br>
-                 <Row v-for="(threadItem,index) in threadList" :key="index">
-                    <Col span="8">
-                        <FormItem :label-width="10" prop="thread_name">
-                            <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
-                        </FormItem>
-                    </Col>
-                    <Col span="8" v-if="showSetType=='03'?true:false">
-                        <FormItem label="组件并发数:" prop="thread_num">
-                            <Input v-model="threadItem.thread_num"></Input>
-                        </FormItem>
-                    </Col>
-                    <Col span="8" v-if="showSetType=='03'?true:false">
-                        <FormItem label="间隔（毫秒）:">
-                            <Input v-model="threadItem.pacing"></Input>
-                        </FormItem>
-                    </Col>
-                </Row>
-            </Form>
-            <div slot="footer">
-                <Button color="#1c2438" @click="setCancel()">取消</Button>
-                <Button type="primary" @click="setOk('setValidate')">确认</Button>
-            </div>
-        </Modal>
-        <!--=================================监控配置模态框============================================-->
-        <Modal v-model="showWathcModal" width="830">
-            <p slot="header" style="color:#f60" >
-                <span>监控配置</span>
-            </p>
-            <Form ref="moniterValidate" :model="moniterValidate" :label-width="80">
-                <Row class="caseBoxRow">
-                    <Col span="8">
-                        <FormItem label="场景类型:" prop="inviro_type">
-                            <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
-                                <Option value="01">组件组装非功能(CPT)_南湖</Option>
-                                <Option value="02">组件组装非功能(CPT)_洋桥</Option>
-                                <Option value="03">应用组装非功能(PT1+PT2)_南湖</Option>                      
-                            </Select>
-                        </FormItem>
-                    </Col>
-                    <Col span="8">
-                        <FormItem label="物理子系统" prop="sComponent">
-                            <Input v-model="moniterValidate.sComponent">
-                            </Input>
-                        </FormItem>
-                    </Col>
-                    <Col span="6" offset="1">
-                        <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
-                        <Button @click="moniterReset('moniterValidate')">清除条件</Button>
-                    </Col>
-                </Row>
-            </Form>
-            <div align="left">
-                <Button @click="moniterSave" type="primary">保存并修改</Button>
-            </div>
-            <Table border  ref="selection" :columns="moniterColumns" :data="tableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
-                <div class="pageBox" v-if="tableData.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
-                    <p>总共{{totalPage}}页</p>
+            <Modal v-model="showSetModal" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>编辑场景</span>
+                </p>
+                <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
+                    <h2>基本属性</h2>
+                    <FormItem label="场景名称:" prop="senario_name">                      
+                    <Input v-model="setValidate.senario_name"></Input>
+                    </FormItem>
+                    <FormItem label="场景描述:" prop="senario_desc">
+                        <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
+                    </FormItem>
+                    <h2>压力机配置</h2> 
+                    <FormItem label="每台压力机最大并发用户数：" prop="max_conusrs_perpm">
+                        <Input v-model="setValidate.max_conusrs_perpm" :number="true"></Input>
+                    </FormItem>
+                    <h2>运行设置</h2>
+                    <FormItem label="持续时长（分钟）：" prop="duration" v-if="showSetType=='03'?true:false">
+                        <Input v-model="setValidate.duration" :number="true"></Input>
+                    </FormItem>
+                    <Row>
+                        <Col span="10"  v-if="showSetType =='02'?true:false">
+                            <FormItem label="每个线程组并发数：" prop="per_threads">
+                                <Input v-model="setValidate.per_threads" :number="true"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="10"  v-if="showSetType !='03'?true:false">
+                            <FormItem label="每个线程组运行时常：" prop="per_duration">
+                                <Input v-model="setValidate.per_duration" :number="true"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="10"  v-if="showSetType =='01'?true:false">
+                            <FormItem label="间隔(毫秒)" prop="base_pacing">
+                                <Input v-model="setValidate.base_pacing" :number="true"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row v-if="showSetType !='03'?true:false">
+                        <Col span="10" offset="2">
+                            <span>线程组个数：</span>
+                            <span>{{setValidate.thread_groups_num}}</span>
+                        </Col>
+                        <Col span="10">
+                            <span>运行时长:</span>
+                            <span>{{totalTime}}</span>
+                        </Col>
+                    </Row>
+                    <h2>线程组配置</h2>
+                    <br>
+                    <Row v-for="(threadItem,index) in threadList" :key="index">
+                        <Col span="8">
+                            <FormItem :label-width="10" prop="thread_name">
+                                <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
+                            </FormItem>
+                        </Col>
+                        <Col span="8" v-if="showSetType=='03'?true:false">
+                            <FormItem label="组件并发数:" prop="thread_num">
+                                <Input v-model="threadItem.thread_num"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="8" v-if="showSetType=='03'?true:false">
+                            <FormItem label="间隔（毫秒）:">
+                                <Input v-model="threadItem.pacing"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="setCancel()">取消</Button>
+                    <Button type="primary" @click="setOk('setValidate')">确认</Button>
                 </div>
-            <div slot="footer">
-                <Button color="#1c2438" @click="moniterCancel">取消</Button>
-                <Button type="primary" @click="moniterOk('setValidate')">确认</Button>
-            </div>
-        </Modal>
+            </Modal>
+        <!--=================================监控配置模态框============================================-->
+            <Modal v-model="showMoniterModal" width="830">
+                <p slot="header" style="color:#f60" >
+                    <span>监控配置</span>
+                </p>
+                <Form ref="moniterValidate" :model="moniterValidate" :label-width="80" >
+                    <Row class="caseBoxRow">
+                        <Col span="8">
+                            <FormItem label="环境类型:" prop="inviro_type">
+                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
+                                    <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
+                                    <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
+                                    <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
+                                    <Option value="应用组装非功能(PT1+PT2)_洋桥">应用组装非功能(PT1+PT2)_洋桥</Option>        
+                                    <Option value="南湖搬迁专项区_洋桥">南湖搬迁专项区_洋桥</Option>               
+                                </Select>
+                            </FormItem>
+                        </Col>
+                        <Col span="8">
+                            <FormItem label="物理子系统" prop="sComponent">
+                                <Input v-model="moniterValidate.sComponent">
+                                </Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="6" offset="1">
+                            <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
+                            <Button @click="moniterReset('moniterValidate')">清除条件</Button>
+                        </Col>
+                    </Row>
+                </Form>
+                <Form ref="monitorAddValidate" :model="monitorAddValidate" :rules="monitorAddRules" :label-width="100" class="tableBox" v-show="monitorAddShow">
+                    <Row class="caseBoxRow">
+                        <Col>
+                            <FormItem label="环境类型" prop="subAreaName">
+                                <Select v-model="monitorAddValidate.subAreaName" placeholder="---请选择---" clearable>
+                                    <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
+                                    <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
+                                    <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
+                                    <Option value="应用组装非功能(PT1+PT2)_洋桥">应用组装非功能(PT1+PT2)_洋桥</Option>        
+                                    <Option value="南湖搬迁专项区_洋桥">南湖搬迁专项区_洋桥</Option>               
+                                </Select>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <FormItem label="物理子系统" prop="subSysName">
+                                <Select v-model="monitorAddValidate.subSysName" placeholder="---请选择---" clearable>
+                                    <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
+                                    <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
+                                    <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option>              
+                                </Select>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <FormItem label="部署单元" prop="funDesc">
+                                <Input v-model="monitorAddValidate.funDesc" placeholder="请输入内容"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <!-- <Row>
+                        <Col span="22" offset="2">
+                            <Button long @click="monitorAddSave">保存</Button>
+                        </Col>
+                    </Row> -->
+                    <div align="center" >
+                     <Button @click="monitorAddSave">保存</Button>
+                     </div>
+                </Form>
+                <div align="left">
+                    <Button @click="moniterSave" type="primary">保存并修改</Button>
+                    <Button @click="moniterAdd" type="success">新增</Button>
+                </div>
+                <div class="tableBox">
+                    <Table border  ref="selection" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                        <div class="pageBox" v-if="moniterTableData != undefined">
+                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                            <p>总共{{moniterTotalPage}}页</p>
+                        </div>
+                </div>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="moniterCancel">取消</Button>
+                    <Button type="primary" @click="moniterOk('setValidate')">确认</Button>
+                </div>
+            </Modal>
+        </Card>
     </div>
 </template>
 <script>
@@ -374,20 +422,6 @@ export default {
                         return h('div', [
                             h('Button', {
                                 props: {
-                                    type: 'primary',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
-                                on: {
-                                    click: () => {
-                                        this.showWathcModal = true;
-                                    }
-                                }
-                            },  '编辑'),
-                            h('Button', {
-                                props: {
                                     size: 'small',
                                     type:'success',
                                     icon:'ios-play',
@@ -441,6 +475,24 @@ export default {
                             }),
                             h('Button', {
                                 props: {
+                                    type: 'default',
+                                    size: 'small',
+                                    icon:'ios-desktop-outline',
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.showMoniterModal = true;
+                                        this.id = item.row.senario_id;
+                                        this.monitor_senario_id = item.row.senario_id;
+                                        this.moniterListCase();
+                                    }
+                                }
+                            }),
+                            h('Button', {
+                                props: {
                                     size:'small',
                                     type:'warning',
                                     icon:'ios-trash',
@@ -451,6 +503,7 @@ export default {
                                     }
                                 }
                             } ),
+                            
                         ])
 
                     }
@@ -517,7 +570,35 @@ export default {
                 ],
             },
             /**==========================监控模态框数据========================= */
-            showWathcModal:false,
+            showMoniterModal:false,
+            id:'',   
+            monitor_senario_id:'', 
+            monitorList:[],                                 
+            moniterPageNo:1,
+            moniterPageSize:10,
+            moniterTotalCount:0,                         //共多少条数据
+            moniterTotalPage:0,                           //共多少页
+            editCount:0,                                   //当前处于编辑状态的数据有几条
+            monitorAddShow:false,
+            monitorAddValidate: {
+                senarioid:'',
+                subAreaName:'', 
+                subSysName:'',
+                funDesc:'',
+                prodIp:'' 
+            },
+            monitorAddRules:{
+                subAreaName:[
+                    {required:true,message:'必输项',trigger:'change'}
+                ],
+                subSysName:[
+                    {required:true,message:'必输项',trigger:'change'}
+                ],
+                funDesc:[
+                    {required:true,message:'必输项',trigger:'blur'}
+                ],
+            },
+            moniterTableData:[],
             moniterSelectedData:[],
             moniterValidate:{
                 inviro_type:'',
@@ -531,25 +612,25 @@ export default {
                 },
                 {
                     title: '#',
-                    key: 'senario_id',
-                    width: 60,
+                    key: 'id',
+                    width: 70,
                 },
                 {
                     title: '环境类型',
-                    key: 'perftask_name',
+                    key: 'subAreaName',
                     ellipsis: true, 
                     width:180,
                 },
                 {
                     title: '物理子系统',
-                    key: 'senario_name',
+                    key: 'subSysName',
                     width:140,
                     ellipsis: true, 
                 },
                 {
                     title: '部署单元',
-                    key: 'script_name',
-                    width:180,
+                    key: 'funDesc',
+                    width:170,
                     align: 'center',
                     ellipsis: true, 
                     render:(h,params) => {
@@ -565,31 +646,26 @@ export default {
                                     // 'background-color':'#f8f8f9'
                                 },
                                 domProps: {
-                                    value: params.row.script_name,
+                                    value: params.row.funDesc,
                                     autofocus: true
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.script_name = event.target.value
+                                        params.row.funDesc = event.target.value
                                     }
                                 }
                             });
                         }else{
-                            return h('div',params.row.script_name)
+                            return h('div',params.row.funDesc)
                         }
                         
                     }
                 },
                 {
                     title: 'IP',
-                    key: 'senario_type',
-                    width:120,
+                    key: 'prodIp',
+                    width:130,
                     align: 'center',
-                    render:(h,params) =>{
-                        let _this = this;
-                        //console.log("场景类型",h,params);
-                        return h('span',_this.$Global.senarioType[params.row.senario_type])
-                    }
                 },
                 {
                     title: 'Action',
@@ -608,7 +684,8 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                          this.handleSave(params.row) 
+                                          this.handleSave(params.row);
+                                          this.editCount --;
                                     }
                                 }
                             },'保存'),
@@ -626,7 +703,8 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.handleEdit(params.row)
+                                            this.handleEdit(params.row);
+                                            this.editCount ++;
                                         }
                                     }
                                 },'编辑'),
@@ -771,9 +849,11 @@ export default {
                                 data:{
                                     ids:deleArr,
                                 }
-                            }).then(function(){
+                            }).then(function(response){
                                 tableData.splice(index, 1);        //即删除该数据上
                                 _this.$Message.info('删除成功');
+                                _this.listCase();
+                                console.log(response);
                             })
                         },
                         onCancel: () => {
@@ -849,6 +929,7 @@ export default {
                         _this.$refs[name].resetFields();
                         _this.isDisabled = true;
                         _this.perftaskOpts = _this.perftaskList;
+                        _this.listCase();
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -1081,14 +1162,40 @@ export default {
             console.log(this.threadList);
         },
         /**=============================监控配置事件=============================== */
+        moniterListCase:function(){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/monitorSetting/list',{
+                header:{},
+                data:{
+                    id:_this.id,
+                    pageNo:_this.moniterPageNo,
+                    pageSize:_this.moniterPageSize,
+                }
+            }).then(function(response){
+                console.log(response.data.resultList);
+                _this.moniterTableData = response.data.resultList;
+                _this.moniterTotalCount = response.headers.totalcount;
+                _this.moniterTotalPage = response.headers.totalpage;
+                console.log(response);
+                console.log(_this.moniterTableData);
+
+            })
+        },
         /**取消事件 */
         moniterCancel:function(){
-            this.showWathcModal = false;
-            console.log('监控取消事件');
+            this.showMoniterModal = false;
+            this.editCount = 0;
         },
         /**确认事件 */
         moniterOk:function(){
             console.log('监控确认事件');
+            if(this.editCount != 0 ){
+                this.$Message.error("您有数据未保存，请查看");
+            }else{
+                this.showMoniterModal = false;
+            }
+            console.log(this.editCount);
         },
         /**查询条件清除 */
         moniterReset:function(name){
@@ -1096,27 +1203,89 @@ export default {
         },
         /**列表查询 */
         moniterCase:function(){
-            
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/monitorSetting/search',{
+                header:{},
+                data:{
+                    id:_this.monitor_senario_id,
+                    subAreaName:_this.moniterValidate.inviro_type,
+                }
+            }).then(function(response){
+                console.log(response);
+                _this.moniterTableData = response.data.resultList;
+                _this.moniterTotalCount = response.headers.totalcount;
+                _this.moniterTotalPage = response.headers.totalpage;
+            })
+        },
+         /**切换页码 */
+        moniterPageChange:function(moniterPageNo){
+            console.log(moniterPageNo);
+            this.moniterPageNo = moniterPageNo;
+            this.moniterListCase();
+        },
+        /**切换页面大小 */
+        moniterPageSizeChange:function(pageSize){
+            console.log(pageSize);
+            this.moniterPageSize = pageSize;
+            this.moniterListCase();
         },
         /**保存并修改事件 */
         moniterSave:function(){
             if(this.moniterSelectedData.length > 0){
-
+                let _this = this;
+                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                    return item.servPartId;
+                })
+                console.log(_this.monitorList);
+               this.$http.defaults.withCredentials = false;
+               this.$http.post("/myapi/monitorSetting/addMachine",{
+                   header:{},
+                   data:{
+                       monitorList:_this.monitorList,
+                       senarioid:_this.monitor_senario_id,
+                   },
+               }).then(function(response){
+                   _this.moniterListCase();
+               });
             }else{
                 this.$Message.error("请选择要删除的数据");
             }
+        },
+        moniterAdd:function(){
+            this.monitorAddShow = true;
+            //let addList = {senarioid:'4',subAreaName:'4', subSysName:'4',funDesc:'4',prodIp:'4' };
+             //this.moniterTableData.push(this.addList)
+            //console.log(this.moniterTableData);
+        },
+        monitorAddSave:function(){
+            this.monitorAddShow = false;
         },
         /**选中的数据 */
         moniterSelectionChanged:function(data){
             this.moniterSelectedData = data;
             console.log("选中的数据",this.moniterSelectedData);
         },
-
+        /**数据编辑 */
         handleEdit:function(row) {
-            this.$set(row, '$isEdit', true)
+            this.$set(row, '$isEdit', true);
+            console.log(row);
         },
+        /**数据保存 */
         handleSave:function(row) {
             this.$set(row, '$isEdit', false)
+            console.log(row);
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/monitorSetting/machineMonitorUpdate',{
+                header:{},
+                data:{
+                    id:row.id,
+                    funDesc:row.funDesc,
+                }
+            }).then(function(response){
+                _this.$Message.info("修改成功")
+            })
 
         },
     }
@@ -1172,12 +1341,12 @@ export default {
     .serchBtnBox{
         position: relative;
     }
-    .actionBtn{
-        width: 16%;
-    }
-    // .caseBoxRow{
-    //     padding-bottom:10px;
+    // .actionBtn{
+    //     width: 16%;
     // }
+    .caseBoxRow{
+        padding-bottom:10px;
+    }
     .serchBtn{
         position: absolute;
         left:0;
@@ -1255,4 +1424,6 @@ export default {
         -ms-transform: translate(-50%, -20%);
         -webkit-transform: translate(-50%, -20%);
     }
+
+   
 </style>

@@ -5,7 +5,7 @@
                 <h3 class="Title">
                     <span>执行队列</span>
                 </h3>
-                <Form ref="formValidate" class="formValidate">
+                <Form ref="37% building modules 230/245 modules 15 active ...odules\regenerator-runtime\runtime.js" class="formValidate">
                     <div class="rowbox">
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">任务名称</Col>
@@ -17,8 +17,9 @@
                                 <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
                             </Col>
                            
-                            <Col span="3">
+                            <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
+                                <Button @click="handleReset('formValidate')" type="error" class="actionBtn"  ghost>重置</Button>
                             </Col>
                         </Row>
                         <Row :gutter="16" v-if="isShowMoreShow">
@@ -154,6 +155,9 @@ export default {
 
             /* add by xin */
             Deletips:false, 
+            formValidate: {
+
+            },
         }
     },
     created(){
@@ -297,7 +301,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{executor_id:row.executor_id}});
+            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id}});
         },
 
         // addCase: function() {
@@ -332,8 +336,11 @@ export default {
         },
         /**清除搜索条件 */
         handleReset (name) {
-            console.log(this.$refs)
-            this.$refs[name].resetFields();
+            let _this = this;
+            _this.task_name='';
+            _this.senario_name='';
+            _this.execution_name='';
+            _this.exe_status='';
         }
     }
 }

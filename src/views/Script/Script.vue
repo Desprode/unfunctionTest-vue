@@ -65,7 +65,7 @@
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框-->
-            <Modal v-model="Deletips" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
+            <Modal v-model="showDialog" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加脚本</span>
@@ -91,8 +91,8 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="脚本说明：" prop="desc">
-                                    <i-input v-model="addValidate.desc" placeholder="请输入脚本说明"></i-input> 
+                                <Form-item label="脚本说明：" prop="memo">
+                                    <i-input v-model="addValidate.memo" placeholder="请输入脚本说明"></i-input> 
                                 </Form-item>
                             </i-col>                            
                         </Row>
@@ -114,10 +114,6 @@
                         </Row>
                     </i-form>
                 </div>
-                <!-- <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
-                </div> -->
             </Modal>
         </Card>
     </div>
@@ -128,7 +124,6 @@ export default {
 	name: 'TestCase',
     data () {
         return {
-            // isShowMoreShow:false,
             srchCmploading: false,
             cmpOpts: [],
             list: [], 
@@ -202,14 +197,33 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                            if (params.row.$isEdit) {
-                                                this.handleSave(params.row);
-                                            } else {
-                                                this.handleEdit(params.row);
-                                            }
+                                        this.showDialog = true;
+                                        // console.log(item.row);
+                                        // this.showSetType =  item.row.senario_type;
+                                        // let _this = this;
+                                        // this.$http.defaults.withCredentials = false;
+                                        // this.$http.post('/myapi/senario/view',{
+                                        //     header:{},
+                                        //     data:{
+                                        //         senario_id:item.row.senario_id,
+                                        //     }
+                                        // }).then(function(response){
+                                        //     console.log("view接口",response.data);
+                                        //     _this.setValidate.senario_name= response.data.resultMap.senario_name;
+                                        //     _this.setValidate.senario_desc=response.data.resultMap.senario_desc;
+                                        //     _this.setValidate.max_conusrs_perpm=response.data.resultMap.max_conusrs_perpm;
+                                        //     _this.setValidate.duration = response.data.resultMap.duration;
+                                        //     _this.setValidate.per_threads = response.data.resultMap.threads_total;
+                                        //     _this.setValidate.per_duration = response.data.resultMap.duration;
+                                        //     _this.setValidate.base_pacing = response.data.resultMap.pacing;
+                                        //     _this.setValidate.thread_groups_num = response.data.resultMap.thread_groups_num;
+                                        //     _this.setValidate.senario_type = response.data.resultMap.senario_type;
+                                        //     _this.setValidate.senario_id = response.data.resultMap.senario_id;
+                                        //     _this.threadList = response.data.resultList;
+                                        // })
                                     }
                                 }
-                            },params.row.$isEdit ? '保存' : '编辑'),
+                            },'编辑'),
                             h('Button', {
                                 props: {
                                     type: 'primary',
@@ -231,7 +245,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        //console.log("文档")
+                                        this.handleDownload(params.row);
                                     }
                                 }
                             }, '下载')
@@ -246,14 +260,14 @@ export default {
             /* 参数化设置开关 */
             paramStatus:false,
             /* add by xin */
-            Deletips:false, 
+            showDialog:false, 
             formValidate: {
 
             },
             addValidate: {
                     script_name: '',
                     app_name: '',
-                    desc: '',
+                    memo: '',
                     script_filename: ''
                 },
             ruleValidate: {
@@ -263,7 +277,7 @@ export default {
                 app_name: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
                 ],
-                desc: [
+                memo: [
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
                 script_filename: [
@@ -338,7 +352,7 @@ export default {
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
                     deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                    // console.log(deleteId);
+                    console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
             }else{
@@ -458,7 +472,7 @@ export default {
         },
         /**添加新数据弹出模态框 */
         addCase:function(){
-            this.Deletips = true;
+            this.showDialog = true;
             console.log("显示模态框");
         },
         setParam:function(){
@@ -473,6 +487,23 @@ export default {
         handleEdit(row){
             console.log("这是编辑",row)
         },
+        /**  下载行*/
+        handleDownload(row){
+            let fileName = row.script_filename // 文件地址
+            //let downName = (new Date()).getTime()+".mp3" // 文件下载名称
+            const blob = new Blob([fileName])
+            if (window.navigator.msSaveOrOpenBlob) {
+                // 兼容IE10
+                navigator.msSaveBlob(blob, fileName)
+            } else {
+                //  chrome/firefox
+                let aTag = document.createElement('a')
+                aTag.fileName = fileName
+                aTag.href = URL.createObjectURL(blob)
+                aTag.click()
+                URL.revokeObjectURL(aTag.href)
+            }
+        },
         /**删除一条数据 */
         remove(index){
             this.tableData.splice(index,1);
@@ -483,17 +514,31 @@ export default {
             console.log(this.addValidate);
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                     this.Deletips = false;
+                    console.log("开始添加");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/script/add',{
+                        data:{
+                            script_name:_this.addValidate.script_name,
+                            app_name:_this.addValidate.app_name,
+                            memo:_this.addValidate.memo,
+                            script_filename:_this.addValidate.script_filename,
+                        }
+                    }).then(function(response){
+                        console.log("响应回来的数据",response);
+                        _this.$Message.success('提交成功!');
+                        _this.showDialog = false;
+                        console.log("添加成功");
+                        _this.$refs[name].resetFields();
+                    })
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    _this.$Message.error('表单验证失败!');
                 }
             });
         },     
         /**模态框弹出取消事件 */
         cancel () {
             this.$Message.info('您取消了添加脚本!');
-            this.Deletips = false;
+            this.showDialog = false;
         },
         cancelParamWin(){
             this.$Message.info("您取消了参数化文件设置!");

@@ -5,51 +5,8 @@
                 <h3 class="Title">
                     <span>系统插件列表</span>
                 </h3>
-                <Form ref="formValidate" class="formValidate">
-                    <div class="rowbox">
-                        <Row :gutter="16">
-                            <Col span="2" class="searchLable">任务名称</Col>
-                            <Col span="5">
-                                <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
-                            </Col> 
-                            <Col span="2" class="searchLable">场景名称</Col>
-                            <Col span="5"> 
-                                <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
-                            </Col>
-                           
-                            <Col span="3">
-                                <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
-                            </Col>
-                        </Row>
-                        <Row :gutter="16" v-if="isShowMoreShow">
-                                <Col span="2" class="searchLable">执行人</Col>
-                                <Col span="9">
-                                    <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
-                                </Col>
-                                <!--
-                                    <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                                    -->
-                                    <Col span="2" class="searchLable">执行状态</Col>
-                                <Col span="9">
-                                        <Select v-model="exe_status" style="" clearable>
-                                        <Option  value="10">执行中</Option>
-                                        <Option  value="00">等待执行</Option>
-                                    </Select>
-                                </Col>
-                        </Row>   
-                    </div>
-                    <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                    </div>
-                </Form>
-                
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <!--<Button type="success" @click="addCase" >新建任务</Button>
-                        <Button type="warning" @click="deleteCase">测试需求</Button>
-                        <Button type="primary" @click="listCase">测试指标</Button>
-                        <Button @click="deleteCase" type="error">停止</Button>-->
                         <Button @click="deleteCase" type="error" class="actionBtn">停止</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -74,11 +31,7 @@ export default {
             cmpOpts: [],
             list: [], 
             taskStatusList: this.$Global.taskStatusList,  
-            execution_name:'',  //执行人
-            task_name:'',      //任务名称
-            senario_name:'',  //场景名称
-            exe_status:'',    //执行状态
-            endTime:'',
+            uploader:'',    //执行状态
 
             columns: [
             {
@@ -87,61 +40,32 @@ export default {
                 align: 'center'
             },
             {
-                title: '执行编号',
-                key: 'executor_id',
+                title: '插件编号',
+                key: 'id',
                 width: 130,
                 // ellipsis: true, 
                 tooltip: true, 
             },
             {
-                title: '关联任务',
+                title: '插件名称',
                 width: 200,
-                key: 'task_name'//perftask_name
+                key: 'plugin_name'//perftask_name
             },
             {
-                title: '关联场景',
-                key: 'senario_name',//online_date
+                title: '插件大小',
+                key: 'plugin_size',//online_date
                 width: 200,
             },
             {
-                title: '执行人',
-                key: 'execution_name',//online_name
+                title: '上传用户',
+                key: 'uploader',//online_name
                 width: 87,
             },
             {
-                title: '执行状态',
-                key: 'exe_status', //perftask_status
-                render: (h, params) => {
-                    let _this = this;
-                    let texts='';
-                    if(params.row.exe_status=='10'){
-                         texts = '执行中'
-                    }else if(params.row.exe_status=='00'){
-                        texts = '等待执行'
-                    }
-                    return h('div',{
-                        props:{
-                        },
-                    },texts)
-                },
-                width: 90,
-            },
-            {
-                title: '预设启动时间',
-                key: 'start_time',//perftask_begin_date
+                title: '上传时间',
+                key: 'upload_time',//perftask_begin_date
                 width: 150,
             },
-            {
-                title: '实际启动时间',
-                key: 'exe_time',//perftask_end_date
-                width: 150,
-            },
-                // {
-                //     title: '创建时间',
-                //     key: 'created_date',
-                //     width: 150,
-                //     align: 'center',
-                // },
             ],
             tableData: [],
             tableDAtaTatol:0,
@@ -173,7 +97,7 @@ export default {
                     console.log('query: ', query)
 
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/testresult/runtests/list', 
+                    this.$http.post('/myapi/userPluginMgr/list', 
                     {
                         headers: {
                         },
@@ -256,14 +180,9 @@ export default {
         //页面展示
         listCase: function() {
             let _this = this;
-            console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/testresult/runtests/list', {
+            this.$http.post('/myapi/userPluginMgr/list', {
                 data: {
-                    component_name: _this.component_name,
-                    task_name:_this.task_name,
-                    senario_name:_this.senario_name,
-                    execution_name:_this.execution_name,
                     pageNo:_this.pageNo,
                     pageSize:_this.pageSize,
                 }
@@ -295,14 +214,6 @@ export default {
             this.selectedData = data;
             console.log(data)
         },
-
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/addCase',query:{executor_id:row.executor_id}});
-        },
-
-        // addCase: function() {
-            // this.$router.push('addCase')
-        // }
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.Deletips = true;
