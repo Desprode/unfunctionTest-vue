@@ -130,7 +130,7 @@
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
-                    <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
+                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading">
                                 <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                         </Select>
                     </FormItem>
@@ -244,7 +244,7 @@
                 </p>
                 <Form ref="moniterValidate" :model="moniterValidate" :label-width="80" >
                     <Row class="caseBoxRow">
-                        <Col span="8">
+                        <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
                                 <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
@@ -255,18 +255,31 @@
                                 </Select>
                             </FormItem>
                         </Col>
-                        <Col span="8">
+                        <Col span="9">
                             <FormItem label="物理子系统" prop="sComponent">
-                                <Input v-model="moniterValidate.sComponent">
-                                </Input>
+                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange">
+                                <Option v-for="(opts,index) in scomponentOpts" :value="index" :key="index">{{opts.label}}</Option>          
+                        </Select>
                             </FormItem>
                         </Col>
-                        <Col span="6" offset="1">
+                        <Col span="5">
                             <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
                             <Button @click="moniterReset('moniterValidate')">清除条件</Button>
                         </Col>
                     </Row>
+                    <Row v-show="isShowMoniterMore">
+                        <Col span="10">
+                            <FormItem label="IP" prop="ip">
+                                <Input v-model="moniterValidate.ip">
+                                </Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
                 </Form>
+                <div class="formValidateMoreBtnBox" :class="isShowMoniterMore ?'arrUp':'arrDown'" @click="isShowMoniterMore = !isShowMoniterMore">
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                    </div>
                 <Form ref="monitorAddValidate" :model="monitorAddValidate" :rules="monitorAddRules" :label-width="100" class="tableBox" v-show="monitorAddShow">
                     <Row class="caseBoxRow">
                         <Col>
@@ -294,7 +307,7 @@
                     </Row>
                     <Row>
                         <Col>
-                            <FormItem label="部署单元" prop="funDesc">
+                            <FormItem label="部署单元" prop="funDesc" >
                                 <Input v-model="monitorAddValidate.funDesc" placeholder="请输入内容"></Input>
                             </FormItem>
                         </Col>
@@ -449,13 +462,13 @@ export default {
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:148,
+                    width:155,
                     align: 'center',
                 },
                 {
                     title:'操作',
                     key:'operAtion',
-                    width:160,
+                    width:150,
                     align: 'center',
                     render: (h, item) => {
                         return h('div', [
@@ -616,6 +629,9 @@ export default {
             },
             /**==========================监控模态框数据========================= */
             showMoniterModal:false,
+            isShowMoniterMore:false,
+            scomponentLoading:false,
+            scomponentOpts:[],
             id:'',   
             monitor_senario_id:'', 
             monitorList:[],                                 
@@ -648,6 +664,7 @@ export default {
             moniterValidate:{
                 inviro_type:'',
                 sComponent:'',
+                ip:'',
             },
             moniterColumns:[
                 {
@@ -897,11 +914,12 @@ export default {
                 });
                 _this.delSenarioModal = false;
                 _this.selectedData = [];
-                if(response.data.resultMap.noDeleted){
+                if(response.data.resultMap.noDeleted != 0){
                     _this.notDeleteList = response.data.resultMap.noDeleted;
                     _this.noDeleteModal = true;
                     _this.listCase();
                 }else{
+                     _this.noDeleteModal = false;
                     _this.$Message.info('删除成功');
                     _this.listCase()
                 }
@@ -1283,6 +1301,44 @@ export default {
         moniterReset:function(name){
             this.$refs[name].resetFields();
         },
+        openMonitorChange:function(openStatus){
+            console.log(openStatus);
+            let _this =this;
+            if(openStatus){
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/search',{
+                    header:{},
+                    data:{
+                        comp_name:'',
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    _this.scomponentOpts = response.data.resultList.map(item=>{
+                        return {label:item.comp_name}
+                    })
+                })
+            }
+        },
+        /**模糊查询物理子系统 */
+        scomponentRemote:function(query){
+                this.scomponentLoading = true;
+                setTimeout(() => {
+                    let _this = this;
+                    _this.scomponentLoading = false;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/component/search',{
+                        header:{},
+                        data:{
+                            comp_name:query,
+                        }
+                    }).then(function(response){
+                        console.log(response);
+                        _this.scomponentOpts = response.data.resultList.map(item=>{
+                            return {label:item.comp_name}
+                        })
+                    })
+                }, 200);
+        },
         /**列表查询 */
         moniterCase:function(){
             let _this = this;
@@ -1292,12 +1348,18 @@ export default {
                 data:{
                     id:_this.monitor_senario_id,
                     subAreaName:_this.moniterValidate.inviro_type,
+                    subSysName:_this.moniterValidate.sComponent,
+                    prodIp:_this.moniterValidate.ip,
+                    pageNo:_this.moniterPageNo,
+                    pageSize:_this.moniterPageSize,
                 }
             }).then(function(response){
                 console.log(response);
+                console.log(_this.moniterValidate.sComponent)
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
+                _this.moniterReset();
             })
         },
          /**切换页码 */
