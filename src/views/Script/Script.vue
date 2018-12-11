@@ -48,29 +48,20 @@
                     <span>参数化文件设置</span>
                 </p>
                 <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                    <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" label-position="left">
                         <h3>请勾选可以拆分的参数化文件：</h3>
-                        <Row>
-                            <i-col span="60">
-                                <CheckboxGroup v-model="param">
-                                    <Checkbox label="文件1"></Checkbox>
-                                    <Checkbox label="文件2"></Checkbox>
-                                    <Checkbox label="文件3"></Checkbox>
-                                </CheckboxGroup>
-                            </i-col>
-                        </Row>
-                        <!-- <Row v-for="(csvItem,index) in csvinfo" :key="index">
+                        <Row v-for="(csvItem,index) in csvList" :key="index">
                             <Col span="8">
-                                <FormItem :label-width="10" prop="thread_name">
-                                    <Checkbox v-model="csvItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{csvItem.key}}</Checkbox>  
+                                <FormItem :label-width="10" prop="filename">
+                                    <Checkbox v-model="csvItem.val == 'true'?true:false" @on-change="isChecked(index)">{{csvItem.filename}}</Checkbox>  
                                 </FormItem>
                             </Col>
-                        </Row> -->
+                        </Row>
                     </i-form>
                 </div>
                 <div slot="footer">
                         <Button color="#1c2438"  @click="cancelParamWin()">取消</Button>
-                        <Button type="primary" @click="handleParamSubmit('addValidate')">确认</Button>
+                        <Button type="primary" @click="handleParamSubmit('paramValidate')">确认</Button>
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框-->
@@ -128,7 +119,7 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="cancelAdd()">取消</Button>
-                    <Button type="primary" @click="submitScript('addValidate')">确认</Button>
+                    <Button type="primary"   @click="submitScript('addValidate')">确认</Button>
                 </div>
             </Modal>
             <!--=============================脚本设置模态框============================-->
@@ -137,13 +128,13 @@
                     <span>编辑脚本</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                    <FormItem label="脚本ID:" prop="script_id">                      
+                    <!-- <FormItem label="脚本ID:" prop="script_id" >                      
                         <Input v-model="setValidate.script_id"></Input>
-                    </FormItem>
+                    </FormItem> -->
                     <FormItem label="脚本名称:" prop="script_name">                      
                     <Input v-model="setValidate.script_name"></Input>
                     </FormItem>
-                    <FormItem label="物理子系统:" prop="app_name">                      
+                    <FormItem label="物理子系统:" >                      
                         <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
                             :remote-method="searchAppname" :loading="srchCmploading">
                         <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
@@ -175,7 +166,7 @@
                 </Form>
                 <div slot="footer">
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
-                    <Button type="primary" @click="setOk('setValidate')">确认</Button>
+                    <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
                 </div>
             </Modal>
         </Card>
@@ -206,7 +197,9 @@ export default {
             script_filepath:'',
             script_id:'',
             filesize:'',
-            csvinfo:[],
+            rowid:'',
+            csvinfo:{},
+            csvList:[],
 
             app_name:'',
             creater:'',
@@ -289,6 +282,10 @@ export default {
                                             _this.setValidate.memo= response.data.resultList[0].memo;
                                             _this.setValidate.create_time= response.data.resultList[0].created_time;
                                             _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                                            _this.filesize=response.data.resultList[0].filesize,
+                                            _this.script_filepath=response.data.resultList[0].script_filepath,
+                                            _this.script_id=response.data.resultList[0].script_id,
+                                            _this.rowid=response.data.resultList[0].id
                                         })
                                     }
                                 }
@@ -312,13 +309,13 @@ export default {
                                                 id:item.row.id,
                                             }
                                         }).then(function(response){
-                                            // console.log("script编辑接口1",response.data);
-                                            _this.csvinfo= response.data.resultList[0].csvinfo.CsvInfo;
-                                            //var obj = _this.csvinfo.parseJSON();
-                                            console.log("script编辑接口",response.data.resultList[0].csvinfo);
-                                            console.log("script编辑接口",_this.csvinfo);
-
-
+                                            console.log("script编辑接口response.data",response.data);
+                                            _this.csvinfo= response.data.resultList[0].csvinfo;
+                                            _this.rowid=response.data.resultList[0].id
+                                            var obj = JSON.parse(_this.csvinfo); // 
+                                            console.log("objjosn"+obj);
+                                            _this.csvList = obj.CsvInfo;
+                                            //console.log("threadList",_this.threadList);
                                         })
                                     }
                                 }
@@ -343,7 +340,8 @@ export default {
             tableDAtaPageLine:0,
             selectedData:[],
             formValidate: {
-
+            },
+            paramValidate:{
             },
             addValidate: {
                     script_name: '',
@@ -374,23 +372,17 @@ export default {
                 script_filename:'',                                       
             },
             setRuleValidate:{
-                script_id:[
-                    {required:true,message:"这是必输字段",trigger:'blur'}
-                ],
                 script_name:[
                     {required:false,message:'',trigger:'blur'}
                 ],
                 app_name:[
-                    {type:'number',required:true,message:'',trigger:'blur'}
+                    {required:true,message:'',trigger:'blur'}
                 ],
                 memo:[
-                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
-                ],
-                create_time:[
-                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
+                    {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
                 script_filename:[
-                    {type:'number',required:true,message:'这是必输字段',trigger:'blur'}
+                    {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
             },
         }
@@ -399,6 +391,7 @@ export default {
         this.listCase();
     },
     methods: {
+        
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
@@ -688,6 +681,29 @@ export default {
         },
         //参数化设置提交
         handleParamSubmit (name) {
+            this.$refs[name].validate((valid) => {
+                let _this = this;
+                if (valid) {
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/scripts/edit",{
+                        header:{},
+                        data:{
+                            id:_this.id,
+                            scene:_this.csvList,
+                        },
+                    }).then(function(response){
+                        _this.$Message.success('提交成功!');
+                        _this.showParamStatus = false;
+                        console.log('response',);
+                        console.log(_this.csvList);
+                    })
+                    
+                } else {
+                    this.$Message.error('表单验证失败!');
+                }
+                console.log(_this);                 //方法接口写好时再清空之前输入的
+                 //this.$refs[name].resetFields();
+            });
         },
         /***模态框弹出时确定事件: 验证表单提交 */
         submitScript (name) {
@@ -720,7 +736,40 @@ export default {
                     _this.$Message.error('表单验证失败!');
                 }
             });
-        },     
+        }, 
+        //编辑提交
+        editSubmitScript (name) {
+            let _this = this;
+            console.log(this.setValidate);
+            //提交添加请求
+            this.$refs[name].validate((valid) => {
+                if (valid) {
+                    console.log("开始修改");
+                    console.log("app_name0000000"+_this.setValidate.app_name);
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/scripts/edit',{
+                        data:{
+                            id:_this.rowid,
+                            script_name:_this.setValidate.script_name,
+                            app_name:_this.setValidate.app_name,
+                            memo:_this.setValidate.memo,
+                            script_filename:_this.setValidate.script_filename,
+                            filesize:_this.filesize,
+                            script_filepath:_this.script_filepath,
+                            script_id:_this.script_id,
+                        }
+                    }).then(function(response){
+                        console.log("响应回来的数据",response);
+                        _this.$Message.success('修改成功!');
+                        _this.showDialog = false;
+                        console.log("修改成功");
+                        _this.$refs[name].resetFields();
+                    })
+                } else {
+                    _this.$Message.error('表单验证失败!');
+                }
+            });
+        },         
         
         /**模态框弹出取消事件 */
         cancelAdd () {
