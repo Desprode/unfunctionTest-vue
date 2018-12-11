@@ -91,7 +91,7 @@
                 <div class="tableBox">
                     <div class="tableBtnBox">
                         <Button type="success" @click="addPTask" >新建任务</Button>
-                        <Button type="warning" @click="listPTask">测试需求</Button>
+                        <Button type="warning" @click="demandMetrics">测试需求</Button>
                         <Button type="primary" @click="listPTask">测试指标</Button>
                         <Button @click="delPTask" type="error">删除</Button>
                     </div>
@@ -226,6 +226,23 @@
                 <div slot="footer">
                     <Button color="#1c2438" @click="delCancel()">取消</Button>
                     <Button type="primary" @click="handleDelPTaskSubmit('delPTaskValidate')">确认</Button>
+                </div>
+            </Modal>
+
+
+            <!--=================================== 测试需求的对话框 ===================================-->
+            <Modal v-model="demandMetricsModal" width="800">
+                <p slot="header" style="text-align:center" >
+                    <span>测试需求</span>
+                </p>
+                <div class="tableBox">
+                    <div class="tableBtnBox">
+                        <Button type="success" @click="addPTask" >新增需求</Button>
+                    </div>
+                    <Table border  :columns="metricsCols" :data="metricsTableData" class="myTable"></Table>
+                    <div class="pageBox" v-if="metricsTableData.length">
+                        <Page :total="parseInt(metricsTcount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    </div>
                 </div>
             </Modal>
         </Card>
@@ -496,6 +513,67 @@ export default {
             delPTaskValidate: {
                 delPTaskList: [],                  // 待删除的任务列表
             },
+
+            /**==================== 测试需求弹出框数据 ====================*/
+            demandMetricsModal: false, 
+            metricsCols: [
+            	{
+                    type: 'index2',
+                    width: 60,
+                    align: 'center', 
+                    render: (h, params) => {
+                        return h('span', params.index + (this.metricsPageno - 1) * this.metricsPagesize + 1);
+                    }
+                },
+                {
+                    title: '需求类型',
+                    key: 'metrics_type',
+                    width: 150,
+                },
+                {
+                    title: '需求描述',
+                    key: 'metrics_desc',
+                    width: 455,
+                },
+                {
+                    title: '操作',
+                    key: 'opration',
+                    width:100,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('Button', {
+                                props: {
+                                    type: 'primary',
+                                    size: 'small'
+                                    // type: 'text', 
+                                    // size: 'small', 
+                                    // icon: 'ios-create-outline', 
+                                    // icon: 'ios-paper-outline', 
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                    // content-size:
+                                },
+                                on: {
+                                    click: () => {
+                                        this.editPTaskModal = true;
+                                        // console.log('params.row: ', params.row);
+                                        this.editPTaskValidate.index = params.row._index;
+                                        this.editPTaskValidate.id = params.row.id;
+                                        this.editPTaskValidate.component_name = params.row.component_name;
+                                        this.editPTaskValidate.perftask_name = params.row.perftask_name;
+                                    }
+                                }
+                            }, '编辑'), 
+                        ])
+                                            
+                    }
+                }
+            ], 
+            metricsTableData: [], 
+            metricsTcount: 0, 
+            metricsPageno:1,                   // 当前页
+            metricsPagesize:10,                // 每页显示多少条数据
         }
     },
     created(){
@@ -588,29 +666,6 @@ export default {
             //console.log("页码切换",pageno);
             this.pageno = pageno; 
             this.listPTask();
-        },
-        
-        setCiFlag: function() {
-            let _this = this
-            let ids = []
-            this.selectedData.forEach(e => {
-                ids.push(e.id)
-            });
-            //console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    ids: ids
-                }
-            })           
         },
 
         onSelectionChanged: function(data) {
@@ -798,6 +853,33 @@ export default {
             this.$Message.info('点击了取消');
             this.delPTaskModal = false;
         },
+
+        /**==================== 测试需求相关事件 ====================*/
+        demandMetrics:function(){
+            let selectedData=this.selectedData; 
+            // console.log("---selectedData: ", selectedData);
+
+            if (selectedData.length <= 0) {                 //如果没有选中的数据
+                this.$Message.error("请选择一个任务查看测试需求")
+            } else if (selectedData.length > 1) {           // 选中多条数据
+                this.$Message.error("请选择一个任务查看测试需求")
+            } else {
+                let _this = this;
+                _this.demandMetricsModal = true;
+                // console.log("---selectedData[0].id: ", selectedData[0].id);
+
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/metrics/list', {
+                    header: {},
+                    data: {
+                        perftask_id: selectedData[0].id, 
+                    }
+                }).then(function (response) {
+                    // console.log("response.data.resultList: ", response.data.resultList);
+                    _this.metricsTableData = response.data.resultList;
+                })
+            }  
+        }, 
 
         /**清除搜索条件 */
         handleReset (name) {

@@ -10,15 +10,15 @@
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">机器名称:</Col>
                             <Col span="4">
-                                <Input clearable v-model="script_name" placeholder="输入机器名称"></Input>                                
+                                <Input clearable v-model="machineName" placeholder="输入机器名称"></Input>                                
                             </Col>
                             <Col span="2" class="searchLable">IP:</Col>
                             <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入IP"></Input>
+                                <Input clearable v-model="ip" placeholder="请输入IP"></Input>
                             </Col>
                             <Col span="2" class="searchLable">机器状态:</Col>
                             <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入机器状态"></Input>
+                                <Input clearable v-model="state" placeholder="请输入机器状态"></Input>
                                 <!-- <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
                                         :remote-method="searchCreater" :loading="srchCmploading">
                                     <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
@@ -33,8 +33,8 @@
                 </Form>
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
-                        <Button @click="addCase"  type="primary">新增</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button @click="addMachine"  type="primary">新增</Button>
+                        <Button @click="deleteMachine" type="error">删除</Button>
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -75,67 +75,63 @@
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
                         <Row>
                             <i-col span="24">
-                                <Form-item label="机器名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称"></i-input>
+                                <Form-item label="机器名称：" prop="machineName">
+                                    <i-input v-model="addValidate.machineName"  placeholder="请输入脚本名称"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="IP：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入IP"></i-input>
+                                <Form-item label="IP：" prop="ip">
+                                    <i-input v-model="addValidate.ip"  placeholder="请输入IP"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="CPU：" >
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入CPU"></i-input>
+                                    <i-input v-model="addValidate.cpu"  placeholder="请输入CPU"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="内存：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
+                                <Form-item label="内存：" prop="mem">
+                                    <i-input v-model="addValidate.mem"  placeholder="请输入内存"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="用户名：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入用户名"></i-input>
+                                <Form-item label="用户名：" prop="userName">
+                                    <i-input v-model="addValidate.userName"  placeholder="请输入用户名"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="密码：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入密码"></i-input>
+                                <Form-item label="密码：" prop="userPwd">
+                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="类型：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
+                                <Form-item label="类型：" prop="mem">
+                                    <i-input v-model="addValidate.mem"  placeholder="请输入类型"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="操作系统：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
+                                <Form-item label="操作系统：" prop="osVersion">
+                                    <i-input v-model="addValidate.osVersion"  placeholder="请输入操作系统"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         
                     </i-form>
                 </div>
-                <!-- <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
-                </div> -->
             </Modal>
         </Card>
     </div>
@@ -154,8 +150,9 @@ export default {
             taskStatusList: this.$Global.taskStatusList,  
             interfaceId:'',
             sTaskName:'',
-            script_name:'',
-            app_name:'',
+            machineName:'',
+            ip:'',
+            state:'',//机器状态
             creater:'',
             param:'',
             startTime:'',
@@ -176,7 +173,7 @@ export default {
                 },
                 {
                     title: '机器名称',
-                    key: 'script_name',
+                    key: 'machineName',
                     width: 120,
                     //sortable: true
                     // ellipsis: true, 
@@ -185,16 +182,16 @@ export default {
                 {
                     title: 'IP',
                     width: 120,
-                    key: 'app_name'
+                    key: 'ip'
                 },
                 {
                     title: 'CPU',
-                    key: 'script_filename',
+                    key: 'cpu',
                     width: 70,
                 },
                 {
                     title: '内存',
-                    key: 'script_manager_name',
+                    key: 'mem',
                     width: 70,                    
                 },
                 {
@@ -305,16 +302,16 @@ export default {
 
             },
             addValidate: {
-                    script_name: '',
-                    app_name: '',
+                    machineName: '',
+                    ip: '',
                     desc: '',
                     script_filename: ''
                 },
             ruleValidate: {
-                script_name: [
+                machineName: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                app_name: [
+                ip: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
                 ],
                 desc: [
@@ -384,7 +381,7 @@ export default {
 
         /* add by xin */
         /*删除按钮功能*/
-        deleteCase: function() {
+        deleteMachine: function() {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
@@ -435,8 +432,8 @@ export default {
                 header: {
                 },
                 data: {
-                    script_name: _this.script_name,
-                    app_name:_this.app_name,
+                    machineName: _this.machineName,
+                    ip:_this.ip,
                     script_manager_id:_this.creater,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
                     pageSize: 15                    
@@ -508,10 +505,10 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            //this.$router.push({path:'/addCase',query:{id:row.id}});
+            //this.$router.push({path:'/addMachine',query:{id:row.id}});
         },
         /**添加新数据弹出模态框 */
-        addCase:function(){
+        addMachine:function(){
             this.Deletips = true;
             console.log("显示模态框");
         },
@@ -556,13 +553,9 @@ export default {
         /**清除搜索条件 */
         handleReset (name) {
             let _this = this;
-            _this.app_name='';
-            _this.script_name='';
+            _this.ip='';
+            _this.machineName='';
             _this.creater='';
-            // console.log(this.$refs[name])
-            // this.$refs[name].resetFields()
-            //this.$emit('on-reset')
-            //this.script_name='';
         } 
     }
 }
