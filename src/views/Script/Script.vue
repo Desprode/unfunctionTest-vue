@@ -50,13 +50,14 @@
                 <div style="text-align:center">
                     <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" label-position="left">
                         <h3>请勾选可以拆分的参数化文件：</h3>
-                        <Row v-for="(csvItem,index) in csvList" :key="index">
-                            <Col span="8">
-                                <FormItem :label-width="10" prop="filename">
-                                    <Checkbox v-model="csvItem.val == 'true'?true:false" @on-change="isChecked(index)">{{csvItem.filename}}</Checkbox>  
+                        <Row v-for="(item,index) in csvList" >
+                            <Col span="24">
+                                <FormItem :label-width="10" prop="fileName">
+                                    <Checkbox v-model="item.enable == true?true:false" >{{item.fileName}}</Checkbox>  
                                 </FormItem>
                             </Col>
                         </Row>
+                        
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -84,7 +85,7 @@
                                 <Form-item label="物理子系统" >
                                     <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" filterable remote 
                                         :remote-method="searchAppname" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
+                                    <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -137,7 +138,7 @@
                     <FormItem label="物理子系统:" >                      
                         <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
                             :remote-method="searchAppname" :loading="srchCmploading">
-                        <Option v-for="(option,index) in appNameOpts" :value="option.value" :key="index">{{ option.label }}</Option>
+                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
                         </Select>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
@@ -304,18 +305,25 @@ export default {
                                         console.log(item.row);
                                         let _this = this;
                                         this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/scripts/checkEdit',{
+                                        this.$http.post('/myapi/scripts/param',{
                                             data:{
                                                 id:item.row.id,
                                             }
                                         }).then(function(response){
                                             console.log("script编辑接口response.data",response.data);
-                                            _this.csvinfo= response.data.resultList[0].csvinfo;
-                                            _this.rowid=response.data.resultList[0].id
-                                            var obj = JSON.parse(_this.csvinfo); // 
-                                            console.log("objjosn"+obj);
-                                            _this.csvList = obj.CsvInfo;
+                                            _this.rowid=response.data.executor_id;
+                                            _this.csvList = response.data.resultList;
+                                            // var obj = JSON.parse(_this.csvinfo); // 
+                                            
+                                            // _this.csvList = response.data.resultList[0].csvinfo;
+                                            //_this.csvList = '['+JSON.parse(response.data.resultList[0].csvinfo)+']';
+                                            // var jsonStr = '[{"filename":"01","val":true},{"filename":"02","val":false}]';
+                                            // _this.csvList =  JSON.parse(jsonStr);//转换为json对象
+                                            console.log("_this.csvList======"+_this.csvList.length);
+                                            console.log("_this.csvList======"+_this.csvList);
                                             //console.log("threadList",_this.threadList);
+
+                                            
                                         })
                                     }
                                 }
@@ -686,10 +694,9 @@ export default {
                 if (valid) {
                     this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/scripts/edit",{
-                        header:{},
                         data:{
-                            id:_this.id,
-                            scene:_this.csvList,
+                            id:_this.rowid,
+                            csvList:_this.csvList,
                         },
                     }).then(function(response){
                         _this.$Message.success('提交成功!');
