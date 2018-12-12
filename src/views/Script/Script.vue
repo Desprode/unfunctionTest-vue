@@ -50,13 +50,20 @@
                 <div style="text-align:center">
                     <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" label-position="left">
                         <h3>请勾选可以拆分的参数化文件：</h3>
-                        <Row v-for="(item,index) in csvList" >
+                        <Row v-for="(item,index) in csvList" :key="index">
                             <Col span="24">
                                 <FormItem :label-width="10" prop="fileName">
-                                    <Checkbox v-model="item.enable == true?true:false" >{{item.fileName}}</Checkbox>  
+                                    <Checkbox v-model="item.enable == 'true'?true:false" @on-change="isChecked(index)">{{item.fileName}}</Checkbox>  
                                 </FormItem>
                             </Col>
                         </Row>
+                        <!-- <Row v-for="(threadItem,index) in threadList" :key="index">
+                            <Col span="8">
+                                <FormItem :label-width="10" prop="thread_name">
+                                    <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
+                                </FormItem>
+                            </Col>
+                        </Row> -->
                         
                     </i-form>
                 </div>
@@ -426,6 +433,24 @@ export default {
                 console.log(this.script_id)
             }
         },
+        isChecked:function(){
+            // var checkedNum = 0,unCheckedNum = 0;
+            this.csvList.map(item=>{
+                if(item.enable == true){
+                    // checkedNum ++;
+                    item.enable = false;
+                }else{
+                    // unCheckedNum ++;
+                    item.enable = true;
+                }
+                console.log(item.enable);
+            })
+            
+            // this.setValidate.thread_groups_num = checkedNum;
+            // console.log(checkedNum);
+            // console.log(unCheckedNum);
+            // console.log(this.threadList);
+        },
         searchAppname: function(query){
             this.appNameOpts = [];
             if (query !== '') {
@@ -693,7 +718,7 @@ export default {
                 let _this = this;
                 if (valid) {
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/scripts/edit",{
+                    this.$http.post("/myapi/scripts/doParam",{
                         data:{
                             id:_this.rowid,
                             csvList:_this.csvList,
