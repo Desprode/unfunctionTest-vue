@@ -19,10 +19,6 @@
                             <Col span="2" class="searchLable">机器状态:</Col>
                             <Col span="4">
                                 <Input clearable v-model="state" placeholder="请输入机器状态"></Input>
-                                <!-- <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
-                                </Select> -->
                             </Col>
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
@@ -66,7 +62,7 @@
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框-->
-            <Modal v-model="Deletips" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
+            <Modal v-model="Deletips" width="800" >
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加机器</span>
@@ -111,26 +107,38 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="密码：" prop="userPwd">
-                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码"></i-input>
+                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码" type="password"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="类型：" prop="mem">
-                                    <i-input v-model="addValidate.mem"  placeholder="请输入类型"></i-input>
-                                </Form-item>
+                                <FormItem label="类型:" prop="type">
+                                    <Select v-model="addValidate.type" placeholder="请输入类型" clearable>
+                                        <Option value="1">http</Option>
+                                        <Option value="2">tuxedo</Option>
+                                        <Option value="3">java</Option>                      
+                                    </Select>
+                                </FormItem>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="操作系统：" prop="osVersion">
-                                    <i-input v-model="addValidate.osVersion"  placeholder="请输入操作系统"></i-input>
-                                </Form-item>
+                                <FormItem label="操作系统:" prop="osVersion">
+                                    <Select v-model="addValidate.osVersion" placeholder="请输入类型" clearable>
+                                        <Option value="Linux">Linux</Option>
+                                        <Option value="Windows">Windows</Option>
+                                        <Option value="AIX">AIX</Option>                      
+                                    </Select>
+                                </FormItem>
                             </i-col>
                         </Row>
                         
                     </i-form>
+                </div>
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="cancel()">取消</Button>
+                    <Button type="primary"   @click="handleSubmit('addValidate')">确认</Button>
                 </div>
             </Modal>
         </Card>
@@ -147,7 +155,8 @@ export default {
             cmpOpts: [],
             list: [], 
             sTaskStatus:'',
-            taskStatusList: this.$Global.taskStatusList,  
+            machineTypeStatus: this.$Global.machineTypeStatus,
+            machineOS:this.$Global.machineOS,  
             interfaceId:'',
             sTaskName:'',
             machineName:'',
@@ -175,9 +184,6 @@ export default {
                     title: '机器名称',
                     key: 'machineName',
                     width: 120,
-                    //sortable: true
-                    // ellipsis: true, 
-                    //tooltip: true, 
                 },
                 {
                     title: 'IP',
@@ -196,29 +202,34 @@ export default {
                 },
                 {
                     title: '机器状态',
-                    key: 'script_manager_name',
+                    key: 'state',
                     width: 100,                    
                 },
                 {
                     title: '类型',
-                    key: 'script_manager_name',
-                    width: 80,                    
+                    key: 'type',
+                    width: 80, 
+                    render : (h, params)=>{
+                        let _this = this
+                        //console.log('params:', params);
+                        return h('span', _this.$Global.machineTypeStatus[params.row.type]);
+                    }                   
                 },
                 {
                     title: '操作系统',
-                    key: 'script_manager_name',
+                    key: 'osVersion',
                     width: 100,                    
                 },
                 {
                     title: '执行开始时间',
-                    key: 'created_time',
+                    key: 'lastUpdateTime',
                     width: 160,
                     align: 'center',
                     sortable: true
                 },
                 {
                     title: '启用时间',
-                    key: 'created_time',
+                    key: 'createTime',
                     width: 160,
                     align: 'center',
                     sortable: true
@@ -304,8 +315,12 @@ export default {
             addValidate: {
                     machineName: '',
                     ip: '',
-                    desc: '',
-                    script_filename: ''
+                    cpu:'',
+                    mem:'',
+                    userName:'',
+                    userPwd:'',
+                    type:'',
+                    osVersion:''
                 },
             ruleValidate: {
                 machineName: [
@@ -314,11 +329,17 @@ export default {
                 ip: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
                 ],
-                desc: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                userName: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                script_filename: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                userPwd: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
+                type: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ],
+                osVersion: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
                 ]
             },
         }
@@ -407,7 +428,7 @@ export default {
                         content: '是否删除该数据',
                         onOk: () => {
                             this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/scripts/del",{
+                            this.$http.post("/myapi/machine/del",{
                                 header:{},
                                 data:{
                                     ids:deleArr,
@@ -428,13 +449,13 @@ export default {
         listCase: function() {
             let _this = this;
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/scripts/list', {
+            this.$http.post('/myapi/machine/list', {
                 header: {
                 },
                 data: {
                     machineName: _this.machineName,
                     ip:_this.ip,
-                    script_manager_id:_this.creater,
+                    state:_this.state,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
                     pageSize: 15                    
                 }
@@ -531,13 +552,33 @@ export default {
         },
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
+            let _this = this;
             console.log(this.addValidate);
+            //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                     this.Deletips = false;
+                    console.log("开始添加");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/machine/add',{
+                        data:{
+                            machineName: _this.addValidate.machineName,
+                            ip: _this.addValidate.ip,
+                            cpu:_this.addValidate.cpu,
+                            mem:_this.addValidate.mem,
+                            userName:_this.addValidate.userName,
+                            userPwd:_this.addValidate.userPwd,
+                            type:_this.addValidate.type,
+                            osVersion:_this.addValidate.osVersion
+                        }
+                    }).then(function(response){
+                        console.log("响应回来的数据",response);
+                        _this.$Message.success('提交成功!');
+                        _this.showDialog = false;
+                        console.log("添加成功");
+                        _this.$refs[name].resetFields();
+                    })
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    _this.$Message.error('表单验证失败!');
                 }
             });
         },     
