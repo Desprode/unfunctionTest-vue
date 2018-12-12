@@ -37,8 +37,8 @@
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
-                        <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
-                        <p>总共{{tableDAtaTatol}}条记录</p>
+                        <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
+                        <p>总共{{tableDataTotal}}条记录</p>
                     </div>
                 </div>
             </div>
@@ -57,14 +57,6 @@
                                 </FormItem>
                             </Col>
                         </Row>
-                        <!-- <Row v-for="(threadItem,index) in threadList" :key="index">
-                            <Col span="8">
-                                <FormItem :label-width="10" prop="thread_name">
-                                    <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
-                                </FormItem>
-                            </Col>
-                        </Row> -->
-                        
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -200,6 +192,9 @@ export default {
             interfaceId:'',
             sTaskName:'',
             script_name:'',
+
+            ITM_id:'',
+            cloud_id:'',
             //脚本信息
             script_filename:'',
             script_filepath:'',
@@ -320,17 +315,8 @@ export default {
                                             console.log("script编辑接口response.data",response.data);
                                             _this.rowid=response.data.executor_id;
                                             _this.csvList = response.data.resultList;
-                                            // var obj = JSON.parse(_this.csvinfo); // 
-                                            
-                                            // _this.csvList = response.data.resultList[0].csvinfo;
-                                            //_this.csvList = '['+JSON.parse(response.data.resultList[0].csvinfo)+']';
-                                            // var jsonStr = '[{"filename":"01","val":true},{"filename":"02","val":false}]';
-                                            // _this.csvList =  JSON.parse(jsonStr);//转换为json对象
                                             console.log("_this.csvList======"+_this.csvList.length);
                                             console.log("_this.csvList======"+_this.csvList);
-                                            //console.log("threadList",_this.threadList);
-
-                                            
                                         })
                                     }
                                 }
@@ -351,8 +337,8 @@ export default {
                 }
             ],
             tableData: [],
-            tableDAtaTatol:0,
-            tableDAtaPageLine:0,
+            tableDataTotal:0,
+            tableDataPageLine:0,
             selectedData:[],
             formValidate: {
             },
@@ -419,6 +405,7 @@ export default {
             }
             let _this = this;
             _this.addValidate.script_filename=file.name;
+            _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
             console.log(res)
@@ -433,23 +420,16 @@ export default {
                 console.log(this.script_id)
             }
         },
+        //the param set checkbox  
         isChecked:function(){
-            // var checkedNum = 0,unCheckedNum = 0;
             this.csvList.map(item=>{
-                if(item.enable == true){
-                    // checkedNum ++;
+                if(item.enable == true || item.enable == 'true'){
                     item.enable = false;
                 }else{
-                    // unCheckedNum ++;
                     item.enable = true;
                 }
                 console.log(item.enable);
             })
-            
-            // this.setValidate.thread_groups_num = checkedNum;
-            // console.log(checkedNum);
-            // console.log(unCheckedNum);
-            // console.log(this.threadList);
         },
         searchAppname: function(query){
             this.appNameOpts = [];
@@ -461,8 +441,6 @@ export default {
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/component/search', 
                     {
-                        headers: {
-                        },
                         data: {
                             name: _this.addValidate.app_name,                            
                         },                        
@@ -475,7 +453,7 @@ export default {
                         const list = _this.list.map(item => {
                             return {
                                 value: item.id,
-                                label: item.name
+                                label: item.comp_name
                             };
                         });
                         _this.appNameOpts = list
@@ -496,8 +474,6 @@ export default {
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/user/search', 
                     {
-                        headers: {
-                        },
                         data: {
                             name: _this.creater,                            
                         },                        
@@ -521,15 +497,12 @@ export default {
                 this.cmpOpts = [];
             }
         },
-
-        /* add by xin */
         /*删除按钮功能*/
         deleteScript: function() {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
             let deleteId = [];                     //选中数据的id
-            //let idstr = '';
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
                     //idstr = selectedData[i].id +",";
@@ -537,8 +510,6 @@ export default {
                     console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
-
-
             }else{
                     this.$Message.error("请选择要删除的数据")
             }
@@ -590,8 +561,8 @@ export default {
                 console.log(response);
                 console.log('response.data: ', response.data);
                 _this.tableData = response.data.resultList;
-                _this.tableDAtaTatol = response.data.pagination.totalCount;
-                _this.tableDAtaPageLine = response.data.pagination.pageSize
+                _this.tableDataTotal = response.data.pagination.totalCount;
+                _this.tableDataPageLine = response.data.pagination.pageSize
             })
         },
         handlePage:function(val){
@@ -724,12 +695,13 @@ export default {
                             csvList:_this.csvList,
                         },
                     }).then(function(response){
-                        _this.$Message.success('提交成功!');
+                        if(response.data.result=="success"){
+                            _this.$Message.success('设置成功!');
+                        }else{
+                            this.$Message.error("设置失败!");
+                        }
                         _this.showParamStatus = false;
-                        console.log('response',);
-                        console.log(_this.csvList);
                     })
-                    
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
@@ -791,9 +763,8 @@ export default {
                             script_id:_this.script_id,
                         }
                     }).then(function(response){
-                        console.log("响应回来的数据",response);
                         _this.$Message.success('修改成功!');
-                        _this.showDialog = false;
+                        _this.showSetScript = false;
                         console.log("修改成功");
                         _this.$refs[name].resetFields();
                     })
