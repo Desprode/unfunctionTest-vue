@@ -72,6 +72,7 @@
                 <div align="left">
                     <Button @click="aggregCase" type="success"  >聚合报告</Button>
                     <Button @click="deleteCase" type="error">删除结果</Button>
+                    <!--<Button @click="deletesCase" type="error">基准测试</Button> -->
                 </div>
                 <div class="tableBox">
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -89,7 +90,7 @@
                 <div style="text-align:center;height:240px" >
                     <Form label-width="80">
                         <FormItem label="报告名称" align="left">
-                            <Input placeholder="Enter something..." style="width:400px"></Input>
+                            <Input placeholder="Enter something..." style="width:400px" readonly></Input>
                         </FormItem>
                     </Form>
                     <div style="float:left;width:100px">
@@ -98,18 +99,18 @@
                     </div>
                     <div style="float:left;width:900px">
                         <Form >
-                            <FormItem label="场景名称" align="left" >
-                                <Input placeholder="Enter something..." style="width:300px"></Input>
+                            <FormItem label="场景名称" align="left">
+                                <Input placeholder="Enter something..." style="width:300px" readonly></Input>
                             </FormItem>
                             <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
                                 执行是否成功：
-                                <Select style="width:80px">
+                                <Select style="width:80px"disabled>
                                     <Option value="beijing">New York</Option>
                                     <Option value="shanghai">London</Option>
                                     <Option value="shenzhen">Sydney</Option>
                                 </Select>
                                 测试结果分析描述：
-                                <Input placeholder="Enter something..." style="width:400px"></Input>
+                                <Input placeholder="Enter something..." style="width:400px" readonly></Input>
                             </FormItem>
                             <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
                                 显示性能数据表：
@@ -414,6 +415,13 @@ export default {
             this.$router.push({
                 path:'/details',
                 query:{executor_id:tableData[index].executor_id}
+            });
+        },
+        /** 测试页面跳转*/
+        deletesCase:function(){
+            this.$router.push({
+                path:'/report',
+                query:{}
             });
         },
            
