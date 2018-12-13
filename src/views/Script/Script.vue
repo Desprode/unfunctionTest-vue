@@ -315,7 +315,6 @@ export default {
                                             console.log("script编辑接口response.data",response.data);
                                             _this.rowid=response.data.executor_id;
                                             _this.csvList = response.data.resultList;
-                                            console.log("_this.csvList======"+_this.csvList.length);
                                             console.log("_this.csvList======"+_this.csvList);
                                         })
                                     }
@@ -328,29 +327,9 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        let _this = this;
-                                        this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/scripts/download',{
-                                            data:{
-                                                id:item.row.id,
-                                            }
-                                        }).then(function(response){
-                                            //console.log("script编辑接口response.data",response.data);
-                                            let fileName = item.row.script_filename // 文件地址
-                                            var blob = new Blob([response.data])
-                                            if (window.navigator.msSaveOrOpenBlob) {
-                                                // 兼容IE10
-                                                navigator.msSaveBlob(blob, fileName)
-                                            } else {
-                                                let url = window.URL.createObjectURL(blob);
-                                                let link = document.createElement('a');
-                                                link.style.display = 'none';
-                                                link.href = url;
-                                                link.setAttribute('download', fileName);
-                                                document.body.appendChild(link);
-                                                link.click();
-                                            }
-                                        })
+
+                                        this.handleDownload(item.row.id,item.row.script_filename);
+                                        
                                         
                                     }
                                 }
@@ -415,7 +394,36 @@ export default {
         this.listCase();
     },
     methods: {
-        
+        handleDownload:function(rowid,fileName){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/scripts/download',{
+                data:{
+                    id:rowid,
+                }
+            }).then(function(response){
+                //服务端文件不存在的情况判断
+                if("fail" == response.data.result){
+                    _this.$Message.error(response.data.err_desc);
+                    return;
+                }
+                //console.log("script编辑接口response.data",response.data);
+               // let fileName = item.row.script_filename // 文件地址
+                var blob = new Blob([response.data])
+                if (window.navigator.msSaveOrOpenBlob) {
+                    // 兼容IE10
+                    navigator.msSaveBlob(blob, fileName)
+                } else {
+                    let url = window.URL.createObjectURL(blob);
+                    let link = document.createElement('a');
+                    link.style.display = 'none';
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                }
+            })
+        },
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
@@ -553,9 +561,13 @@ export default {
                                    // ids:deleArr,
                                     id:deleArr[0],
                                 }
-                            }).then(function(){
-                                tableData.splice(index, 1);        //即删除该数据上
-                                _this.$Message.info('删除成功');
+                            }).then(function(response){
+                                if(response.status == 500){
+                                    _this.$Message.error('服务端错误!');
+                                }else{
+                                    tableData.splice(index, 1);        //即删除该数据上
+                                    _this.$Message.info('删除成功');
+                                }
                             })
                         },
                         onCancel: () => {
@@ -649,13 +661,17 @@ export default {
                     script_name:_this.addValidate.script_name,
                 }
             }).then(function(response){
-                console.log("检查脚本响应数据",response);
-                var flag = response.data.result;
-                console.log("检查脚本响应数据flag",flag);
-                if("fail" == flag){
-                    console.log("检查脚本响应数据flag22",flag);
-                    _this.$Message.error('脚本名称重复!');
-                    return ;
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    console.log("检查脚本响应数据",response);
+                    var flag = response.data.result;
+                    console.log("检查脚本响应数据flag",flag);
+                    if("fail" == flag){
+                        console.log("检查脚本响应数据flag22",flag);
+                        _this.$Message.error('脚本名称重复!');
+                        return ;
+                    }
                 }
                
             })
@@ -701,12 +717,16 @@ export default {
                             csvList:_this.csvList,
                         },
                     }).then(function(response){
-                        if(response.data.result=="success"){
-                            _this.$Message.success('设置成功!');
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
                         }else{
-                            this.$Message.error("设置失败!");
+                            if(response.data.result=="success"){
+                                _this.$Message.success('设置成功!');
+                            }else{
+                                this.$Message.error("设置失败!");
+                            }
+                            _this.showParamStatus = false;
                         }
-                        _this.showParamStatus = false;
                     })
                 } else {
                     this.$Message.error('表单验证失败!');
@@ -737,13 +757,17 @@ export default {
                         }
                     }).then(function(response){
                         console.log("响应回来的数据",response);
-                        if("ok" == response.data.result){
-                            _this.$Message.success('添加成功！');
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
                         }else{
-                            _this.$Message.error('添加失败'+response.data.err_desc);
+                            if("ok" == response.data.result){
+                                _this.$Message.success('添加成功！');
+                            }else{
+                                _this.$Message.error('添加失败'+response.data.err_desc);
+                            }
+                            _this.showDialog = false;
+                            _this.$refs[name].resetFields();
                         }
-                        _this.showDialog = false;
-                        _this.$refs[name].resetFields();
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -772,10 +796,19 @@ export default {
                             script_id:_this.script_id,
                         }
                     }).then(function(response){
-                        _this.$Message.success('修改成功!');
-                        _this.showSetScript = false;
-                        console.log("修改成功");
-                        _this.$refs[name].resetFields();
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if("fail" == response.data.result){
+                                _this.$Message.error('修改失败!');
+                                return;
+                            }else{
+                                _this.$Message.success('修改成功!');
+                                _this.showSetScript = false;
+                                console.log("修改成功");
+                                _this.$refs[name].resetFields();   
+                            }
+                        }
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
