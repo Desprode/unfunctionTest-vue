@@ -328,7 +328,30 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.handleDownload(params.row);
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/scripts/download',{
+                                            data:{
+                                                id:item.row.id,
+                                            }
+                                        }).then(function(response){
+                                            //console.log("script编辑接口response.data",response.data);
+                                            let fileName = item.row.script_filename // 文件地址
+                                            var blob = new Blob([response.data])
+                                            if (window.navigator.msSaveOrOpenBlob) {
+                                                // 兼容IE10
+                                                navigator.msSaveBlob(blob, fileName)
+                                            } else {
+                                                let url = window.URL.createObjectURL(blob);
+                                                let link = document.createElement('a');
+                                                link.style.display = 'none';
+                                                link.href = url;
+                                                link.setAttribute('download', fileName);
+                                                document.body.appendChild(link);
+                                                link.click();
+                                            }
+                                        })
+                                        
                                     }
                                 }
                             }, '下载')
@@ -661,23 +684,6 @@ export default {
         handleEdit(row){
             console.log("这是编辑",row)
         },
-        /**  下载行*/
-        handleDownload(row){
-            let fileName = row.script_filename // 文件地址
-            //let downName = (new Date()).getTime()+".mp3" // 文件下载名称
-            const blob = new Blob([fileName])
-            if (window.navigator.msSaveOrOpenBlob) {
-                // 兼容IE10
-                navigator.msSaveBlob(blob, fileName)
-            } else {
-                //  chrome/firefox
-                let aTag = document.createElement('a')
-                aTag.fileName = fileName
-                aTag.href = URL.createObjectURL(blob)
-                aTag.click()
-                URL.revokeObjectURL(aTag.href)
-            }
-        },
         /**删除一条数据 */
         remove(index){
             this.tableData.splice(index,1);
@@ -731,9 +737,12 @@ export default {
                         }
                     }).then(function(response){
                         console.log("响应回来的数据",response);
-                        _this.$Message.success('提交成功!');
+                        if("ok" == response.data.result){
+                            _this.$Message.success('添加成功！');
+                        }else{
+                            _this.$Message.error('添加失败'+response.data.err_desc);
+                        }
                         _this.showDialog = false;
-                        console.log("添加成功");
                         _this.$refs[name].resetFields();
                     })
                 } else {
@@ -848,9 +857,7 @@ export default {
 .serchBtnBox{
     position: relative;
 }
-// .actionBtn{
-//     width: 16%;
-// }
+
 .caseBoxRow{
     padding-bottom:10px;
 }
