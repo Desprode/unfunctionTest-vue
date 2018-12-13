@@ -571,9 +571,12 @@ export default {
                             osVersion:_this.addValidate.osVersion
                         }
                     }).then(function(response){
-                        console.log("响应回来的数据",response);
-                        _this.$Message.success('提交成功!');
-                        _this.showDialog = false;
+                        if("ok" == response.data.result){
+                            _this.$Message.success('添加成功！');
+                        }else{
+                            _this.$Message.error('添加失败'+response.data.err_desc);
+                        }
+                        _this.Deletips = false;
                         console.log("添加成功");
                         _this.$refs[name].resetFields();
                     })
