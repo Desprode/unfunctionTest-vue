@@ -19,7 +19,7 @@
                                     remote
                                     :remote-method="srchComponent"
                                     :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</Option>
+                                    <Option v-for="(option, index) in cmpOpts" :value="option.id" :key="index">{{option.com_name}}</Option>
                                 </Select>
                             </Col>
                             <Col span="2" class="searchLable">任务名称</Col>
@@ -123,7 +123,7 @@
                                 :loading="srchCmploading" 
                                 :transfer=false
                                 >
-                                <i-option v-for="(option, index) in cmpOpts" :value="option.label" :key="index">{{option.label}}</i-option>
+                                <i-option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index" @click.native="getMoreCmpParams(option)">{{option.com_name}}</i-option>
                             </i-select>
                         </Form-item>
                         <Form-item label="任务名称" prop="task_name">
@@ -237,13 +237,14 @@
                 </p>
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <Button type="success" @click="addPTask" >新增需求</Button>
+                        <Button type="success" @click="addDemand" >新增需求</Button>
                     </div>
                     <Table border  :columns="metricsCols" :data="metricsTableData" class="myTable"></Table>
                     <div class="pageBox" v-if="metricsTableData.length">
                         <Page :total="parseInt(metricsTcount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     </div>
                 </div>
+                <div slot="footer"></div>
             </Modal>
         </Card>
     </div>
@@ -271,6 +272,11 @@ export default {
             sTaskSource:'',         // 任务来源
             onlineDate_s:'',        // 投产日期
             onlineDate_f:'',  
+            formSendCmpP: {         // 物理子系统选中项中传递的多个参数
+                id: '', 
+                cloud_id: '', 
+                com_name: '', 
+            }, 
 
             /**==================== 列表数据 ====================*/
             columns: [
@@ -280,9 +286,9 @@ export default {
                     align: 'center'
                 },
                 {
-                    title: 'id',
+                    title: '任务id',
                     key: 'id',
-                    width: 60,
+                    width: 75,
                 },
                 {
                     title: '物理子系统',
@@ -413,21 +419,6 @@ export default {
                                     }
                                 }
                             }, '编辑'),        // params.row.$isEdit ? '保存' : '编辑'
-                            // h('Button', {
-                            //                 props: {
-                            //                     type: 'error',
-                            //                     size: 'small'
-                            //                 },
-                            //                 style: {
-                            //                     marginRight: '5px'
-                            //                 },
-                            //                 on: {
-                            //                     click: () => {
-                            //                         this.remove(params.index);
-                            //                         //console.log(params)
-                            //                     }
-                            //                 }
-                            //             }, '删除'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -464,7 +455,7 @@ export default {
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ], 
                 component_name: [
-                    { required: true, message: '此项为必填项', trigger: 'change' }
+                    { required: true, message: '此项为必填项', trigger: 'change' }    // type: 'number', 
                 ], 
                 perftask_begin_date: [
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
@@ -529,51 +520,162 @@ export default {
                     title: '需求类型',
                     key: 'metrics_type',
                     width: 150,
+                    render : (h, params)=>{
+                        let _this = this;
+                        console.log("^^^ params.row.metrics_type: ", params.row.metrics_type);
+                        let demandType = _this.$Global.demandTypeList;
+                        console.log("^^^ demandType: ", demandType);
+                        if (params.row.is_add == true && params.row.$isEdit) {
+                            return h('div', [
+                                h("Select", {
+                                    props:{
+                                        value: '01'
+                                    }, 
+                                    on: {
+                                        'on-change': (event) => {
+                                            console.log("^^^ event: ", event);
+                                            params.row.metrics_type = event;
+                                        }
+                                    },
+                                },
+                                demandType.map(function(item) {
+                                    console.log("^^^ item: ", item);
+                                    return [h(
+                                        "Option", 
+                                        {
+                                            props: {
+                                                value: item.value,
+                                                key: item.value
+                                            }
+                                        },
+                                        item.label
+                                    )]
+                                }))
+                            ])
+                        } else {
+                            return h('span', _this.$Global.demandTypeMap[params.row.metrics_type]);
+                        }
+                    }
                 },
                 {
                     title: '需求描述',
                     key: 'metrics_desc',
-                    width: 455,
+                    width: 425,
+                    render:(h,params) => {
+                        if(params.row.$isEdit){
+                            return h('input',{
+                                style: {
+                                    'text-align':'center',
+                                    width: params.column._width+'px',
+                                    height: '48px',
+                                    border: '0',
+                                    outline:'none',
+                                    cursor: 'pointer',
+                                    // 'background-color':'#f8f8f9'
+                                },
+                                domProps: {
+                                    value: params.row.metrics_desc,
+                                    autofocus: true
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.metrics_desc = event.target.value
+                                    }
+                                }
+                            });
+                        }else{
+                            return h('div',params.row.metrics_desc)
+                        }
+                        
+                    } 
                 },
                 {
                     title: '操作',
                     key: 'opration',
-                    width:100,
+                    width:130,
                     render: (h, params) => {
+                        if(params.row.$isEdit ){
                         return h('div', [
                             h('Button', {
                                 props: {
                                     type: 'primary',
                                     size: 'small'
-                                    // type: 'text', 
-                                    // size: 'small', 
-                                    // icon: 'ios-create-outline', 
-                                    // icon: 'ios-paper-outline', 
                                 },
                                 style: {
                                     marginRight: '5px'
-                                    // content-size:
+                                },
+                                on: {
+                                    click: () => {
+                                          this.demandEditSave(params.row);
+                                        //   this.editCount --;
+                                    }
+                                }
+                            },'保存'),
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
                                 },
                                 on: {
                                     click: () => {
                                         this.editPTaskModal = true;
-                                        // console.log('params.row: ', params.row);
                                         this.editPTaskValidate.index = params.row._index;
                                         this.editPTaskValidate.id = params.row.id;
                                         this.editPTaskValidate.component_name = params.row.component_name;
                                         this.editPTaskValidate.perftask_name = params.row.perftask_name;
                                     }
                                 }
-                            }, '编辑'), 
+                            }, '删除'), 
+                        
                         ])
-                                            
+                        }else{
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'success',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.handleEdit(params.row);
+                                            // this.editCount ++;
+                                        }
+                                    }
+                                },'编辑'),
+                                h('Button', {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.editPTaskModal = true;
+                                            this.editPTaskValidate.index = params.row._index;
+                                            this.editPTaskValidate.id = params.row.id;
+                                            this.editPTaskValidate.component_name = params.row.component_name;
+                                            this.editPTaskValidate.perftask_name = params.row.perftask_name;
+                                        }
+                                    }
+                                }, '删除'), 
+                            ])
+                        }
                     }
                 }
             ], 
             metricsTableData: [], 
             metricsTcount: 0, 
-            metricsPageno:1,                   // 当前页
-            metricsPagesize:10,                // 每页显示多少条数据
+            metricsPageno:1,                    // 当前页
+            metricsPagesize:10,                 // 每页显示多少条数据
+            metricsTblDataCopy: [],             // 一份metricTable表格的副本，当编辑项被服务器拒绝的时候用来还原数据
         }
     },
     created(){
@@ -594,28 +696,52 @@ export default {
                     this.srchCmploading = false;
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/search',{
+                    this.$http.post('/myapi/component/searchFromITM',{
                         headers:{},
                         data:{
-                            name:query,
-                            endDate:''
+                            kw: query,
+                            page: 1, 
+                            limit: 10, 
                         },
                     }).then(function(response){
                         //console.log('下拉框请求的响应',response);
                         _this.list = response.data.resultList;
                         _this.cmpOpts = _this.list.map(item =>{
                             return {
-                                value:item.id,
-                                label :item.name
+                                id: item.id,
+                                cloud_id: item.cloud_id, 
+                                com_name: item.com_name
                             }
                         });
                         //console.log('赋值给预选项',_this.cmpOpts);
                     })
+                    // this.$http.post('/myapi/component/search',{
+                    //     headers:{},
+                    //     data:{
+                    //         name:query,
+                    //         endDate:''
+                    //     },
+                    // }).then(function(response){
+                    //     //console.log('下拉框请求的响应',response);
+                    //     _this.list = response.data.resultList;
+                    //     _this.cmpOpts = _this.list.map(item =>{
+                    //         return {
+                    //             value:item.id,
+                    //             label :item.name
+                    //         }
+                    //     });
+                    //     //console.log('赋值给预选项',_this.cmpOpts);
+                    // })
                 },200)
             }else{
                 this.cmpOpts = [];
             }
         },
+        getMoreCmpParams: function(obj) {
+            this.formSendCmpP.id = obj.id;
+            this.formSendCmpP.cloud_id = obj.cloud_id; 
+            this.formSendCmpP.com_name = obj.com_name;
+        }, 
         
 
         /**==================== 任务列表相关事件 ====================*/
@@ -707,7 +833,9 @@ export default {
                     this.$http.post('/myapi/perftask/add', {
                         header: {},
                         data: {
-                            component_name: _this.addValidate.component_name,   // 物理子系统名称
+                            component_name: _this.formSendCmpP.com_name,   // 物理子系统名称
+                            ref_itm_id: _this.formSendCmpP.id,                  // ITM的物理子系统id
+                            cloud_id: -this.formSendCmpP.cloud_id,              // ITM同步云的时候的id
                             task_name: _this.addValidate.task_name,             // 任务名称
                             perftask_begin_date: _this.addValidate.perftask_begin_date,   // 任务开始日期
                             perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
@@ -733,11 +861,11 @@ export default {
                             _this.addPTaskModal = false;
                         } else if (response.data.result == "ok") {
                             // console.log("**********************addValidate: ", _this.addValidate);
+                            // _this.addValidate.component_name = _this.formSendCmpP.com_name;
                             _this.addValidate.perftask_name = _this.addValidate.task_name;
                             _this.addValidate.id = response.data.resultMap.id;
                             _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
                             _this.addValidate.ptask_source = '2';
-                            console.log("**********************addValidate: ", _this.addValidate);
                             _this.$Message.success('提交成功!');
                             _this.addPTaskModal = false;
                             _this.tableData.push(_this.addValidate);
@@ -877,9 +1005,111 @@ export default {
                 }).then(function (response) {
                     // console.log("response.data.resultList: ", response.data.resultList);
                     _this.metricsTableData = response.data.resultList;
+                    _this.metricsTblDataCopy = _this.metricsTableData;
                 })
             }  
         }, 
+        addDemand: function () {
+            let newDemandMtrc = {'metrics_type': '01', 'metrics_desc': '', 'is_add': true};
+            let mtrcTbDtLength = this.metricsTableData.push(newDemandMtrc);
+            // console.log("newDemandMtrc: ", newDemandMtrc);
+            // console.log("mtrcTbDtLength: ", mtrcTbDtLength);
+            // console.log("this.metricsTableData[mtrcTbDtLength-1]: ", this.metricsTableData[mtrcTbDtLength-1]);
+            this.$set(this.metricsTableData[mtrcTbDtLength-1], '$isEdit', true);
+            // this.addDmdItem = true;
+        },
+        /**数据编辑 */
+        handleEdit:function(row) {
+            // console.log("row: ", row);
+            this.$set(row, '$isEdit', true);
+            // console.log(row);
+        },
+        /**数据保存 */
+        demandEditSave:function(row) {
+            if (row.metrics_desc == '') {
+                this.$Message.error("需求描述不能为空");
+            } else {
+                this.$set(row, '$isEdit', false)
+                // console.log('^^^ row:', row);
+
+                let _this = this;
+
+                if ( row['id'] ) {
+                    console.log("^^^ row has id, it is an edit ^^^");
+
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/edit',{
+                        header:{},
+                        data:{
+                            id: row.id, 
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = "";
+                            if (response.data.err_code != null) {
+                                errDesc = errDesc + "errCode: " + response.data.err_code;
+                            } else {
+                                errDesc = "no errCode";
+                            }
+
+                            if (response.data.err_desc != null) {
+                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
+                            } else {
+                                errDesc = errDesc + " —— no errDesc";
+                            }
+
+                            _this.$Message.error(errDesc);
+                            // console.log("^^^ metricsTblDataCopy: ", _this.metricsTblDataCopy);
+                            _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc);
+                        } else if (response.data.result == "ok") {
+                            _this.$set(row, 'metrics_desc', row.metrics_desc);
+                        }
+                    })
+                } else {
+                    console.log("^^^ row has not id, it is an add ^^^");
+                    // console.log("^^^ _this: ", _this);
+
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/add',{
+                        header:{},
+                        data:{
+                            perftask_id: _this.selectedData[0].id, 
+                            metrics_type: row.metrics_type,
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = "";
+                            if (response.data.err_code != null) {
+                                errDesc = errDesc + "errCode: " + response.data.err_code;
+                            } else {
+                                errDesc = "no errCode";
+                            }
+
+                            if (response.data.err_desc != null) {
+                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
+                            } else {
+                                errDesc = errDesc + " —— no errDesc";
+                            }
+
+                            _this.$Message.error(errDesc);
+                            _this.metricsTableData.splice(row._index, 1); 
+                        } else if (response.data.result == "ok") {
+                            let newDemandMtrc = {
+                                'id': response.data.resultMap.id, 
+                                'metrics_type': row.metrics_type, 
+                                'metrics_desc': row.metrics_desc, 
+                                'is_add': false, 
+                                '$isEdit': false
+                            };
+                            _this.$set(_this.metricsTableData, row._index, newDemandMtrc);
+                            // console.log("^^^ _this.metricsTableData: ", _this.metricsTableData);
+                        }
+                    })
+                }
+            }
+        },
 
         /**清除搜索条件 */
         handleReset (name) {
