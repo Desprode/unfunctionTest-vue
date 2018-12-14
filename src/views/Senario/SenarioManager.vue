@@ -11,7 +11,7 @@
                         <Row class="caseBoxRow">
                             <Col span="8">
                                 <FormItem label="场景类型:" prop="senario_type">
-                                    <Select v-model="formValidate.senario_type" clearable>
+                                    <Select v-model="formValidate.senario_type" clearable @keyup.enter.native= listCase()>
                                         <Option  value="01">单交易基准</Option>
                                         <Option  value="02">单交易负载</Option>
                                         <Option  value="03">混合场景</Option>
@@ -20,7 +20,7 @@
                             </Col>
                             <Col span="8">
                                 <FormItem label="场景名称:" prop="senario_name">
-                                    <Input v-model="formValidate.senario_name" placeholder="输入场景名称"></Input>
+                                    <Input v-model="formValidate.senario_name" placeholder="输入场景名称" @keyup.enter.native= listCase()></Input>
                                 </FormItem>
                             </Col>
                             
@@ -32,12 +32,12 @@
                         <Row class="caseBoxRow" v-show="isShowMore">
                             <Col span="8">
                                 <FormItem label="创建人:" prop="senario_creator">
-                                <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人"></Input>
+                                <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input>
                                 </FormItem>
                             </Col>
                             <Col span="8">
                                 <FormItem label="关联任务:" prop="perf_task">
-                                    <Select v-model="formValidate.perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
+                                    <Select v-model="formValidate.perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
                                     </Select>
                                     <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
@@ -45,7 +45,7 @@
                             </Col>
                             <Col span="8">
                                 <FormItem label="关联脚本:" prop="script">
-                                    <Select v-model="formValidate.script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
+                                    <Select v-model="formValidate.script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
                                     </Select>
                                 </FormItem>
@@ -112,27 +112,27 @@
                 <div style="text-align:center">
                 <Form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="80">
                     <FormItem label="场景类型:" prop="senario_type">
-                    <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable>
+                    <Select v-model="addValidate.senario_type" placeholder="请选择场景类型" clearable @keyup.enter.native= "handleSubmit('addValidate')">
                             <Option value="01">单交易基准</Option>
                             <Option value="02">单交易负载</Option>
                             <Option value="03">混合场景</Option>                      
                         </Select>
                     </FormItem>
                     <FormItem label="场景名称:" prop="senario_name">                      
-                    <Input v-model="addValidate.senario_name" placeholder="请输入场景名称"></Input>
+                    <Input v-model="addValidate.senario_name" placeholder="请输入场景名称" @keyup.enter.native= "handleSubmit('addValidate')"></Input>
                     </FormItem>
                     <FormItem label="场景描述:" prop="fie">
-                        <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
+                        <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc" @keyup.enter.native= "handleSubmit('addValidate')"></Input>
                     </FormItem>
                     <FormItem label="关联任务:" prop="ref_task_name">
-                        <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear" @on-open-change="perftask">
+                        <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear" @on-open-change="perftask" @keyup.enter.native= "handleSubmit('addValidate')">
                             <Scroll :on-reach-bottom="perftaskReachBottom">
                                 <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
                             </Scroll>                
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
-                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading">
+                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" @keyup.enter.native= "handleSubmit('addValidate')">
                                 <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                         </Select>
                     </FormItem>
@@ -188,17 +188,17 @@
                         <Input v-model="setValidate.duration" :number="true"></Input>
                     </FormItem>
                     <Row>
-                        <Col span="10"  v-if="showSetType =='02'?true:false">
-                            <FormItem label="每个线程组并发数：" prop="per_threads">
+                        <Col span="12"  v-if="showSetType =='02'?true:false">
+                            <FormItem label="每个线程组并发数：" prop="per_threads" :label-width="140">
                                 <Input v-model="setValidate.per_threads" :number="true"></Input>
                             </FormItem>
                         </Col>
-                        <Col span="10"  v-if="showSetType !='03'?true:false">
-                            <FormItem label="每个线程组运行时常：" prop="per_duration">
+                        <Col span="12"  v-if="showSetType !='03'?true:false">
+                            <FormItem label="每个线程组运行时常：" prop="per_duration" :label-width="150">
                                 <Input v-model="setValidate.per_duration" :number="true"></Input>
                             </FormItem>
                         </Col>
-                        <Col span="10"  v-if="showSetType =='01'?true:false">
+                        <Col span="12"  v-if="showSetType =='01'?true:false">
                             <FormItem label="间隔(毫秒)" prop="base_pacing">
                                 <Input v-model="setValidate.base_pacing" :number="true"></Input>
                             </FormItem>
@@ -209,7 +209,7 @@
                             <span>线程组个数：</span>
                             <span>{{setValidate.thread_groups_num}}</span>
                         </Col>
-                        <Col span="10">
+                        <Col span="9" offset="3">
                             <span>运行时长:</span>
                             <span>{{totalTime}}</span>
                         </Col>
@@ -217,7 +217,12 @@
                     <h2>线程组配置</h2>
                     <br>
                     <Row v-for="(threadItem,index) in threadList" :key="index">
-                        <Col span="8">
+                        <Col span="20"  v-if="showSetType !='03'?true:false">
+                            <FormItem :label-width="10" prop="thread_name">
+                                <Checkbox v-model="threadItem.enable" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
+                            </FormItem>
+                        </Col>
+                        <Col span="8"  v-if="showSetType=='03'?true:false">
                             <FormItem :label-width="10" prop="thread_name">
                                 <Checkbox v-model="threadItem.enable" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
                             </FormItem>
@@ -248,14 +253,14 @@
                     <Row class="caseBoxRow">
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
-                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange">
+                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
                             </FormItem>
                         </Col>
                         <Col span="9">
                             <FormItem label="IP" prop="ip">
-                                <Input v-model="moniterValidate.ip">
+                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase()>
                                 </Input>
                             </FormItem>
                         </Col>
@@ -267,7 +272,7 @@
                     <Row v-show="isShowMoniterMore">
                         <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
-                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
+                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()>
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
                                     <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
                                     <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
@@ -287,7 +292,7 @@
                     <Row>
                         <Col span="11">
                             <FormItem label="系统名称" prop="subSysName">
-                                <Select  v-model="monitorAddValidate.subSysName" clearable placeholder="请选择物理子系统" clearable filterable remote :remote-method="scomponentAddRemote" :loading="scomponentAddLoading" @on-open-change="openMonitorAddChange">
+                                <Select  v-model="monitorAddValidate.subSysName" clearable placeholder="请选择物理子系统" clearable filterable remote :remote-method="scomponentAddRemote" :loading="scomponentAddLoading" @on-open-change="openMonitorAddChange"  @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'>
                                     <Option v-for="(opts,index) in scomponentAddOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                                 </Select>
                                 <!-- <Input v-model="monitorAddValidate.subSysName" clearable></Input> -->
@@ -295,7 +300,7 @@
                         </Col>
                         <Col span="11">
                             <FormItem label="环境类型" prop="subAreaName">
-                                <Select v-model="monitorAddValidate.subAreaName" placeholder="---请选择---" clearable>
+                                <Select v-model="monitorAddValidate.subAreaName" placeholder="---请选择---" clearable  @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'>
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
                                     <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
                                     <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
@@ -309,7 +314,7 @@
                     <Row class="caseBoxRow">
                         <Col span="11">
                             <FormItem label="操作系统类型" prop="osVersion">
-                                <Select v-model="monitorAddValidate.osVersion" placeholder="---请选择---" clearable>
+                                <Select v-model="monitorAddValidate.osVersion" placeholder="---请选择---" clearable @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'>
                                     <Option value="hp">hp</Option>
                                     <Option value="linux">linux</Option>
                                     <Option value="aix">aix</Option>
@@ -318,30 +323,31 @@
                         </Col>
                         <Col span="11">
                             <FormItem label="部署单元" prop="funDesc" >
-                                <Input v-model="monitorAddValidate.funDesc" placeholder="请输入内容"></Input>
+                                <Input v-model="monitorAddValidate.funDesc" placeholder="请输入内容" @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row class="caseBoxRow">
                         <Col span="11">
                             <FormItem label="ip地址" prop="prodIp" >
-                                <Input v-model="monitorAddValidate.prodIp" placeholder="请输入内容"></Input>
+                                <Input v-model="monitorAddValidate.prodIp" placeholder="请输入内容" @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'></Input>
                             </FormItem>
                         </Col>
                         <Col span="11">
                             <FormItem label="用户名" prop="userName" >
-                                <Input v-model="monitorAddValidate.userName" placeholder="请输入内容"></Input>
+                                <Input v-model="monitorAddValidate.userName" placeholder="请输入内容" @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row class="caseBoxRow">
                         <Col span="11">
                             <FormItem label="密码" prop="password" >
-                                <Input v-model="monitorAddValidate.password" placeholder="请输入内容"></Input>
+                                <Input v-model="monitorAddValidate.password" placeholder="请输入内容" @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'></Input>
                             </FormItem>
                         </Col>
-                        <Col span="5" offset="6">
+                        <Col span="8" offset="3">
                             <Button type="success" @click='monitorAddSave("monitorAddValidate")'>保存</Button>
+                            <Button type="warning" @click='monitorDissmissAdd'>取消添加 </Button>
                             <Button @click='monitorAddReset("monitorAddValidate")'>重置</Button>
                         </Col>
                     </Row>
@@ -351,7 +357,7 @@
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox">
-                    <Table border  ref="selection" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
@@ -822,6 +828,7 @@ export default {
         /**========================================加载列表中的数据======================================= */
         listCase: function() {
             let _this = this;
+            console.log("键盘按下")
             // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list', {
@@ -1063,27 +1070,27 @@ export default {
         },
         /**远程加载关联任务方法 */
         perftaskRemote:function(query){
-                console.log("输入的参数",query);
-                this.perftaskLoading = true;
-                setTimeout(() => {
-                    this.perftaskLoading = false;
-                    let _this = this;
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/perftask/list",{
-                        data:{
-                            perftask_name:query,
+            console.log("输入的参数",query);
+            this.perftaskLoading = true;
+            setTimeout(() => {
+                this.perftaskLoading = false;
+                let _this = this;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post("/myapi/perftask/list",{
+                    data:{
+                        perftask_name:query,
+                    }
+                }).then(function(response){
+                    console.log("任务管理请求回的数据",response.data.resultList);
+                    console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                    _this.perftaskOpts =response.data.resultList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.perftask_name,
                         }
-                    }).then(function(response){
-                        console.log("任务管理请求回的数据",response.data.resultList);
-                        console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                        _this.perftaskOpts =response.data.resultList.map(item=>{
-                            return {
-                                value:item.id,
-                                label:item.perftask_name,
-                            }
-                        })
                     })
-                }, 200);
+                })
+            }, 200);
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
@@ -1097,7 +1104,7 @@ export default {
                 }
             }).then(function(response){
                 console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
-                if(response.data.resultList.length == 0){
+                if(response.data.resultList.length == 0 || response.data.resultList.length == undefined){
                     _this.isDisabled = true;
                 }else{
                     _this.isDisabled = false;
@@ -1114,33 +1121,32 @@ export default {
             console.log("关联任务中的内容被清空了");
             this.addValidate.ref_script_name = '';
             this.isDisabled = true;
-            
         },
         /**远程加载关联脚本数据 */
         refscriptRemote:function(query){
-                console.log("输入的脚本参数",query);
-                this.perftaskLoading = true;
-                setTimeout(() => {
-                    this.perftaskLoading = false;
-                    let _this = this;
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/perftask/taskRelatedScript",{
-                        data:{
-                            script_name:query,
-                            id:_this.id,
-                        }
-                    }).then(function(response){
-                        console.log("远程加载管理脚本的数据",response.data.resultList);
-                         _this.isDisabled = false;
-                        _this.scriptOpts =response.data.resultList.map(item=>{
-                                return {
-                                    value:item.id,
-                                    label:item.script_name,
-                                }
-                            })
-                        console.log("远程加载回来之后关联脚本的数据",_this.scriptOpts)
-                    })
-                }, 200);
+            console.log("输入的脚本参数",query);
+            this.perftaskLoading = true;
+            setTimeout(() => {
+                this.perftaskLoading = false;
+                let _this = this;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post("/myapi/perftask/taskRelatedScript",{
+                    data:{
+                        script_name:query,
+                        id:_this.id,
+                    }
+                }).then(function(response){
+                    console.log("远程加载管理脚本的数据",response.data.resultList);
+                        _this.isDisabled = false;
+                    _this.scriptOpts =response.data.resultList.map(item=>{
+                            return {
+                                value:item.id,
+                                label:item.script_name,
+                            }
+                        })
+                    console.log("远程加载回来之后关联脚本的数据",_this.scriptOpts)
+                })
+            }, 200);
         },
         perftaskReachBottom:function(){
             console.log("到达底部了");
@@ -1286,9 +1292,9 @@ export default {
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
-                _this.monitorAddValidate.subSysName = response.data.resultList[0].subSysName;
-                _this.subSysName_old = response.data.resultList[0].subSysName;
-                _this.monitorAddValidate.subAreaName = response.data.resultList[0].subAreaName;
+                if(response.data.resultList != undefined){
+                    _this.subSysName_old = response.data.resultList[0].subSysName;
+                }
                 console.log(response);
                 console.log(_this.moniterTableData);
 
@@ -1367,7 +1373,7 @@ export default {
                     data:{
                         id:_this.monitor_senario_id,
                         subAreaName:_this.moniterValidate.inviro_type,
-                        name:_this.moniterValidate.sComponent,
+                        subSysName:_this.moniterValidate.sComponent,
                         prodIp:_this.moniterValidate.ip,
                         pageNo:_this.moniterPageNo,
                         pageSize:_this.moniterPageSize,
@@ -1378,7 +1384,10 @@ export default {
                     _this.moniterTableData = response.data.resultList;
                     _this.moniterTotalCount = response.headers.totalcount;
                     _this.moniterTotalPage = response.headers.totalpage;
-                    _this.subSysName_new = response.data.resultList[0].subSysName;
+                    if(response.data.resultList != undefined){
+                        _this.subSysName_new = response.data.resultList[0].subSysName;
+                    }
+                    _this.moniterReset();
                 })
             }
         },
@@ -1500,7 +1509,7 @@ export default {
                     this.$http.post('/myapi/monitorSetting/addMachineMonitor',{
                         header:{},
                         data:{
-                            name:_this.monitorAddValidate.subSysName,                     //物理子系统
+                            subSysName:_this.monitorAddValidate.subSysName,                     //物理子系统
                             subAreaName:_this.monitorAddValidate.subAreaName,                   //环境类型
                             funDesc:_this.monitorAddValidate.funDesc,                        //部署单元
                             prodIp:_this.monitorAddValidate.prodIp,                        //ip地址
@@ -1519,6 +1528,12 @@ export default {
                 }
             });
         },
+        /**取消添加 */
+        monitorDissmissAdd:function(){
+            //this.monitorAddReset();
+            this.monitorAddShow = false;
+        },
+        /**添加重置 */
         monitorAddReset:function(name){
             this.$refs[name].resetFields();
         },

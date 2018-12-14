@@ -1,3 +1,4 @@
+#
 .DS_Store
 config/
 node_modules/
@@ -11,6 +12,9 @@ build/
 apts-vue.rar
 package.json
 
+# local
+src.rar
+
 # Editor directories and files
 .idea
 .vscode
@@ -19,5 +23,6 @@ package.json
 *.njsproj
 *.sln
 *.bak*
+.gitignore
 
 
