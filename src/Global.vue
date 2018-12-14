@@ -47,6 +47,9 @@ export default {
     ], 
     demandTypeMap: {'01': '单交易测试', '02': '容量测试', '03': '稳定性测试', '04': '其他测试'}, 
     
+    //机器管理类型
+    machineTypeStatus: {'1':'http', '2':'tuxedo', '3':'java'},
+    
     //执行状态
     exeStatusList: [
         {value: '00', label: '执行完成'},

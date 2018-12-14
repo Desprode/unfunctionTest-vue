@@ -10,19 +10,15 @@
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">机器名称:</Col>
                             <Col span="4">
-                                <Input clearable v-model="script_name" placeholder="输入机器名称"></Input>                                
+                                <Input clearable v-model="machineName" placeholder="输入机器名称"></Input>                                
                             </Col>
                             <Col span="2" class="searchLable">IP:</Col>
                             <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入IP"></Input>
+                                <Input clearable v-model="ip" placeholder="请输入IP"></Input>
                             </Col>
                             <Col span="2" class="searchLable">机器状态:</Col>
                             <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入机器状态"></Input>
-                                <!-- <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
-                                </Select> -->
+                                <Input clearable v-model="state" placeholder="请输入机器状态"></Input>
                             </Col>
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
@@ -33,40 +29,18 @@
                 </Form>
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
-                        <Button @click="addCase"  type="primary">新增</Button>
-                        <Button @click="deleteCase" type="error">删除</Button>
+                        <Button @click="addMachine"  type="primary">新增</Button>
+                        <Button @click="deleteMachine" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" ></Table>
                     <div class="pageBox" v-if="tableData.length">
-                        <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
-                        <p>总共{{tableDAtaTatol}}条记录</p>
+                        <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
+                        <p>总共{{tableDataTotal}}条记录</p>
                     </div>
                 </div>
             </div>
-            <!-- 参数化设置对话框 -->
-            <Modal v-model="paramStatus" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancelParamWin()">
-                <p slot="header" style="color:rgba(184, 124, 13, 0.637)" >
-                    <span>参数化文件设置</span>
-                </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
-                        <h3>请勾选可以拆分的参数化文件：</h3>
-                        <br>
-                        <Row>
-                            <i-col span="60">
-                                <CheckboxGroup v-model="param">
-                                    <Checkbox label="文件1"></Checkbox>
-                                    <Checkbox label="文件2"></Checkbox>
-                                    <Checkbox label="文件3"></Checkbox>
-                                </CheckboxGroup>
-                                </Form-item>
-                            </i-col>
-                        </Row>
-                    </i-form>
-                </div>
-            </Modal>
-            <!--新建脚本时弹出的对话框-->
-            <Modal v-model="Deletips" width="800" @on-ok="handleSubmit(addValidate)" @on-cancel="cancel()">
+            <!--新建机器时弹出的对话框begin-->
+            <Modal v-model="Deletips" width="800" >
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加机器</span>
@@ -75,68 +49,158 @@
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
                         <Row>
                             <i-col span="24">
-                                <Form-item label="机器名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称"></i-input>
+                                <Form-item label="机器名称：" prop="machineName">
+                                    <i-input v-model="addValidate.machineName"  placeholder="请输入机器名称"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="IP：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入IP"></i-input>
+                                <Form-item label="IP：" prop="ip">
+                                    <i-input v-model="addValidate.ip"  placeholder="请输入IP"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="CPU：" >
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入CPU"></i-input>
+                                    <i-input v-model="addValidate.cpu"  placeholder="请输入CPU"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="内存：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
+                                <Form-item label="内存：" prop="mem">
+                                    <i-input v-model="addValidate.mem"  placeholder="请输入内存"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="用户名：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入用户名"></i-input>
+                                <Form-item label="用户名：" prop="userName">
+                                    <i-input v-model="addValidate.userName"  placeholder="请输入用户名"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="密码：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入密码"></i-input>
+                                <Form-item label="密码：" prop="userPwd">
+                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码" type="password"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="类型：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
-                                </Form-item>
+                                <FormItem label="类型:" prop="type">
+                                    <Select v-model="addValidate.type" placeholder="请输入类型" clearable>
+                                        <Option value="1">http</Option>
+                                        <Option value="2">tuxedo</Option>
+                                        <Option value="3">java</Option>                      
+                                    </Select>
+                                </FormItem>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="操作系统：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入内存"></i-input>
-                                </Form-item>
+                                <FormItem label="操作系统:" prop="osVersion">
+                                    <Select v-model="addValidate.osVersion" placeholder="请输入类型" clearable>
+                                        <Option value="Linux">Linux</Option>
+                                        <Option value="Windows">Windows</Option>
+                                        <Option value="AIX">AIX</Option>                      
+                                    </Select>
+                                </FormItem>
                             </i-col>
                         </Row>
                         
                     </i-form>
                 </div>
-                <!-- <div slot="footer">
-                    <Button color="#1c2438" @click="handleSubmit('addValidate')">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
-                </div> -->
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="cancel()">取消</Button>
+                    <Button type="primary"   @click="handleSubmit('addValidate')">确认</Button>
+                </div>
             </Modal>
+            <!--新建机器时弹出的对话框end-->
+            <!--编辑机器时弹出的对话框begin-->
+            <Modal v-model="editMachineStatus" width="800" >
+                <p slot="header" style="text-align:center" >
+                    <Icon type="ios-information-circle"></Icon>
+                    <span>编辑机器</span>
+                </p>
+                <div style="text-align:center">
+                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="机器名称：" prop="machineName">
+                                    <i-input v-model="addValidate.machineName"  placeholder="请输入机器名称"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="IP：" prop="ip">
+                                    <i-input v-model="addValidate.ip"  placeholder="请输入IP"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="CPU：" >
+                                    <i-input v-model="addValidate.cpu"  placeholder="请输入CPU"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="内存：" prop="mem">
+                                    <i-input v-model="addValidate.mem"  placeholder="请输入内存"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="用户名：" prop="userName">
+                                    <i-input v-model="addValidate.userName"  placeholder="请输入用户名"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <Form-item label="密码：" prop="userPwd">
+                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码" type="password"></i-input>
+                                </Form-item>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <FormItem label="类型:" prop="type">
+                                    <Select v-model="addValidate.type" placeholder="请输入类型" clearable>
+                                        <Option value="1">http</Option>
+                                        <Option value="2">tuxedo</Option>
+                                        <Option value="3">java</Option>                      
+                                    </Select>
+                                </FormItem>
+                            </i-col>
+                        </Row>
+                        <Row>
+                            <i-col span="24">
+                                <FormItem label="操作系统:" prop="osVersion">
+                                    <Select v-model="addValidate.osVersion" placeholder="请输入类型" clearable>
+                                        <Option value="Linux">Linux</Option>
+                                        <Option value="Windows">Windows</Option>
+                                        <Option value="AIX">AIX</Option>                      
+                                    </Select>
+                                </FormItem>
+                            </i-col>
+                        </Row>
+                        
+                    </i-form>
+                </div>
+                <div slot="footer">
+                    <Button color="#1c2438"  @click="cancel()">取消</Button>
+                    <Button type="primary"   @click="handleEdit('addValidate')">确认</Button>
+                </div>
+            </Modal>
+            <!--编辑机器时弹出的对话框end-->
         </Card>
     </div>
 </template>
@@ -146,16 +210,18 @@ export default {
 	name: 'TestCase',
     data () {
         return {
-            // isShowMoreShow:false,
+            rowid:'',
             srchCmploading: false,
             cmpOpts: [],
             list: [], 
             sTaskStatus:'',
-            taskStatusList: this.$Global.taskStatusList,  
+            machineTypeStatus: this.$Global.machineTypeStatus,
+            machineOS:this.$Global.machineOS,  
             interfaceId:'',
             sTaskName:'',
-            script_name:'',
-            app_name:'',
+            machineName:'',
+            ip:'',
+            state:'',//机器状态
             creater:'',
             param:'',
             startTime:'',
@@ -176,52 +242,54 @@ export default {
                 },
                 {
                     title: '机器名称',
-                    key: 'script_name',
+                    key: 'machineName',
                     width: 120,
-                    //sortable: true
-                    // ellipsis: true, 
-                    //tooltip: true, 
                 },
                 {
                     title: 'IP',
                     width: 120,
-                    key: 'app_name'
+                    key: 'ip'
                 },
                 {
                     title: 'CPU',
-                    key: 'script_filename',
+                    key: 'cpu',
                     width: 70,
                 },
                 {
                     title: '内存',
-                    key: 'script_manager_name',
+                    key: 'mem',
                     width: 70,                    
                 },
                 {
                     title: '机器状态',
-                    key: 'script_manager_name',
+                    key: 'state',
                     width: 100,                    
                 },
                 {
                     title: '类型',
-                    key: 'script_manager_name',
-                    width: 80,                    
+                    key: 'type',
+                    width: 80, 
+                    render : (h, params)=>{
+                        let _this = this
+                        //console.log('params:', params);
+                        return h('span', _this.$Global.machineTypeStatus[params.row.type]);
+                    }                   
                 },
                 {
                     title: '操作系统',
-                    key: 'script_manager_name',
+                    key: 'osVersion',
                     width: 100,                    
                 },
                 {
                     title: '执行开始时间',
-                    key: 'created_time',
+                    key: 'lastUpdateTime',
                     width: 160,
                     align: 'center',
                     sortable: true
                 },
                 {
                     title: '启用时间',
-                    key: 'created_time',
+                    key: 'createTime',
                     width: 160,
                     align: 'center',
                     sortable: true
@@ -230,7 +298,7 @@ export default {
                     title: '操作',
                     key: 'opration',
                     width:220,
-                    render: (h, params) => {
+                    render: (h, item) => {
                         return h('div', [
                         h('Button', {
                             props: {
@@ -242,11 +310,7 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                        if (params.row.$isEdit) {
-                                            this.handleSave(params.row);
-                                        } else {
-                                            this.handleEdit(params.row);
-                                        }
+                                    this.deployMachine(item.row.ip,item.row.userName,item.row.userPwd);   
                                 }
                             }
                         },'部署'),
@@ -260,7 +324,30 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                    this.paramStatus = true ;
+                                    this.showSetScript = true;
+                                    console.log(item.row);
+                                    let _this = this;
+                                    this.$http.defaults.withCredentials = false;
+                                    this.$http.post('/myapi/machine/view',{
+                                        data:{
+                                            id:item.row.id,
+                                        }
+                                    }).then(function(response){
+                                        console.log("machine编辑接口",response.data);
+                                        _this.addValidate.machineName= response.data.resultList[0].machineName;
+                                        _this.addValidate.ip= response.data.resultList[0].ip;
+                                        _this.addValidate.cpu= response.data.resultList[0].cpu;
+                                        _this.addValidate.mem= response.data.resultList[0].mem;
+                                        _this.addValidate.userName= response.data.resultList[0].userName;
+                                        _this.addValidate.userPwd= response.data.resultList[0].userPwd;
+                                        _this.addValidate.state= response.data.resultList[0].state;
+                                        _this.addValidate.type= response.data.resultList[0].type;
+                                        _this.addValidate.osVersion= response.data.resultList[0].osVersion;
+                                        // _this.filesize=response.data.resultList[0].filesize,
+                                        // _this.script_filepath=response.data.resultList[0].script_filepath,
+                                        // _this.script_id=response.data.resultList[0].script_id,
+                                        _this.rowid=response.data.resultList[0].id
+                                    })
                                 }
                             }
                         },'编辑'),
@@ -274,7 +361,7 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                    this.paramStatus = true ;
+                                    this.restartMachine(item.row.id,item.row.ip,item.row.userName,item.row.userPwd); 
                                 }
                             }
                         },'重启'),
@@ -286,6 +373,7 @@ export default {
                             on: {
                                 click: () => {
                                     //console.log("文档")
+                                    this.stopMachine(item.row.id,item.row.ip,item.row.userName,item.row.userPwd); 
                                 }
                             }
                         }, '停止')
@@ -294,34 +382,42 @@ export default {
                 }
             ],
             tableData: [],
-            tableDAtaTatol:0,
-            tableDAtaPageLine:0,
+            tableDataTotal:0,
+            tableDataPageLine:0,
             selectedData:[],
-            /* 参数化设置开关 */
-            paramStatus:false,
-            /* add by xin */
             Deletips:false, 
+            editMachineStatus:false,
             formValidate: {
 
             },
             addValidate: {
-                    script_name: '',
-                    app_name: '',
-                    desc: '',
-                    script_filename: ''
+                    machineName: '',
+                    ip: '',
+                    cpu:'',
+                    mem:'',
+                    userName:'',
+                    userPwd:'',
+                    type:'',
+                    osVersion:''
                 },
             ruleValidate: {
-                script_name: [
+                machineName: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                app_name: [
+                ip: [
                     { required: true, message: '此项为必填项', trigger: 'change' }
                 ],
-                desc: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                userName: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                script_filename: [
-                    { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
+                userPwd: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
+                type: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ],
+                osVersion: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
                 ]
             },
         }
@@ -330,61 +426,79 @@ export default {
         this.listCase();
     },
     methods: {
-        handleFormatError:function(file){
-            this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
-        },
-        handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
-            var fname = file.name.substr(0,file.name.indexOf('.'))
-            if(reg.test(fname)==true){
-                this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
-                return false;
-            }
+        //deploy  the machine 
+        deployMachine (ip,userName,userPwd) {
             let _this = this;
-            _this.addValidate.script_filename=file.name;
-            console.log('111'+_this.addValidate.script_filename)
-        },
-        searchAppname: function(query){
-        },
-        searchCreater: function(query) {
-            this.cmpOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-                    let _this = this
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/search', 
-                    {
-                        headers: {
-                        },
-                        data: {
-                            name: _this.creater,                            
-                        },                        
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/machine/exe',{
+                data:{
+                    ip:ip,
+                    userName:userName,
+                    userPwd:userPwd
+                }
+            }).then(function(response){
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    if("ok" == response.data.result){
+                        _this.$Message.success('部署成功！');
+                    }else{
+                        _this.$Message.error('部署失败'+response.data.err_desc);
                     }
-                    ).then(function (response) {
-                        console.log('response:', response);
-                        console.log('response.data: ', response.data);
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                value: item.id,
-                                label: item.member_name
-                            };
-                        });
-                        _this.cmpOpts = list
-                        console.log('this.cmpOpts:', _this.cmpOpts);
-                    })
-                }, 200);
-            } else {
-                this.cmpOpts = [];
-            }
-        },
-
-        /* add by xin */
+                    _this.Deletips = false;
+                }
+            })
+        },  
+        //restart the machine 
+        restartMachine (id,ip,userName,userPwd) {
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/machine/restartAgent',{
+                data:{
+                    id:id,
+                    ip:ip,
+                    userName:userName,
+                    userPwd:userPwd
+                }
+            }).then(function(response){
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    if("ok" == response.data.result){
+                        _this.$Message.success('重启成功！');
+                    }else{
+                        _this.$Message.error('重启失败'+response.data.err_desc);
+                    }
+                    _this.Deletips = false;
+                }
+            })
+        },  
+        // stop the machine 
+        stopMachine (id,ip,userName,userPwd) {
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/machine/stopAgent',{
+                data:{
+                    id:id,
+                    ip:ip,
+                    userName:userName,
+                    userPwd:userPwd
+                }
+            }).then(function(response){
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    if("ok" == response.data.result){
+                        _this.$Message.success('停止成功！');
+                    }else{
+                        _this.$Message.error('停止失败'+response.data.err_desc);
+                    }
+                    _this.Deletips = false;
+                }
+            })
+        },  
         /*删除按钮功能*/
-        deleteCase: function() {
+        deleteMachine: function() {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
@@ -396,7 +510,7 @@ export default {
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
             }else{
-                    this.$Message.error("请选择要删除的数据")
+                this.$Message.error("请选择要删除的数据")
             }
         }, 
         deleteData(deleArr){                //调用方法将原有数据中对应的id删除
@@ -410,14 +524,22 @@ export default {
                         content: '是否删除该数据',
                         onOk: () => {
                             this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/scripts/del",{
+                            this.$http.post("/myapi/machine/delete",{
                                 header:{},
                                 data:{
                                     ids:deleArr,
                                 }
-                            }).then(function(){
-                                tableData.splice(index, 1);        //即删除该数据上
-                                _this.$Message.info('删除成功');
+                            }).then(function(response){
+                                if(response.status == 500){
+                                    _this.$Message.error('服务端错误!');
+                                }else{
+                                    if(response.data.result == "fail"){
+                                        _this.$Message.error('删除失败!'+response.data.err_desc);    
+                                    }else{
+                                        tableData.splice(index, 1);        //即删除该数据上
+                                        _this.$Message.info('删除成功');    
+                                    }
+                                }
                             })
                         },
                         onCancel: () => {
@@ -431,23 +553,25 @@ export default {
         listCase: function() {
             let _this = this;
             this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/scripts/list', {
+            this.$http.post('/myapi/machine/list', {
                 header: {
                 },
                 data: {
-                    script_name: _this.script_name,
-                    app_name:_this.app_name,
-                    script_manager_id:_this.creater,
+                    machineName: _this.machineName,
+                    ip:_this.ip,
+                    state:_this.state,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
                     pageSize: 15                    
                 }
             }).then(function (response) {
-                console.log('response:');
-                console.log(response);
-                console.log('response.data: ', response.data);
-                _this.tableData = response.data.resultList;
-                _this.tableDAtaTatol = response.data.pagination.totalCount;
-                _this.tableDAtaPageLine = response.data.pagination.pageSize
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    console.log('response.data: ', response.data);
+                    _this.tableData = response.data.resultList;
+                    _this.tableDataTotal = response.data.pagination.totalCount;
+                    _this.tableDataPageLine = response.data.pagination.pageSize 
+                }
             })
         },
         handlePage:function(value){
@@ -456,62 +580,8 @@ export default {
             console.log(value);
             _this.listCase();
         },
-
-        findCase: function(id) {
-            let _this = this
-            console.log('findCase')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    id: id
-                }
-            }).then(function (response) {
-                console.log('response')
-                console.log(response.data.data)
-            })
-        },
-        
-        setCiFlag: function() {
-            let _this = this
-            let ids = []
-            this.selectedData.forEach(e => {
-                ids.push(e.id)
-            });
-            console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('caseHandler', {
-                header: {
-                    txCode:'setCiFlag',
-                    sysTransId:'20181010153628000165432',
-                    projectId:'1001',
-                    projectName:'res',
-                    reqTime:'153628001',
-                    userId:'admin',
-                },
-                data: {
-                    ids: ids
-                }
-            })           
-        },
-
-        onSelectionChanged: function(data) {
-            this.selectedData = data;
-            console.log(data)
-        },
-
-        onRowDblClick: function(row) {
-            //this.$router.push({path:'/addCase',query:{id:row.id}});
-        },
         /**添加新数据弹出模态框 */
-        addCase:function(){
+        addMachine:function(){
             this.Deletips = true;
             console.log("显示模态框");
         },
@@ -534,35 +604,92 @@ export default {
         },
         /***模态框弹出时确定事件: 验证表单提交 */
         handleSubmit (name) {
+            let _this = this;
             console.log(this.addValidate);
+            //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$Message.success('提交成功!');
-                     this.Deletips = false;
+                    console.log("开始添加");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/machine/add',{
+                        data:{
+                            machineName: _this.addValidate.machineName,
+                            ip: _this.addValidate.ip,
+                            cpu:_this.addValidate.cpu,
+                            mem:_this.addValidate.mem,
+                            userName:_this.addValidate.userName,
+                            userPwd:_this.addValidate.userPwd,
+                            type:_this.addValidate.type,
+                            osVersion:_this.addValidate.osVersion
+                        }
+                    }).then(function(response){
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if("ok" == response.data.result){
+                                _this.$Message.success('添加成功！');
+                            }else{
+                                _this.$Message.error('添加失败'+response.data.err_desc);
+                            }
+                            _this.Deletips = false;
+                            _this.$refs[name].resetFields();
+                        }
+                    })
                 } else {
-                    this.$Message.error('表单验证失败!');
+                    _this.$Message.error('表单验证失败!');
                 }
             });
-        },     
+        },  
+        /***edit the amchine details */
+        handleEdit (name) {
+            let _this = this;
+            console.log(this.addValidate);
+            //提交添加请求
+            this.$refs[name].validate((valid) => {
+                if (valid) {
+                    console.log("begin edit");
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/machine/edit',{
+                        data:{
+                            id:_this.rowid,
+                            machineName: _this.addValidate.machineName,
+                            ip: _this.addValidate.ip,
+                            cpu:_this.addValidate.cpu,
+                            mem:_this.addValidate.mem,
+                            userName:_this.addValidate.userName,
+                            userPwd:_this.addValidate.userPwd,
+                            type:_this.addValidate.type,
+                            osVersion:_this.addValidate.osVersion
+                        }
+                    }).then(function(response){
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if("ok" == response.data.result){
+                                _this.$Message.success('编辑成功！');
+                            }else{
+                                _this.$Message.error('编辑失败'+response.data.err_desc);
+                            }
+                            _this.Deletips = false;
+                            _this.$refs[name].resetFields();
+                        }
+                    })
+                } else {
+                    _this.$Message.error('表单验证失败!');
+                }
+            });
+        },       
         /**模态框弹出取消事件 */
         cancel () {
-            this.$Message.info('您取消了添加脚本!');
+            this.$Message.info('您取消了添加机器!');
             this.Deletips = false;
-        },
-        cancelParamWin(){
-            this.$Message.info("您取消了参数化文件设置!");
-            this.paramStatus = false;
         },
         /**清除搜索条件 */
         handleReset (name) {
             let _this = this;
-            _this.app_name='';
-            _this.script_name='';
+            _this.ip='';
+            _this.machineName='';
             _this.creater='';
-            // console.log(this.$refs[name])
-            // this.$refs[name].resetFields()
-            //this.$emit('on-reset')
-            //this.script_name='';
         } 
     }
 }

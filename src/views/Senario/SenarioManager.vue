@@ -6,44 +6,46 @@
                     <span>场景管理</span>
                 </h3>
             <!--==================================form 表单============================================-->
-                <Form ref="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
+                <Form ref="formValidate" :model="formValidate" class="formValidate" :label-width="80" v-show="isbouterAlive">
                     <div class="rowbox">
                         <Row class="caseBoxRow">
-                            <Col span="7">
-                                <FormItem label="场景类型:">
-                                    <Select v-model="senario_type" clearable>
+                            <Col span="8">
+                                <FormItem label="场景类型:" prop="senario_type">
+                                    <Select v-model="formValidate.senario_type" clearable>
                                         <Option  value="01">单交易基准</Option>
                                         <Option  value="02">单交易负载</Option>
                                         <Option  value="03">混合场景</Option>
                                     </Select>
                                 </FormItem>
                             </Col>
-                            <Col span="7">
-                                <FormItem label="场景名称:">
-                                    <Input v-model="senario_name" placeholder="输入场景名称"></Input>
+                            <Col span="8">
+                                <FormItem label="场景名称:" prop="senario_name">
+                                    <Input v-model="formValidate.senario_name" placeholder="输入场景名称"></Input>
                                 </FormItem>
                             </Col>
-                            <Col span="7">
-                                <FormItem label="创建人:">
-                                <Input v-model="senario_creator" placeholder="输入场景创建人"></Input>
-                                </FormItem>
-                            </Col>
-                            <Col span="3">
+                            
+                            <Col span="8">
                                 <Button @click="listCase" type="primary" icon="ios-search" class="actionBtn">查询</Button>
+                                <Button @click='searchReset("formValidate")' class="actionBtn">重置</Button>
                             </Col>
                         </Row>
                         <Row class="caseBoxRow" v-show="isShowMore">
                             <Col span="8">
-                                <FormItem label="关联任务:">
-                                    <Select v-model="perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
+                                <FormItem label="创建人:" prop="senario_creator">
+                                <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人"></Input>
+                                </FormItem>
+                            </Col>
+                            <Col span="8">
+                                <FormItem label="关联任务:" prop="perf_task">
+                                    <Select v-model="formValidate.perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading">
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
                                     </Select>
                                     <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
                                 </FormItem>
                             </Col>
                             <Col span="8">
-                                <FormItem label="关联脚本:">
-                                    <Select v-model="script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
+                                <FormItem label="关联脚本:" prop="script">
+                                    <Select v-model="formValidate.script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading">
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
                                     </Select>
                                 </FormItem>
@@ -57,10 +59,10 @@
                 </Form>
                 <div align="left">
                     <Button @click="addCase()" type="primary"  class="actionBtn">创建场景</Button>
-                    <Button @click="deleteCase" type="error" class="actionBtn">批量删除</Button>
+                    <Button @click="deleteCase" type="error" class="actionBtn">删除</Button>
                 </div>
                 <div class="tableBox">
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -68,7 +70,40 @@
                 </div>
             </div>
 
-
+        <!--============================================删除任务模态框==================================-->
+            <Modal v-model="delSenarioModal" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>请确认是否删除以下任务</span>
+                </p>
+                <!--<Form ref="delPTaskValidate" :model="delPTaskValidate" :label-width="120">-->
+                    <Row v-for="(Item,index) in deleteDataList" :key="index">
+                        <Col span="3" class="delShowTitle"><Icon type="ios-close" /></Col>
+                        <Col span="2" class="delShowTitle">id: </Col>
+                        <Col span="1">{{Item.senario_id}}</Col>
+                        <Col span="3" class="delShowTitle">任务名称: </Col>
+                        <Col span="13">{{Item.senario_name}}</Col>
+                        <Col span="2"></Col>
+                    </Row>
+                <!--</Form>-->
+                <div slot="footer">
+                    <Button color="#1c2438" @click="delMonitorCancel">取消</Button>
+                    <Button type="primary" @click="delMonitorOk">确认</Button>
+                </div>
+            </Modal>
+            <!--=========================未删除成功模态框======================================-->
+             <Modal v-model="noDeleteModal" width="800">
+                <p slot="header" style="text-align:center" >
+                    <span>以下任务在进行中，未删除成功</span>
+                </p>
+                    <Row v-for="(Item,index) in notDeleteList" :key="index">
+                        <Col span="3" class="delShowTitle"><Icon type="ios-close" /></Col>
+                        <Col span="2" class="delShowTitle">id: </Col>
+                        <Col span="1">{{Item.id}}</Col>
+                        <Col span="3" class="delShowTitle">任务名称: </Col>
+                        <Col span="13">{{Item.senario_name}}</Col>
+                        <Col span="2"></Col>
+                    </Row>
+            </Modal>
         <!--========================================创建场景模态框：=================================-->
             <Modal v-model="showAddModal" width="800">
                 <p slot="header" style="color:#f60" >
@@ -90,14 +125,14 @@
                         <Input placeholder="请填写场景描述"  v-model="addValidate.fie" type="textarea" name="senario_desc" :autosize='true' id="field_senario_desc"></Input>
                     </FormItem>
                     <FormItem label="关联任务:" prop="ref_task_name">
-                        <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear">
+                        <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear" @on-open-change="perftask">
                             <Scroll :on-reach-bottom="perftaskReachBottom">
                                 <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
                             </Scroll>                
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
-                    <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" >
+                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading">
                                 <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                         </Select>
                     </FormItem>
@@ -117,11 +152,11 @@
                 <Form ref="eveValidate" :model="eveValidate" :rules="eveRuleValidate" :label-width="100" label-position="left">
                     <FormItem label="执行类型" prop="exeType">
                         <RadioGroup v-model="eveValidate.exeType" vertical >
-                            <Radio label="00" checked>立即执行</Radio>
-                            <Radio label="01">定时执行</Radio>
+                            <Radio label="1" checked>立即执行</Radio>
+                            <Radio label="2">定时执行</Radio>
                         </RadioGroup>
                     </FormItem>
-                    <FormItem label="预设启动时间" v-show="eveValidate.exeType=='01'?true:false">
+                    <FormItem label="预设启动时间" v-show="eveValidate.exeType=='2'?true:false">
                         <DatePicker type="datetime" placeholder="选择日期" v-model="eveValidate.exeDateTime"></DatePicker>
                     </FormItem>
                 </Form>
@@ -184,7 +219,7 @@
                     <Row v-for="(threadItem,index) in threadList" :key="index">
                         <Col span="8">
                             <FormItem :label-width="10" prop="thread_name">
-                                <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
+                                <Checkbox v-model="threadItem.enable" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
                             </FormItem>
                         </Col>
                         <Col span="8" v-if="showSetType=='03'?true:false">
@@ -211,7 +246,26 @@
                 </p>
                 <Form ref="moniterValidate" :model="moniterValidate" :label-width="80" >
                     <Row class="caseBoxRow">
-                        <Col span="8">
+                        <Col span="10">
+                            <FormItem label="系统名称" prop="sComponent">
+                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange">
+                                <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
+                        </Select>
+                            </FormItem>
+                        </Col>
+                        <Col span="9">
+                            <FormItem label="IP" prop="ip">
+                                <Input v-model="moniterValidate.ip">
+                                </Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="5">
+                            <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
+                            <Button @click="moniterReset('moniterValidate')">重置</Button>
+                        </Col>
+                    </Row>
+                    <Row v-show="isShowMoniterMore">
+                        <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
                                 <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable>
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
@@ -222,21 +276,24 @@
                                 </Select>
                             </FormItem>
                         </Col>
-                        <Col span="8">
-                            <FormItem label="物理子系统" prop="sComponent">
-                                <Input v-model="moniterValidate.sComponent">
-                                </Input>
-                            </FormItem>
-                        </Col>
-                        <Col span="6" offset="1">
-                            <Button @click="moniterCase" type="primary" icon="ios-search">查询</Button>
-                            <Button @click="moniterReset('moniterValidate')">清除条件</Button>
-                        </Col>
                     </Row>
                 </Form>
+                <div class="formValidateMoreBtnBox" :class="isShowMoniterMore ?'arrUp':'arrDown'" @click="isShowMoniterMore = !isShowMoniterMore">
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                    </div>
+                <!--添加区域-->
                 <Form ref="monitorAddValidate" :model="monitorAddValidate" :rules="monitorAddRules" :label-width="100" class="tableBox" v-show="monitorAddShow">
-                    <Row class="caseBoxRow">
-                        <Col>
+                    <Row>
+                        <Col span="11">
+                            <FormItem label="系统名称" prop="subSysName">
+                                <Select  v-model="monitorAddValidate.subSysName" clearable placeholder="请选择物理子系统" clearable filterable remote :remote-method="scomponentAddRemote" :loading="scomponentAddLoading" @on-open-change="openMonitorAddChange">
+                                    <Option v-for="(opts,index) in scomponentAddOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
+                                </Select>
+                                <!-- <Input v-model="monitorAddValidate.subSysName" clearable></Input> -->
+                            </FormItem>
+                        </Col>
+                        <Col span="11">
                             <FormItem label="环境类型" prop="subAreaName">
                                 <Select v-model="monitorAddValidate.subAreaName" placeholder="---请选择---" clearable>
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
@@ -247,33 +304,47 @@
                                 </Select>
                             </FormItem>
                         </Col>
+                        
                     </Row>
-                    <Row>
-                        <Col>
-                            <FormItem label="物理子系统" prop="subSysName">
-                                <Select v-model="monitorAddValidate.subSysName" placeholder="---请选择---" clearable>
-                                    <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
-                                    <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
-                                    <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option>              
+                    <Row class="caseBoxRow">
+                        <Col span="11">
+                            <FormItem label="操作系统类型" prop="osVersion">
+                                <Select v-model="monitorAddValidate.osVersion" placeholder="---请选择---" clearable>
+                                    <Option value="hp">hp</Option>
+                                    <Option value="linux">linux</Option>
+                                    <Option value="aix">aix</Option>
                                 </Select>
                             </FormItem>
                         </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <FormItem label="部署单元" prop="funDesc">
+                        <Col span="11">
+                            <FormItem label="部署单元" prop="funDesc" >
                                 <Input v-model="monitorAddValidate.funDesc" placeholder="请输入内容"></Input>
                             </FormItem>
                         </Col>
                     </Row>
-                    <!-- <Row>
-                        <Col span="22" offset="2">
-                            <Button long @click="monitorAddSave">保存</Button>
+                    <Row class="caseBoxRow">
+                        <Col span="11">
+                            <FormItem label="ip地址" prop="prodIp" >
+                                <Input v-model="monitorAddValidate.prodIp" placeholder="请输入内容"></Input>
+                            </FormItem>
                         </Col>
-                    </Row> -->
-                    <div align="center" >
-                     <Button @click="monitorAddSave">保存</Button>
-                     </div>
+                        <Col span="11">
+                            <FormItem label="用户名" prop="userName" >
+                                <Input v-model="monitorAddValidate.userName" placeholder="请输入内容"></Input>
+                            </FormItem>
+                        </Col>
+                    </Row>
+                    <Row class="caseBoxRow">
+                        <Col span="11">
+                            <FormItem label="密码" prop="password" >
+                                <Input v-model="monitorAddValidate.password" placeholder="请输入内容"></Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="5" offset="6">
+                            <Button type="success" @click='monitorAddSave("monitorAddValidate")'>保存</Button>
+                            <Button @click='monitorAddReset("monitorAddValidate")'>重置</Button>
+                        </Col>
+                    </Row>
                 </Form>
                 <div align="left">
                     <Button @click="moniterSave" type="primary">保存并修改</Button>
@@ -301,19 +372,26 @@ export default {
         return {
             
             isbouterAlive: true,
-            senario_name:'',                                      //场景名称             
-            senario_type:'',                                      //场景类型
-            senario_creator:'',                                  //创建人
-            perf_task:'',                                    //关联任务
+            formValidate:{
+                senario_name:'',                                      //场景名称             
+                senario_type:'',                                      //场景类型
+                senario_creator:'',                                  //创建人
+                perf_task:'',                                    //关联任务
+                script:'',                                      //脚本名称
+            },
             perftaskNameLoading:false,
-            script:'',                                      //脚本名称
             isShowMore:false,                                   //是否显示更多查询条件
             searchOpts:[],
             searchList:[],
+            /**============删除模态框数据========= */
+            delSenarioModal:false,
+            deleteDataList:[],
+            noDeleted:[],
+            noDeleteModal:false,
+            notDeleteList:[],
             /**============新增模态框数据=========== */
             showAddModal:false,                  //新建窗口
             perftaskOpts:[],                     //关联任务下拉选项
-            perftaskList:[],
             scriptOpts:[],                      //关联脚本下拉选项
             scriptList:[],
             perftaskLoading:false,
@@ -360,13 +438,15 @@ export default {
                     title: '关联任务',
                     key: 'perftask_name',
                     ellipsis: true, 
-                    width:110,
+                    width:100,
+                    align:'center',
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    width:175,
+                    width:140,
                     ellipsis: true, 
+                    align:'center',
                 },
                 {
                     title: '关联脚本',
@@ -389,7 +469,7 @@ export default {
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
-                    width:120,
+                    width:100,
                     align: 'center',
                     render:(h,params)=>{
                         let _this = this;
@@ -404,19 +484,19 @@ export default {
                 {
                     title: '线程组并发数',
                     key: 'threads_total',
-                    width:110,
+                    width:90,
                     align: 'center',
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:148,
+                    width:155,
                     align: 'center',
                 },
                 {
                     title:'操作',
                     key:'operAtion',
-                    width:160,
+                    width:200,
                     align: 'center',
                     render: (h, item) => {
                         return h('div', [
@@ -424,7 +504,6 @@ export default {
                                 props: {
                                     size: 'small',
                                     type:'success',
-                                    icon:'ios-play',
                                 },
                                 style: {
                                     marginRight: '5px'
@@ -432,14 +511,14 @@ export default {
                                 on: {
                                     click: () => {
                                         this.showExeModal = true;
+                                        this.id = item.row.senario_id;
                                     }
                                 }
-                            }),
+                            },'执行'),
                             h('Button', {
                                 props: {
                                     size: 'small',
                                     type:'info',
-                                    icon:'ios-bookmarks',
                                 },
                                 style: {
                                     marginRight: '5px'
@@ -472,12 +551,11 @@ export default {
                                         })
                                     }
                                 }
-                            }),
+                            },'设置'),
                             h('Button', {
                                 props: {
-                                    type: 'default',
+                                    type: 'primary',
                                     size: 'small',
-                                    icon:'ios-desktop-outline',
                                 },
                                 style: {
                                     marginRight: '5px'
@@ -490,19 +568,7 @@ export default {
                                         this.moniterListCase();
                                     }
                                 }
-                            }),
-                            h('Button', {
-                                props: {
-                                    size:'small',
-                                    type:'warning',
-                                    icon:'ios-trash',
-                                },
-                                on: {
-                                    click: () => {
-                                        this.deleteDataCase(item.index)
-                                    }
-                                }
-                            } ),
+                            },'监控配置'),
                             
                         ])
 
@@ -513,6 +579,7 @@ export default {
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],                    //选中的项的数组
+            deleteId:[],                       //选中删除数据的id
             totalCount:0,                         //共多少条数据
             pageNo:1,                            //当前页
             pageSize:10,                           //每页显示多少条数据
@@ -520,7 +587,7 @@ export default {
             /**====================执行模态框数据=================== */
             showExeModal:false,                  //执行窗口
             eveValidate: {        
-                exeType:'00',                             //执行类型
+                exeType:'1',                             //执行类型
                 exeDateTime:new Date(),                         //执行时间
                
 
@@ -571,6 +638,9 @@ export default {
             },
             /**==========================监控模态框数据========================= */
             showMoniterModal:false,
+            isShowMoniterMore:false,
+            scomponentLoading:false,
+            scomponentOpts:[],
             id:'',   
             monitor_senario_id:'', 
             monitorList:[],                                 
@@ -580,12 +650,18 @@ export default {
             moniterTotalPage:0,                           //共多少页
             editCount:0,                                   //当前处于编辑状态的数据有几条
             monitorAddShow:false,
+            scomponentAddLoading:false,
+            scomponentAddOpts:[],
+            subSysName_old:'',
+            subSysName_new:'',
             monitorAddValidate: {
-                senarioid:'',
-                subAreaName:'', 
-                subSysName:'',
-                funDesc:'',
-                prodIp:'' 
+                subSysName:'',                     //物理子系统
+                subAreaName:'',                   //环境类型
+                funDesc:'',                        //部署单元
+                prodIp:'',                        //ip地址
+                osVersion:'',                     //操作系统类型
+                userName:'',                     //用户名
+                password:'',                      //密码
             },
             monitorAddRules:{
                 subAreaName:[
@@ -597,12 +673,25 @@ export default {
                 funDesc:[
                     {required:true,message:'必输项',trigger:'blur'}
                 ],
+                prodIp:[
+                    {required:true,message:'必输项',trigger:'blur'}
+                ],
+                osVersion:[
+                    {required:true,message:'必输项',trigger:'blur'}
+                ],
+                userName:[
+                    {required:true,message:'必输项',trigger:'blur'}
+                ],
+                password:[
+                    {required:true,message:'必输项',trigger:'blur'}
+                ],
             },
             moniterTableData:[],
             moniterSelectedData:[],
             moniterValidate:{
                 inviro_type:'',
                 sComponent:'',
+                ip:'',
             },
             moniterColumns:[
                 {
@@ -714,7 +803,6 @@ export default {
                                             
                     }
                 }
-                //evnInfo:store.getters.evnList
             ],
         }
     },
@@ -734,15 +822,15 @@ export default {
         /**========================================加载列表中的数据======================================= */
         listCase: function() {
             let _this = this;
-            console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
+            // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list', {
                 data: {
-                    senario_type: _this.senario_type, 
-                    senario_name:_this.senario_name,
-                    senario_creator:_this.senario_creator,
-                    perf_task:_this.perf_task,
-                    script:_this.script,
+                    senario_type: _this.formValidate.senario_type, 
+                    senario_name:_this.formValidate.senario_name,
+                    senario_creator:_this.formValidate.senario_creator,
+                    perf_task:_this.formValidate.perf_task,
+                    script:_this.formValidate.script,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
                 }
@@ -763,7 +851,9 @@ export default {
                 console.log("搜索提示选项",_this.searchOpts)
             })
         },
-
+        searchReset:function(name){
+            this.$refs[name].resetFields();
+        },
         /**切换页码 */
         pageChange:function(pageNo){
             console.log(pageNo);
@@ -777,9 +867,7 @@ export default {
             this.listCase();
         },
         perftaskNameRemote:function(query){
-            let _this = this;
-            console.log('query',query);
-            console.log("搜索关联任务",_this.perf_task);   
+            let _this = this;   
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list',{
                 header:{},
@@ -819,91 +907,97 @@ export default {
         /**============================删除多条数据========================= */
         deleteCase: function () {
             //console.log("删除多条按钮");
-            let selectedData = this.selectedData;      //选中要删除的数据
+            this.deleteDataList = this.selectedData;      //选中要删除的数据
             let deleteId = [];                       //选中数据的id
-            if (selectedData.length > 0) {               //如果有选中的数据
-                for (let i in selectedData) {         //进行遍历
-                    deleteId.push(selectedData[i].senario_id);  //将选中的而数据的id放入要删除的集合中
-                    //console.log(selectedData[i].id);
-                    //console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
+            if (this.selectedData.length > 0) {               //如果有选中的数据
+                this.delSenarioModal = true;
+                for (let i in this.deleteDataList) {         //进行遍历
+                    deleteId.push(this.selectedData[i].senario_id);  //将选中的而数据的id放入要删除的集合中
+                    //this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 }
+                this.deleteId = deleteId;
                 console.log("删除多条的id",deleteId);
             } else {
                 this.$Message.error("请选择要删除的数据")
             }
         }, 
-        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
-            console.log("删除多台哦数据内容",deleArr)
+        /**确认删除 */
+        delMonitorOk:function(){
+            console.log(this.deleteId);
             let _this = this;
-            let tableData = _this.tableData;          //原有的数据
-            tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                if (deleArr.includes(item.senario_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                    _this.$Modal.confirm({
-                        title:'确认',
-                        content: '是否删除该数据',
-                        onOk: () => {
-                            this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/senario/del",{
-                                header:{},
-                                data:{
-                                    ids:deleArr,
-                                }
-                            }).then(function(response){
-                                tableData.splice(index, 1);        //即删除该数据上
-                                _this.$Message.info('删除成功');
-                                _this.listCase();
-                                console.log(response);
-                            })
-                        },
-                        onCancel: () => {
-                            _this.$Message.info('删除失败');
-                        }
-                    }); 
-                   
+            this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/senario/del",{
+                header:{},
+                data:{
+                    ids:_this.deleteId,
                 }
-            });
+            }).then(function(response){
+                console.log(response.data.resultMap.noDeleted);
+                _this.tableData.forEach((item,index) => {
+                    if(_this.deleteId.includes(item.senario_id)){
+                        _this.tableData.splice(index, 1);        //即删除该数据上
+                    }
+                });
+                _this.delSenarioModal = false;
+                _this.selectedData = [];
+                if(response.data.resultMap.noDeleted != 0){
+                    _this.notDeleteList = response.data.resultMap.noDeleted;
+                    _this.noDeleteModal = true;
+                    _this.listCase();
+                }else{
+                     _this.noDeleteModal = false;
+                    _this.$Message.info('删除成功');
+                    _this.listCase()
+                }
+            })
+             ;
         },
+        /**取消删除 */
+        delMonitorCancel:function(){
+            this.delSenarioModal = false;
+        }, 
+        //deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
+            // console.log("删除多台哦数据内容",deleArr)
+            // let _this = this;
+            // let tableData = _this.tableData;          //原有的数据
+            // tableData.forEach((item, index) => {      //对原有的数据进行遍历
+            //     if (deleArr.includes(item.senario_id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+            //         _this.$Modal.confirm({
+            //             title:'确认',
+            //             content: '是否删除该数据',
+            //             onOk: () => {
+            //                 this.$http.defaults.withCredentials = false;
+            //                 this.$http.post("/myapi/senario/del",{
+            //                     header:{},
+            //                     data:{
+            //                         ids:deleArr,
+            //                     }
+            //                 }).then(function(response){
+            //                     tableData.splice(index, 1);        //即删除该数据上
+            //                     _this.$Message.info('删除成功');
+            //                     _this.listCase();
+            //                     console.log(response);
+            //                 })
+            //             },
+            //             onCancel: () => {
+            //                 _this.$Message.info('删除失败');
+            //             }
+            //         }); 
+                   
+            //     }
+            // });
+        //,
             /**选中的数据发生改变 */
         onSelectionChanged: function(data) {
             this.selectedData = data;
             console.log("选中要删除的数据",this.selectedData)
             //console.log(data)
         },
-        
-        /**================================删除一条数据================================ */
-        deleteDataCase:function (index){      
-            //console.log("删除单条按钮");
-            let _this = this;
-            let tableData = _this.tableData;
-            console.log(tableData[index]);
-            _this.$Modal.confirm({
-                title:'确认',
-                content: `是否删除该数据`,
-                onOk: () => {
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/senario/del",{
-                        header:{},
-                        data:{
-                            ids:[tableData[index].senario_id],
-                        }
-                    }).then(function(){
-                        tableData.splice(index, 1);
-                        _this.$Message.info('删除成功');
-                    })
-                },
-                onCancel:() => {
-                    _this.$Message.info('删除失败');
-                }
-            });       
-            
-        },
-
        
         /**添加新数据弹出模态框 */
         addCase:function(){
             this.showAddModal = true;
-            this.perftask();
+            //this.perftask();
             //console.log("显示模态框");
         },
         /***================================新增模态框事件===========================================*/
@@ -928,7 +1022,6 @@ export default {
                         console.log("添加成功");
                         _this.$refs[name].resetFields();
                         _this.isDisabled = true;
-                        _this.perftaskOpts = _this.perftaskList;
                         _this.listCase();
                     })
                 } else {
@@ -945,30 +1038,31 @@ export default {
             this.showAddModal = false;
         },
         /**通过任务管理加载出来的关联任务 */
-        perftask:function(){
-            let _this = this;
-            this.$http.defaults.withCredentials = false;
-            this.$http.post("/myapi/perftask/list",{
-                data:{
-                    perftask_name:_this.addValidate.ref_task_name,    //第一次请求时关联任务为空
-                }
-            }).then(function(response){
-                // console.log("任务管理请求回的数据",response.data.resultList);
-                // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                _this.perftaskList = response.data.resultList;
-                _this.perftaskOpts = _this.perftaskList.map(item=>{
-                    return {
-                        value:item.id,
-                        label:item.perftask_name,
+        perftask:function(openStatus){
+            console.log(openStatus)
+            if(openStatus){
+                let _this = this;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post("/myapi/perftask/list",{
+                    data:{
+                        perftask_name:'',    //第一次请求时关联任务为空
                     }
+                }).then(function(response){
+                    // console.log("任务管理请求回的数据",response.data.resultList);
+                    // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                    _this.perftaskOpts = response.data.resultList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.perftask_name,
+                        }
+                    })
+                    console.log("关联任务选项",_this.perftaskOpts);
+                    console.log('response',response);
                 })
-                console.log("关联任务选项",_this.perftaskOpts);
-                console.log('response',response);
-            })
+            }
         },
         /**远程加载关联任务方法 */
         perftaskRemote:function(query){
-            if(query !== ''){
                 console.log("输入的参数",query);
                 this.perftaskLoading = true;
                 setTimeout(() => {
@@ -988,13 +1082,8 @@ export default {
                                 label:item.perftask_name,
                             }
                         })
-                        console.log("关联任务选项",_this.perftaskList);
                     })
                 }, 200);
-             }else{
-                 _this.perftaskOpts = _this.perftaskList;
-                 _this.isDisabled = true;
-            }
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
@@ -1029,8 +1118,6 @@ export default {
         },
         /**远程加载关联脚本数据 */
         refscriptRemote:function(query){
-            
-            if(query !== ''){
                 console.log("输入的脚本参数",query);
                 this.perftaskLoading = true;
                 setTimeout(() => {
@@ -1054,9 +1141,6 @@ export default {
                         console.log("远程加载回来之后关联脚本的数据",_this.scriptOpts)
                     })
                 }, 200);
-             }else{
-              _this.scriptOpts=[];
-            }
         },
         perftaskReachBottom:function(){
             console.log("到达底部了");
@@ -1072,14 +1156,13 @@ export default {
                     }).then(function(response){
                         console.log("触底响应",response.headers.pageno);
                         console.log(response);
-                        _this.perftaskList = response.data.resultList.map(item=>{
+                        _this.perftaskOpts = response.data.resultList.map(item=>{
                             return {
                                 value:item.id,
                                 label:item.perftask_name,
                             }
                         });
-                        console.log(_this.perftaskList);
-                        _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskList);
+                        _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskOpts);
                         console.log(_this.perftaskOpts);
                         if(_this.pNo < response.headers.totalpage){
                             _this.pNo++;
@@ -1091,19 +1174,45 @@ export default {
             })
         },
         /**=========================================执行模态框事件==================================== */
+        
         /**确认事件 */
         exeOk:function(){
-            
-            if(this.eveValidate.exeType == '00'){
+            let _this = this;
+            if(this.eveValidate.exeType == '1'){
                 console.log(new Date());
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/senario/exec', {
+                    header:{},
+                    data:{
+                        senario_id:_this.id,
+                        exe_type:_this.eveValidate.exeType,
+                    }
+                }).then(function(response){
+                    console.log("立即执行");
+                    this.showExeModal = false;
+                    this.eveValidate.exeType='1';
+                })
             }else{
                 console.log(this.eveValidate.exeDateTime);
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/senario/exec', {
+                    header:{},
+                    data:{
+                        senario_id:_this.id,
+                        preset_exe_time:_this.eveValidate.exeDateTime,
+                        exe_type:_this.eveValidate.exeType,
+                    }
+                }).then(function(response){
+                    console.log("定时执行");
+                    this.showExeModal = false;
+                    this.eveValidate.exeType='1';
+                })
             }
-            this.showExeModal = false;
         },
         /**取消事件 */
         exeCancel:function(){
             this.showExeModal = false;
+            this.eveValidate.exeType='1';
         },
 
 
@@ -1177,6 +1286,9 @@ export default {
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
+                _this.monitorAddValidate.subSysName = response.data.resultList[0].subSysName;
+                _this.subSysName_old = response.data.resultList[0].subSysName;
+                _this.monitorAddValidate.subAreaName = response.data.resultList[0].subAreaName;
                 console.log(response);
                 console.log(_this.moniterTableData);
 
@@ -1186,6 +1298,7 @@ export default {
         moniterCancel:function(){
             this.showMoniterModal = false;
             this.editCount = 0;
+            this.monitorAddShow = false;
             console.log('监控取消事件');
         },
         /**确认事件 */
@@ -1195,6 +1308,7 @@ export default {
                 this.$Message.error("您有数据未保存，请查看");
             }else{
                 this.showMoniterModal = false;
+                this.monitorAddShow = false;
             }
             console.log(this.editCount);
         },
@@ -1202,22 +1316,71 @@ export default {
         moniterReset:function(name){
             this.$refs[name].resetFields();
         },
+        openMonitorChange:function(openStatus){
+            console.log(openStatus);
+            let _this =this;
+            if(openStatus){
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/search',{
+                    header:{},
+                    data:{
+                        name:'',
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    _this.scomponentOpts = response.data.resultList.map(item=>{
+                        return {label:item.name}
+                    })
+                })
+            }
+        },
+        /**模糊查询物理子系统 */
+        scomponentRemote:function(query){
+            this.scomponentLoading = true;
+            setTimeout(() => {
+                let _this = this;
+                _this.scomponentLoading = false;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/search',{
+                    header:{},
+                    data:{
+                        name:query,
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    _this.scomponentOpts = response.data.resultList.map(item=>{
+                        return {label:item.name}
+                    })
+                })
+            }, 200);
+        },
         /**列表查询 */
         moniterCase:function(){
             let _this = this;
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/monitorSetting/search',{
-                header:{},
-                data:{
-                    id:_this.monitor_senario_id,
-                    subAreaName:_this.moniterValidate.inviro_type,
-                }
-            }).then(function(response){
-                console.log(response);
-                _this.moniterTableData = response.data.resultList;
-                _this.moniterTotalCount = response.headers.totalcount;
-                _this.moniterTotalPage = response.headers.totalpage;
-            })
+            console.log('系统名称',_this.moniterValidate.sComponent,'ip',_this.moniterValidate.ip);
+            if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
+                _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
+            }else{
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/monitorSetting/search',{
+                    header:{},
+                    data:{
+                        id:_this.monitor_senario_id,
+                        subAreaName:_this.moniterValidate.inviro_type,
+                        name:_this.moniterValidate.sComponent,
+                        prodIp:_this.moniterValidate.ip,
+                        pageNo:_this.moniterPageNo,
+                        pageSize:_this.moniterPageSize,
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    console.log(_this.moniterValidate.sComponent)
+                    _this.moniterTableData = response.data.resultList;
+                    _this.moniterTotalCount = response.headers.totalcount;
+                    _this.moniterTotalPage = response.headers.totalpage;
+                    _this.subSysName_new = response.data.resultList[0].subSysName;
+                })
+            }
         },
          /**切换页码 */
         moniterPageChange:function(moniterPageNo){
@@ -1233,34 +1396,131 @@ export default {
         },
         /**保存并修改事件 */
         moniterSave:function(){
+            console.log('旧的系统名称',this.subSysName_old,'新的系统名称',this.subSysName_new);
             if(this.moniterSelectedData.length > 0){
                 let _this = this;
-                _this.monitorList = _this.moniterSelectedData.map(item=>{
-                    return item.servPartId;
-                })
-                console.log(_this.monitorList);
-               this.$http.defaults.withCredentials = false;
-               this.$http.post("/myapi/monitorSetting/addMachine",{
-                   header:{},
-                   data:{
-                       monitorList:_this.monitorList,
-                       senarioid:_this.monitor_senario_id,
-                   },
-               }).then(function(response){
-                   _this.moniterListCase();
-               });
+                if(_this.subSysName_old !== _this.subSysName_new ){
+                    console.log("不相同");
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '系统名称将发生改变',
+                        onOk: () => {
+                            console.log("不相同确认");
+                            _this.monitorList = _this.moniterSelectedData.map(item=>{
+                                return item.servPartId;
+                            })
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/monitorSetting/addMachine",{
+                                header:{},
+                                data:{
+                                    monitorList:_this.monitorList,
+                                    senarioid:_this.monitor_senario_id,
+                                },
+                            }).then(function(response){
+                                _this.moniterListCase();
+                            });
+                        },
+                        onCancel: () => {
+                            console.log("不相同取消");
+                            _this.$Message.info('修改失败，系统未发生改变');
+                        }
+                    }); 
+                }else{
+                    console.log("相同");
+                    _this.monitorList = _this.moniterSelectedData.map(item=>{
+                        return item.servPartId;
+                    })
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/monitorSetting/addMachine",{
+                        header:{},
+                        data:{
+                            monitorList:_this.monitorList,
+                            senarioid:_this.monitor_senario_id,
+                        },
+                    }).then(function(response){
+                         _this.moniterListCase();
+                    });
+                }
             }else{
-                this.$Message.error("请选择要删除的数据");
+                this.$Message.error("至少选择一条数据");
             }
         },
+        /**自定义监控添加 */
         moniterAdd:function(){
             this.monitorAddShow = true;
             //let addList = {senarioid:'4',subAreaName:'4', subSysName:'4',funDesc:'4',prodIp:'4' };
              //this.moniterTableData.push(this.addList)
             //console.log(this.moniterTableData);
         },
-        monitorAddSave:function(){
-            this.monitorAddShow = false;
+        /**远程加载物理子系统 */
+        scomponentAddRemote:function(query){
+            this.scomponentAddLoading = true;
+            setTimeout(() => {
+                let _this = this;
+                _this.scomponentAddLoading = false;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/search',{
+                    header:{},
+                    data:{
+                        name:query,
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    _this.scomponentAddOpts = response.data.resultList.map(item=>{
+                        return {label:item.name}
+                    })
+                })
+            }, 200);
+        },
+        /**下拉框下拉加载 */
+        openMonitorAddChange:function(openStatus){
+            let _this =this;
+            if(openStatus){
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/search',{
+                    header:{},
+                    data:{
+                        name:'',
+                    }
+                }).then(function(response){
+                    console.log(response);
+                    _this.scomponentAddOpts = response.data.resultList.map(item=>{
+                        return {label:item.name}
+                    })
+                    console.log(_this.scomponentAddOpts);
+                })
+            }
+        },
+        /**保存自定义添加的接口 */
+        monitorAddSave:function(name){
+            this.$refs[name].validate((valid) => {
+                if(valid){
+                    let _this = this;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/monitorSetting/addMachineMonitor',{
+                        header:{},
+                        data:{
+                            name:_this.monitorAddValidate.subSysName,                     //物理子系统
+                            subAreaName:_this.monitorAddValidate.subAreaName,                   //环境类型
+                            funDesc:_this.monitorAddValidate.funDesc,                        //部署单元
+                            prodIp:_this.monitorAddValidate.prodIp,                        //ip地址
+                            osVersion:_this.monitorAddValidate.osVersion,                     //操作系统类型
+                            userName:_this.monitorAddValidate.userName,                     //用户名
+                            password:_this.monitorAddValidate.password,                      //密码
+                        }
+                    }).then(function(response){
+                        console.log("添加成功");     
+                        _this.monitorAddShow = false;
+                        _this.moniterListCase();
+                        _this.$refs[name].resetFields();
+                    })
+                }else{
+                    _this.$Message.info("提交失败")
+                }
+            });
+        },
+        monitorAddReset:function(name){
+            this.$refs[name].resetFields();
         },
         /**选中的数据 */
         moniterSelectionChanged:function(data){
@@ -1425,6 +1685,13 @@ export default {
         -ms-transform: translate(-50%, -20%);
         -webkit-transform: translate(-50%, -20%);
     }
-
+    .delShowTitle {
+        // padding-left: 40px;
+        padding-right: 15px;
+        padding-bottom: 15px;
+        text-align: right;
+        font-size: 12px;
+        font-weight: bold;
+    }
    
 </style>
