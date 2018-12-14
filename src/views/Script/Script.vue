@@ -451,16 +451,13 @@ export default {
                 console.log(this.script_id)
             }
         },
-        //the param set checkbox  
+        //the param set checkbox when onclick change the value to oppsite  
         isChecked:function(){
-            this.csvList.map(item=>{
-                if(item.enable == true || item.enable == 'true'){
-                    item.enable = false;
-                }else{
-                    item.enable = true;
-                }
-                console.log(item.enable);
-            })
+            if(this.csvList[index].enable == true || this.csvList[index].enable == 'true'){
+                this.csvList[index].enable = false;
+            }else{
+                this.csvList[index].enable=true;
+            }
         },
         searchAppname: function(query){
             this.appNameOpts = [];
