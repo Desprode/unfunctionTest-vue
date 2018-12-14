@@ -37,8 +37,19 @@ export default {
     // 任务来源
     taskSourceList: [{value: '1', label: 'ICDP任务'}, {value: '2', label: '自建任务'}], 
     taskSourceMap: {'1':'ICDP任务', '2':'自建任务'},
+
+    // 需求类型
+    demandTypeList: [
+        {value: '01', label: '单交易测试'}, 
+        {value: '02', label: '容量测试'}, 
+        {value: '03', label: '稳定性测试'}, 
+        {value: '04', label: '其他测试'}, 
+    ], 
+    demandTypeMap: {'01': '单交易测试', '02': '容量测试', '03': '稳定性测试', '04': '其他测试'}, 
+    
     //机器管理类型
     machineTypeStatus: {'1':'http', '2':'tuxedo', '3':'java'},
+    
     //执行状态
     exeStatusList: [
         {value: '00', label: '执行完成'},

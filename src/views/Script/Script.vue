@@ -37,8 +37,8 @@
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
-                        <Page :total="tableDAtaTatol/tableDAtaPageLine > 1 ? (tableDAtaTatol%tableDAtaPageLine ? parseInt(tableDAtaTatol/tableDAtaPageLine)+1 : tableDAtaTatol/tableDAtaPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
-                        <p>总共{{tableDAtaTatol}}条记录</p>
+                        <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
+                        <p>总共{{tableDataTotal}}条记录</p>
                     </div>
                 </div>
             </div>
@@ -57,14 +57,6 @@
                                 </FormItem>
                             </Col>
                         </Row>
-                        <!-- <Row v-for="(threadItem,index) in threadList" :key="index">
-                            <Col span="8">
-                                <FormItem :label-width="10" prop="thread_name">
-                                    <Checkbox v-model="threadItem.enable == 'true'?true:false" @on-change="isChecked(index)">{{threadItem.thread_name}}</Checkbox>  
-                                </FormItem>
-                            </Col>
-                        </Row> -->
-                        
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -200,6 +192,9 @@ export default {
             interfaceId:'',
             sTaskName:'',
             script_name:'',
+
+            ITM_id:'',
+            cloud_id:'',
             //脚本信息
             script_filename:'',
             script_filepath:'',
@@ -320,17 +315,7 @@ export default {
                                             console.log("script编辑接口response.data",response.data);
                                             _this.rowid=response.data.executor_id;
                                             _this.csvList = response.data.resultList;
-                                            // var obj = JSON.parse(_this.csvinfo); // 
-                                            
-                                            // _this.csvList = response.data.resultList[0].csvinfo;
-                                            //_this.csvList = '['+JSON.parse(response.data.resultList[0].csvinfo)+']';
-                                            // var jsonStr = '[{"filename":"01","val":true},{"filename":"02","val":false}]';
-                                            // _this.csvList =  JSON.parse(jsonStr);//转换为json对象
-                                            console.log("_this.csvList======"+_this.csvList.length);
                                             console.log("_this.csvList======"+_this.csvList);
-                                            //console.log("threadList",_this.threadList);
-
-                                            
                                         })
                                     }
                                 }
@@ -342,7 +327,10 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.handleDownload(params.row);
+
+                                        this.handleDownload(item.row.id,item.row.script_filename);
+                                        
+                                        
                                     }
                                 }
                             }, '下载')
@@ -351,8 +339,8 @@ export default {
                 }
             ],
             tableData: [],
-            tableDAtaTatol:0,
-            tableDAtaPageLine:0,
+            tableDataTotal:0,
+            tableDataPageLine:0,
             selectedData:[],
             formValidate: {
             },
@@ -406,7 +394,36 @@ export default {
         this.listCase();
     },
     methods: {
-        
+        handleDownload:function(rowid,fileName){
+            let _this = this;
+            this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/scripts/download',{
+                data:{
+                    id:rowid,
+                }
+            }).then(function(response){
+                //服务端文件不存在的情况判断
+                if("fail" == response.data.result){
+                    _this.$Message.error(response.data.err_desc);
+                    return;
+                }
+                //console.log("script编辑接口response.data",response.data);
+               // let fileName = item.row.script_filename // 文件地址
+                var blob = new Blob([response.data])
+                if (window.navigator.msSaveOrOpenBlob) {
+                    // 兼容IE10
+                    navigator.msSaveBlob(blob, fileName)
+                } else {
+                    let url = window.URL.createObjectURL(blob);
+                    let link = document.createElement('a');
+                    link.style.display = 'none';
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                }
+            })
+        },
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
@@ -419,6 +436,7 @@ export default {
             }
             let _this = this;
             _this.addValidate.script_filename=file.name;
+            _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
             console.log(res)
@@ -433,23 +451,13 @@ export default {
                 console.log(this.script_id)
             }
         },
+        //the param set checkbox when onclick change the value to oppsite  
         isChecked:function(){
-            // var checkedNum = 0,unCheckedNum = 0;
-            this.csvList.map(item=>{
-                if(item.enable == true){
-                    // checkedNum ++;
-                    item.enable = false;
-                }else{
-                    // unCheckedNum ++;
-                    item.enable = true;
-                }
-                console.log(item.enable);
-            })
-            
-            // this.setValidate.thread_groups_num = checkedNum;
-            // console.log(checkedNum);
-            // console.log(unCheckedNum);
-            // console.log(this.threadList);
+            if(this.csvList[index].enable == true || this.csvList[index].enable == 'true'){
+                this.csvList[index].enable = false;
+            }else{
+                this.csvList[index].enable=true;
+            }
         },
         searchAppname: function(query){
             this.appNameOpts = [];
@@ -461,8 +469,6 @@ export default {
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/component/search', 
                     {
-                        headers: {
-                        },
                         data: {
                             name: _this.addValidate.app_name,                            
                         },                        
@@ -475,7 +481,7 @@ export default {
                         const list = _this.list.map(item => {
                             return {
                                 value: item.id,
-                                label: item.name
+                                label: item.comp_name
                             };
                         });
                         _this.appNameOpts = list
@@ -496,8 +502,6 @@ export default {
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/user/search', 
                     {
-                        headers: {
-                        },
                         data: {
                             name: _this.creater,                            
                         },                        
@@ -521,15 +525,12 @@ export default {
                 this.cmpOpts = [];
             }
         },
-
-        /* add by xin */
         /*删除按钮功能*/
         deleteScript: function() {
             console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
             let resArr = [];                         
             let deleteId = [];                     //选中数据的id
-            //let idstr = '';
             if(selectedData.length>0){               //如果有选中的数据
                 for(let i in selectedData){         //进行遍历
                     //idstr = selectedData[i].id +",";
@@ -537,8 +538,6 @@ export default {
                     console.log(deleteId);
                     this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
                 } 
-
-
             }else{
                     this.$Message.error("请选择要删除的数据")
             }
@@ -559,9 +558,13 @@ export default {
                                    // ids:deleArr,
                                     id:deleArr[0],
                                 }
-                            }).then(function(){
-                                tableData.splice(index, 1);        //即删除该数据上
-                                _this.$Message.info('删除成功');
+                            }).then(function(response){
+                                if(response.status == 500){
+                                    _this.$Message.error('服务端错误!');
+                                }else{
+                                    tableData.splice(index, 1);        //即删除该数据上
+                                    _this.$Message.info('删除成功');
+                                }
                             })
                         },
                         onCancel: () => {
@@ -590,8 +593,8 @@ export default {
                 console.log(response);
                 console.log('response.data: ', response.data);
                 _this.tableData = response.data.resultList;
-                _this.tableDAtaTatol = response.data.pagination.totalCount;
-                _this.tableDAtaPageLine = response.data.pagination.pageSize
+                _this.tableDataTotal = response.data.pagination.totalCount;
+                _this.tableDataPageLine = response.data.pagination.pageSize
             })
         },
         handlePage:function(val){
@@ -655,13 +658,17 @@ export default {
                     script_name:_this.addValidate.script_name,
                 }
             }).then(function(response){
-                console.log("检查脚本响应数据",response);
-                var flag = response.data.result;
-                console.log("检查脚本响应数据flag",flag);
-                if("fail" == flag){
-                    console.log("检查脚本响应数据flag22",flag);
-                    _this.$Message.error('脚本名称重复!');
-                    return ;
+                if(response.status == 500){
+                    _this.$Message.error('服务端错误!');
+                }else{
+                    console.log("检查脚本响应数据",response);
+                    var flag = response.data.result;
+                    console.log("检查脚本响应数据flag",flag);
+                    if("fail" == flag){
+                        console.log("检查脚本响应数据flag22",flag);
+                        _this.$Message.error('脚本名称重复!');
+                        return ;
+                    }
                 }
                
             })
@@ -690,23 +697,6 @@ export default {
         handleEdit(row){
             console.log("这是编辑",row)
         },
-        /**  下载行*/
-        handleDownload(row){
-            let fileName = row.script_filename // 文件地址
-            //let downName = (new Date()).getTime()+".mp3" // 文件下载名称
-            const blob = new Blob([fileName])
-            if (window.navigator.msSaveOrOpenBlob) {
-                // 兼容IE10
-                navigator.msSaveBlob(blob, fileName)
-            } else {
-                //  chrome/firefox
-                let aTag = document.createElement('a')
-                aTag.fileName = fileName
-                aTag.href = URL.createObjectURL(blob)
-                aTag.click()
-                URL.revokeObjectURL(aTag.href)
-            }
-        },
         /**删除一条数据 */
         remove(index){
             this.tableData.splice(index,1);
@@ -724,12 +714,17 @@ export default {
                             csvList:_this.csvList,
                         },
                     }).then(function(response){
-                        _this.$Message.success('提交成功!');
-                        _this.showParamStatus = false;
-                        console.log('response',);
-                        console.log(_this.csvList);
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if(response.data.result=="success"){
+                                _this.$Message.success('设置成功!');
+                            }else{
+                                this.$Message.error("设置失败!");
+                            }
+                            _this.showParamStatus = false;
+                        }
                     })
-                    
                 } else {
                     this.$Message.error('表单验证失败!');
                 }
@@ -759,10 +754,17 @@ export default {
                         }
                     }).then(function(response){
                         console.log("响应回来的数据",response);
-                        _this.$Message.success('提交成功!');
-                        _this.showDialog = false;
-                        console.log("添加成功");
-                        _this.$refs[name].resetFields();
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if("ok" == response.data.result){
+                                _this.$Message.success('添加成功！');
+                            }else{
+                                _this.$Message.error('添加失败'+response.data.err_desc);
+                            }
+                            _this.showDialog = false;
+                            _this.$refs[name].resetFields();
+                        }
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -791,11 +793,19 @@ export default {
                             script_id:_this.script_id,
                         }
                     }).then(function(response){
-                        console.log("响应回来的数据",response);
-                        _this.$Message.success('修改成功!');
-                        _this.showDialog = false;
-                        console.log("修改成功");
-                        _this.$refs[name].resetFields();
+                        if(response.status == 500){
+                            _this.$Message.error('服务端错误!');
+                        }else{
+                            if("fail" == response.data.result){
+                                _this.$Message.error('修改失败!');
+                                return;
+                            }else{
+                                _this.$Message.success('修改成功!');
+                                _this.showSetScript = false;
+                                console.log("修改成功");
+                                _this.$refs[name].resetFields();   
+                            }
+                        }
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -877,9 +887,7 @@ export default {
 .serchBtnBox{
     position: relative;
 }
-// .actionBtn{
-//     width: 16%;
-// }
+
 .caseBoxRow{
     padding-bottom:10px;
 }
