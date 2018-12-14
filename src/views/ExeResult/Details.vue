@@ -6,11 +6,10 @@
     <Tabs type="line">
         <Tab-pane label="测试报告" >
             <div align="left">
-                <Button @click="aggregCase" type="primary">下载报告</Button>
-                <!-- <a href="../report/1543825966538/report.xlsx" download="111.xlsx">111</a> -->
+                <Button @click="downloadCase()" type="primary">下载报告</Button>
             </div>
             <!-- 页面渲染   -->
-            <div v-html='content'></div>
+            <div v-html='content'>{{content}}</div>
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="压力机日志">
@@ -32,13 +31,13 @@
             <FormItem label="测试结论分析描述：">
                 <Row>
                     <i-col span="13">
-                         <i-input type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..."></i-input>
+                         <i-input type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..." v-model="result_desc" ></i-input>
                     </i-col>
                 </Row>
             </FormItem>
             <Form-item align="center">
                 <i-button type="error" style="margin-left: 8px">取消</i-button>
-                <i-button type="primary">保存</i-button>
+                <i-button type="primary" @click="saveResult">保存</i-button>
                 <i-button type="primary">提交缺陷</i-button>
             </Form-item>
         </Tab-pane>
@@ -120,9 +119,10 @@
                 /** ============================执行结果============================ */
                 showSetType:'',
                 content:'',
+                file_path:'',
+                executor_id:'',
                 result_is_pass:'',  //执行结果是否通过：
-                result_desc:'',     //测试结论分析描述：
-        
+                result_desc:''     //测试结论分析描述：                                   
             }
         },
         
@@ -195,25 +195,58 @@
                 })
                 console.log("执行结果");
             },
-            /**下载功能*/
-            aggregCase:function(){
+            /**保存功能*/
+            saveResult:function () {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
                 this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/testresult/search', {
+                this.$http.post('/myapi/testresult/saveResult', {
                     data: {
-                        //executor_id:executor_id,
+                        executor_id:executor_id,
+                        result_is_pass:_this.result_is_pass,
+                        result_desc:_this.result_desc
                     }
                 }).then(function (response) {
-                    //_this.tableDatas =  response.data.resultList;
-                    //_this.file_path  = response.data.resultList.file_path;
-                    //window.open(_this.file_path)
-                    //console.log("111111",_this.file_path);
+                    _this.tableDatas =  response.data.result;
+                    if(_this.tableDatas=="ok"){
+                        _this.$Message.info('保存成功');
+                    }else{
+                        _this.$Message.info('保存失败');
+                    }
+                    console.log(_this.tableDatas)
+                    
                 })
-                alert("还不好使");
-                console.log("下载测试");
+                console.log("保存功能");
             },
-        }
+            /**下载*/
+            downloadCase:function(){
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/testresult/download',{
+                    data:{
+                        executor_id:executor_id,
+                    }
+                }).then(function(response){
+                    //console.log("script编辑接口response.data",response.data);
+                    //_this.tableData =  response.data.resultList.file_path;
+                    console.log("111222",response.data);
+                    var blob = new Blob([response.data]);
+                    if (window.navigator.msSaveOrOpenBlob) {
+                        // 兼容IE10
+                        navigator.msSaveBlob(blob,'report.xlsx')
+                    } else {
+                        let url = window.URL.createObjectURL(blob);
+                        let link = document.createElement('a');
+                        link.style.display = 'none';
+                        link.href = url;
+                        link.setAttribute('download','report.xlsx');
+                        document.body.appendChild(link);
+                        link.click();
+                    }
+                })
+                
+            }
     }
-
+    }
 </script>
