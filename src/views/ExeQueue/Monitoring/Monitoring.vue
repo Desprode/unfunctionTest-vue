@@ -31,14 +31,14 @@
             <Tab-pane label="jmeter信息">
                 <!--http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={{=starttime}}&to={{=endtime}}&var-testId={{=exe_id}}&refresh=5s&kiosk-->
                 <div><iframe id="gIframe1" src="http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={starttime}&to={endtime}&var-testId={exe_id}&refresh=5s&kiosk" width="100%" height="300" frameborder="0"></iframe></div>
-                <div><iframe id="gIframe" src="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId=%executor_id%&refresh=5s&kiosk" width="100%" height="980" frameborder="0"></iframe></div>
+                <div><iframe id="gIframe" src="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId=%=executor_id%&refresh=5s&kiosk" width="100%" height="980" frameborder="0"></iframe></div>
                 <!--http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from={{=starttime}}&to={{=endtime}}&var-testId={{=exe_id}}&refresh=5s&kiosk-->
             </Tab-pane>
             <!---------------------分割线-------------------------->
             <Tab-pane label="服务器资源">
                 <Table border  ref="selection" :columns="columns1"  :data="tableDatal" class="myTable"></Table>
                 <div class="pageBox" v-if="tableDatal.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChangel" @on-page-size-change="pageSizeChangel"></Page>
                     <p>总共{{totalPage}}页</p>
                 </div>
             </Tab-pane>
@@ -59,7 +59,6 @@ export default {
         data () {
             return { 
                 executor_id:'',
-                cmpOpts: [],
                 formItem: {
                     cmpOpts: [],
                     list: [], 
@@ -211,7 +210,7 @@ export default {
         created(){
             //this.srchComponent();
             this.pressCase();
-           // this.listCase();
+            this.listCase();
         },
         
         methods:{
@@ -279,9 +278,12 @@ export default {
              //服务器资源
             pressCase: function() {
                 let _this = this;
+                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
+                console.log("第二个页面接收的ID",executor_id);
                 this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/runtests/list', {
                     data: {
+                        executor_id:executor_id,
                         pageNo:_this.pageNo,
                         pageSize:_this.pageSize,
                     }
@@ -297,13 +299,13 @@ export default {
                 })
             },
              /**切换页码 */
-             pageChange:function(pageNo){
+             pageChangel:function(pageNo){
                 console.log(pageNo);
                 this.pageNo = pageNo;
                 this.pressCase();
             },
             /**切换页面大小 */
-            pageSizeChange:function(pageSize){
+            pageSizeChangel:function(pageSize){
                 console.log(pageSize);
                 this.pageSize = pageSize;
                 this.pressCase();
@@ -311,10 +313,12 @@ export default {
             //压力机资源
             listCase: function() {
                 let _this = this;
+                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
+                console.log("第二个页面接收的ID",executor_id);
                 this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/runtests/list', {
                     data: {
-                        execution_name: _this.editPTaskValidate.execution_name,
+                        executor_id:executor_id,
                         pageNo:_this.pageNo,
                         pageSize:_this.pageSize,
                     }
