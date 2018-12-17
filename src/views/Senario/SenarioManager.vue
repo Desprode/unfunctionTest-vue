@@ -1207,8 +1207,9 @@ export default {
                     }
                 }).then(function(response){
                     console.log("立即执行");
-                    this.showExeModal = false;
-                    this.eveValidate.exeType='1';
+                    _this.showExeModal = false;
+                    _this.eveValidate.exeType='1';
+                    _this.$router.push({path:'/monitoring'});
                 })
             }else{
                 console.log(this.eveValidate.exeDateTime);
@@ -1222,8 +1223,9 @@ export default {
                     }
                 }).then(function(response){
                     console.log("定时执行");
-                    this.showExeModal = false;
-                    this.eveValidate.exeType='1';
+                    _this.showExeModal = false;
+                    _this.eveValidate.exeType='0';
+                    _this.$router.push({path:'/monitoring'});
                 })
             }
         },
