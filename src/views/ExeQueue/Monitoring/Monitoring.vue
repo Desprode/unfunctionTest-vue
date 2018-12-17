@@ -31,24 +31,22 @@
             <Tab-pane label="jmeter信息">
                 <!--http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={{=starttime}}&to={{=endtime}}&var-testId={{=exe_id}}&refresh=5s&kiosk-->
                 <div><iframe id="gIframe1" src="http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={starttime}&to={endtime}&var-testId={exe_id}&refresh=5s&kiosk" width="100%" height="300" frameborder="0"></iframe></div>
-                <div><iframe id="gIframe" src="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId=%=executor_id%&refresh=5s&kiosk" width="100%" height="980" frameborder="0"></iframe></div>
-                <!--http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from={{=starttime}}&to={{=endtime}}&var-testId={{=exe_id}}&refresh=5s&kiosk-->
+                <div><iframe :src="iframeUrl" id="gIframe"  width="100%" height="980" frameborder="0"></iframe></div>
+                <!--http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from={{=starttime}}&to={{=endtime}}&var-testId={{=exe_id}}&refresh=5s&kiosk
+                http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId='executor_id'&refresh=5s&kiosk
+                -->
             </Tab-pane>
             <!---------------------分割线-------------------------->
             <Tab-pane label="服务器资源">
                 <Table border  ref="selection" :columns="columns1"  :data="tableDatal" class="myTable"></Table>
                 <div class="pageBox" v-if="tableDatal.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChangel" @on-page-size-change="pageSizeChangel"></Page>
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
                 </div>
             </Tab-pane>
             <!---------------------分割线-------------------------->
             <Tab-pane label="压力机资源">
                 <Table border  ref="selection" :columns="columns"  :data="tableData" class="myTable"></Table>
-                <div class="pageBox" v-if="tableData.length">
-                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
-                    <p>总共{{totalPage}}页</p>
-                </div>
             </Tab-pane>
         </Tabs>
     </div>
@@ -59,6 +57,7 @@ export default {
         data () {
             return { 
                 executor_id:'',
+                iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                 formItem: {
                     cmpOpts: [],
                     list: [], 
@@ -75,7 +74,7 @@ export default {
                 columns: [
                     {
                         title: '序号',
-                        key: 'executor_id'
+                        key: 'prodIp'
                     },
                     {
                         title: 'ip',
@@ -87,7 +86,7 @@ export default {
                     },
                     {
                         title: '硬件配置',
-                        key: 'execution_name'
+                        key: 'osVersion'
                     },
                     {
                         title: '操作系统',
@@ -110,7 +109,7 @@ export default {
                 columns1: [
                     {
                         title: '序号',
-                        key: 'executor_id'
+                        key: 'prodIp'
                     },
                     {
                         title: 'IP地址',
@@ -188,7 +187,6 @@ export default {
                 tableDatal: [],
                 tableDAtaTatol:0,
                 tableDAtaPageLine:3,
-                selectedData:[],
                 totalCount:0,                         //共多少条数据
                 pageNo:1,                            //当前页
                 pageSize:10,                           //每页显示多少条数据
@@ -281,9 +279,11 @@ export default {
                 var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                 console.log("第二个页面接收的ID",executor_id);
                 this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/testresult/runtests/list', {
+                this.$http.post('http://128.192.219.11:8080/monitor/serverlist', {
                     data: {
-                        executor_id:executor_id,
+                        scenarioId: 300,
+                        start: 1544519137,
+                        end: 1544519451,
                         pageNo:_this.pageNo,
                         pageSize:_this.pageSize,
                     }
@@ -291,59 +291,72 @@ export default {
                     console.log(response);
                     console.log('请求回来的表格数据: ', response.data);
                     _this.tableDatal = response.data.resultList;  
-                    _this.totalCount = response.headers.totalcount;
-                    _this.totalPage = response.headers.totalpage;
-                    console.log(response.headers.totalcount);
-                    console.log(_this.totalCount);  
+                    _this.totalCount = response.totalCount;
+                    _this.totalPage = response.totalPage;
+                    console.log(_this.totalCount);
+                    console.log(response.totalCount);  
+                    console.log(_this.totalPage);    
+                    console.log(response.totalPage);
                     _this.tableDatal = response.data.resultList;
                 })
             },
              /**切换页码 */
-             pageChangel:function(pageNo){
+             pageChange:function(pageNo){
                 console.log(pageNo);
                 this.pageNo = pageNo;
                 this.pressCase();
-            },
-            /**切换页面大小 */
-            pageSizeChangel:function(pageSize){
-                console.log(pageSize);
-                this.pageSize = pageSize;
-                this.pressCase();
-            },
-            //压力机资源
-            listCase: function() {
-                let _this = this;
-                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
-                console.log("第二个页面接收的ID",executor_id);
-                this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/testresult/runtests/list', {
-                    data: {
-                        executor_id:executor_id,
-                        pageNo:_this.pageNo,
-                        pageSize:_this.pageSize,
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                    console.log('请求回来的表格数据: ', response.data);
-                    _this.tableData = response.data.resultList;  
-                    _this.totalCount = response.headers.totalcount;
-                    _this.totalPage = response.headers.totalpage;
-                    console.log(response.headers.totalcount);
-                    console.log(_this.totalCount);  
-                    _this.tableData = response.data.resultList;
-                })
-            },
-            /**切换页码 */
-            pageChange:function(pageNo){
-                console.log(pageNo);
-                this.pageNo = pageNo;
-                this.listCase();
             },
             /**切换页面大小 */
             pageSizeChange:function(pageSize){
                 console.log(pageSize);
                 this.pageSize = pageSize;
-                this.listCase();
+                this.pressCase();
+            },
+            //压力机资源
+           // listCase: function() {
+           //     let _this = this;
+           //     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
+            //    console.log("第二个页面接收的ID",executor_id);
+            //    this.$http.defaults.withCredentials = false;// ?executorId=1543568019509&start=1543567995&end=1543568195
+           //     this.$http.post('http://128.192.219.11:8080/monitor/pressureagentlist', {
+            //        data: {
+            //            executorId: executor_id,
+            //            start: 1543567995,
+             //           end: 1543568195,
+             //       }
+             //   }).then(function (response) {
+             //       console.log(response);
+             //       console.log('请求回来的表格数据222: ', response.data);
+             //       _this.tableData = response.data.resultList;   
+              //      _this.tableData = response.data.resultList;
+              //  })
+         //   },
+            listCase: function() {
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
+                console.log("第二个页面接收的ID",executor_id);
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('http://128.192.219.11:8080/monitor/pressureagentlist', {
+                    data: {
+                        executorId: 1543568019509,
+                        scenarioId: 300,
+                        start: 1544519137,
+                        end: 1544519451,
+                        pageNo:_this.pageNo,
+                        pageSize:_this.pageSize,
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    console.log('请求回来的表格数据555: ', response.data);
+                    _this.tableData = response.data.resultList;  
+                    _this.totalCount = response.totalCount;
+                    _this.totalPage = response.totalPage;
+                    console.log(_this.totalCount);
+                    console.log(response.totalCount);  
+                    console.log(_this.totalPage);    
+                    console.log(response.totalPage);
+                    _this.tableData = response.data.resultList;
+                })
             },
         }
     }

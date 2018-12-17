@@ -72,7 +72,8 @@
                 <div align="left">
                     <Button @click="aggregCase" type="success"  >聚合报告</Button>
                     <Button @click="deleteCase" type="error">删除结果</Button>
-                    <!--<Button @click="deletesCase" type="error">基准测试</Button> -->
+                    <!-- <Button @click="loadCase" type="error">负载测试</Button>
+                    <Button @click="baseCase" type="error">基准测试</Button> -->
                 </div>
                 <div class="tableBox">
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -90,7 +91,7 @@
                 <div style="text-align:center;height:240px" >
                     <Form label-width="80">
                         <FormItem label="报告名称" align="left">
-                            <Input placeholder="Enter something..." style="width:400px" readonly></Input>
+                            <Input placeholder="Enter something..." style="width:400px">{{task_name}}}</Input>
                         </FormItem>
                     </Form>
                     <div style="float:left;width:100px">
@@ -99,42 +100,46 @@
                     </div>
                     <div style="float:left;width:900px">
                         <Form >
-                            <FormItem label="场景名称" align="left">
-                                <Input placeholder="Enter something..." style="width:300px" readonly></Input>
+                            <FormItem label="场景名称" align="left" >
+                                <Input placeholder="Enter something..." style="width:300px">{{senario_name}}</Input>
                             </FormItem>
-                            <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
-                                执行是否成功：
-                                <Select style="width:80px"disabled>
-                                    <Option value="beijing">New York</Option>
-                                    <Option value="shanghai">London</Option>
-                                    <Option value="shenzhen">Sydney</Option>
-                                </Select>
-                                测试结果分析描述：
-                                <Input placeholder="Enter something..." style="width:400px" readonly></Input>
-                            </FormItem>
-                            <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
-                                显示性能数据表：
-                                <Select style="width:80px">
-                                    <Option value="beijing">否</Option>
-                                    <Option value="shanghai">是</Option>
-                                </Select>
-                                显示性能曲线图：
-                                <Select style="width:80px">
-                                    <Option value="beijing">否</Option>
-                                    <Option value="shanghai">是</Option>
-                                </Select>
-                                显示资源监控图：
-                                <Select style="width:80px">
-                                    <Option value="beijing">否</Option>
-                                    <Option value="shanghai">是</Option>
-                                </Select>
-                                显示失败事务分析：
-                                <Select style="width:80px">
-                                    <Option value="beijing">否</Option>
-                                    <Option value="shanghai">是</Option>
-                                </Select>
-                            </FormItem>
+                            <div v-show="isShowMore">
+                                <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
+                                    执行是否成功：
+                                    <Select style="width:80px">
+                                        <Option>{{result_is_pass}}</Option>
+                                    </Select>
+                                    测试结果分析描述：
+                                    <Input placeholder="Enter something..." style="width:400px">{{err_desc}}</Input>
+                                </FormItem>
+                                <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
+                                    显示性能数据表：
+                                    <Select style="width:80px">
+                                        <Option value="0">否</Option>
+                                        <Option value="1">是</Option>
+                                    </Select>
+                                    显示性能曲线图：
+                                    <Select style="width:80px">
+                                        <Option value="0">否</Option>
+                                        <Option value="1">是</Option>
+                                    </Select>
+                                    显示资源监控图：
+                                    <Select style="width:80px">
+                                        <Option value="0">否</Option>
+                                        <Option value="1">是</Option>
+                                    </Select>
+                                    显示失败事务分析：
+                                    <Select style="width:80px">
+                                        <Option value="0">否</Option>
+                                        <Option value="1">是</Option>
+                                    </Select>
+                                </FormItem>
+                            </div>
                         </Form>
+                    </div>
+                    <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
+                        <Icon type="chevron-down" color="#fff" ></Icon>
+                        <Icon type="chevron-down" color="#fff" ></Icon>
                     </div>
                 </div>
                 <Table border  ref="index" :columns="columnss" :data="tableDatas" class="myTable"></Table>
@@ -152,8 +157,11 @@ export default {
     data () {
         return {
             isShowMoreShow:false,               //是否显示更多查询条件
+            isShowMore:false,               //是否显示更多查询条件  聚合报告
             srchCmploading: false,
             exeStatusList: this.$Global.exeStatusList,  
+            result_is_pass:'',                  //执行是否通过
+            err_desc:'',                        //测试结果分析描述
             showAddModal:false,                 //聚合窗口
             executor_id:'',                     //执行编号
             component_name:'',                  //物理子系统
@@ -329,6 +337,7 @@ export default {
                             }).then(function(){
                                 tableData.splice(index, 1);        //即删除该数据上
                                 _this.$Message.info('删除成功');
+                                _this.listCase(); 
                             })
                         },
                         onCancel: () => {
@@ -417,10 +426,21 @@ export default {
                 query:{executor_id:tableData[index].executor_id}
             });
         },
-        /** 测试页面跳转*/
-        deletesCase:function(){
+        //负载测试
+        loadCase:function(){
+            let _this = this;
+            let tableData = _this.tableData;
             this.$router.push({
-                path:'/report',
+                path:'/load',
+                query:{}
+            });
+        },
+        //基准测试
+        baseCase:function(){
+            let _this = this;
+            let tableData = _this.tableData;
+            this.$router.push({
+                path:'/base',
                 query:{}
             });
         },
