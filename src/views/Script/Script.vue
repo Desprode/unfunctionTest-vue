@@ -64,7 +64,7 @@
                         <Button type="primary" @click="handleParamSubmit('paramValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--新建脚本时弹出的对话框-->
+            <!--新建脚本时弹出的对话框begin-->
             <Modal v-model="showDialog" width="800" >
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
@@ -122,7 +122,8 @@
                     <Button type="primary"   @click="submitScript('addValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--=============================脚本设置模态框============================-->
+            <!--新建脚本时弹出的对话框end-->
+            <!--script edit begin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>编辑脚本</span>
@@ -169,6 +170,56 @@
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
                 </div>
             </Modal>
+            <!--script edit end-->
+            <!--script detail begin-->
+            <Modal v-model="showSetScript" width="800">
+                <p slot="header" style="color:#f60" >
+                    <span>编辑脚本</span>
+                </p>
+                <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
+                    <!-- <FormItem label="脚本ID:" prop="script_id" >                      
+                        <Input v-model="setValidate.script_id"></Input>
+                    </FormItem> -->
+                    <FormItem label="脚本名称:" prop="script_name">                      
+                    <Input v-model="setValidate.script_name"></Input>
+                    </FormItem>
+                    <FormItem label="物理子系统:" >                      
+                        <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
+                            :remote-method="searchAppname" :loading="srchCmploading">
+                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
+                        </Select>
+                    </FormItem>
+                    <FormItem label="脚本说明:" prop="memo">                      
+                        <Input v-model="setValidate.memo"></Input>
+                    </FormItem>
+                    <FormItem label="创建时间:" prop="create_time">                      
+                        <Input v-model="setValidate.create_time"></Input>
+                    </FormItem>
+                    <i-col span="20">
+                        <Form-item label="更新脚本：" prop="script_filename">
+                            <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)"></i-input>
+                        </Form-item>                                
+                    </i-col>        
+                    <i-col span=4 >
+                        <Upload ref="upload"
+                                name="file"
+                                action="/myapi/scripts/upload" 
+                                :before-upload="handleUpload" 
+                                :format="['zip']" 
+                                :on-success="uploadSuccess"
+                                :on-format-error="handleFormatError"
+                                v-model="setValidate.script_filename">
+                            <Button icon="ios-cloud-upload-outline">上传文件</Button>
+                        </Upload>
+                    </i-col> 
+                </Form>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="setCancel()">取消</Button>
+                    <!-- <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button> -->
+                </div>
+            </Modal>
+            <!--script detail end-->
+
         </Card>
     </div>
 </template>
@@ -181,6 +232,7 @@ export default {
             /* 窗口设置开关 */
             showParamStatus:false,
             showDialog:false,
+            showDetail:false,
             showSetScript:false,
 
             srchCmploading: false,
@@ -256,7 +308,7 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:200,
+                    width:250,
                     render: (h, item) => {
                         return h('div', [
                             h('Button', {
@@ -320,6 +372,33 @@ export default {
                                     }
                                 }
                             },'参数设置'),
+                            h('Button', {
+                                props: {
+                                    type: 'primary',
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        this.showDetail = true;
+                                        console.log(item.row);
+                                        let _this = this;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/scripts/checkEdit',{
+                                            data:{
+                                                id:item.row.id,
+                                            }
+                                        }).then(function(response){
+                                            console.log("script编辑接口response.data",response.data);
+                                            // _this.rowid=response.data.executor_id;
+                                            // _this.csvList = response.data.resultList;
+                                            // console.log("_this.csvList======"+_this.csvList);
+                                        })
+                                    }
+                                }
+                            },'详情'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -757,7 +836,7 @@ export default {
                         if(response.status == 500){
                             _this.$Message.error('服务端错误!');
                         }else{
-                            if("ok" == response.data.result){
+                            if("success" == response.data.result){
                                 _this.$Message.success('添加成功！');
                             }else{
                                 _this.$Message.error('添加失败'+response.data.err_desc);
@@ -825,6 +904,7 @@ export default {
         //取消脚本编辑
         setCancel:function(){
             this.showSetScript = false;
+            this.showDetail = false;
         },
         /**清除搜索条件 */
         handleReset (name) {
