@@ -173,10 +173,10 @@
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
                     <h2>基本属性</h2>
-                    <FormItem label="场景名称:" prop="senario_name">                      
+                    <FormItem label="场景名称 ：" prop="senario_name">                      
                     <Input v-model="setValidate.senario_name"></Input>
                     </FormItem>
-                    <FormItem label="场景描述:" prop="senario_desc">
+                    <FormItem label="场景描述 ：" prop="senario_desc">
                         <Input placeholder="请填写场景描述"  v-model="setValidate.senario_desc" type="textarea" :autosize="{minRows:2,maxRows:5}"></Input>
                     </FormItem>
                     <h2>压力机配置</h2> 
@@ -189,28 +189,28 @@
                     </FormItem>
                     <Row>
                         <Col span="12"  v-if="showSetType =='02'?true:false">
-                            <FormItem label="每个线程组并发数：" prop="per_threads" :label-width="140">
+                            <FormItem label="每个线程组并发数 ：" prop="per_threads" :label-width="140">
                                 <Input v-model="setValidate.per_threads" :number="true"></Input>
                             </FormItem>
                         </Col>
                         <Col span="12"  v-if="showSetType !='03'?true:false">
-                            <FormItem label="每个线程组运行时常：" prop="per_duration" :label-width="150">
+                            <FormItem label="每个线程组运行时常 ：" prop="per_duration" :label-width="150">
                                 <Input v-model="setValidate.per_duration" :number="true"></Input>
                             </FormItem>
                         </Col>
-                        <Col span="12"  v-if="showSetType =='01'?true:false">
-                            <FormItem label="间隔(毫秒)" prop="base_pacing">
+                        <Col span="10" offset="1" v-if="showSetType =='01'?true:false">
+                            <FormItem label="间隔(毫秒) ：" prop="base_pacing">
                                 <Input v-model="setValidate.base_pacing" :number="true"></Input>
                             </FormItem>
                         </Col>
                     </Row>
                     <Row v-if="showSetType !='03'?true:false">
                         <Col span="10" offset="2">
-                            <span>线程组个数：</span>
+                            <span>线程组个数 ： </span>
                             <span>{{setValidate.thread_groups_num}}</span>
                         </Col>
                         <Col span="9" offset="3">
-                            <span>运行时长:</span>
+                            <span>运行时长 ：</span>
                             <span>{{totalTime}}</span>
                         </Col>
                     </Row>
@@ -228,12 +228,12 @@
                             </FormItem>
                         </Col>
                         <Col span="8" v-if="showSetType=='03'?true:false">
-                            <FormItem label="组件并发数:" prop="thread_num">
+                            <FormItem label="组件并发数 ：" prop="thread_num">
                                 <Input v-model="threadItem.thread_num"></Input>
                             </FormItem>
                         </Col>
                         <Col span="8" v-if="showSetType=='03'?true:false">
-                            <FormItem label="间隔（毫秒）:">
+                            <FormItem label="间隔（毫秒）：">
                                 <Input v-model="threadItem.pacing"></Input>
                             </FormItem>
                         </Col>
@@ -516,8 +516,22 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showExeModal = true;
-                                        this.id = item.row.senario_id;
+                                        let _this = this;
+                                        _this.id = item.row.senario_id;
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/senario/execStatus',{
+                                            header:{},
+                                            data:{
+                                                senario_id:_this.id
+                                            }
+                                        }).then(function(response){
+                                            console.log(response.data.resultMap.isRun);
+                                            if(response.data.resultMap.isRun){
+                                                _this.$Message.error("该任务正在进行，无法重复执行");
+                                            }else{
+                                                _this.showExeModal = true;
+                                            }
+                                        })
                                     }
                                 }
                             },'执行'),
@@ -595,8 +609,6 @@ export default {
             eveValidate: {        
                 exeType:'1',                             //执行类型
                 exeDateTime:new Date(),                         //执行时间
-               
-
             },
             eveRuleValidate:{
                 exeType:[
