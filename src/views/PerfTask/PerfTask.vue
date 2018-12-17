@@ -91,8 +91,8 @@
                 <div class="tableBox">
                     <div class="tableBtnBox">
                         <Button type="success" @click="addPTask" >新建任务</Button>
-                        <Button type="warning" @click="demandMetrics">测试需求</Button>
-                        <Button type="primary" @click="listPTask">测试指标</Button>
+                        <Button type="primary" @click="demandMetrics">测试需求</Button>
+                        <!-- <Button type="warning" @click="listPTask">测试指标</Button> -->
                         <Button @click="delPTask" type="error">删除</Button>
                     </div>
                     <!-- @on-row-dblclick="onRowDblClick" -->
@@ -676,6 +676,7 @@ export default {
             metricsPageno:1,                    // 当前页
             metricsPagesize:10,                 // 每页显示多少条数据
             metricsTblDataCopy: [],             // 一份metricTable表格的副本，当编辑项被服务器拒绝的时候用来还原数据
+            metricsEditingNo: 0,                // 记录当前处于新增或者编辑状态的测试需求个数，同时只允许1个
         }
     },
     created(){
@@ -835,7 +836,7 @@ export default {
                         data: {
                             component_name: _this.formSendCmpP.com_name,   // 物理子系统名称
                             ref_itm_id: _this.formSendCmpP.id,                  // ITM的物理子系统id
-                            cloud_id: -this.formSendCmpP.cloud_id,              // ITM同步云的时候的id
+                            cloud_id: _this.formSendCmpP.cloud_id,              // ITM同步云的时候的id
                             task_name: _this.addValidate.task_name,             // 任务名称
                             perftask_begin_date: _this.addValidate.perftask_begin_date,   // 任务开始日期
                             perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
@@ -1006,23 +1007,36 @@ export default {
                     // console.log("response.data.resultList: ", response.data.resultList);
                     _this.metricsTableData = response.data.resultList;
                     _this.metricsTblDataCopy = _this.metricsTableData;
+                    _this.metricsEditingNo = 0;
                 })
             }  
         }, 
         addDemand: function () {
-            let newDemandMtrc = {'metrics_type': '01', 'metrics_desc': '', 'is_add': true};
-            let mtrcTbDtLength = this.metricsTableData.push(newDemandMtrc);
-            // console.log("newDemandMtrc: ", newDemandMtrc);
-            // console.log("mtrcTbDtLength: ", mtrcTbDtLength);
-            // console.log("this.metricsTableData[mtrcTbDtLength-1]: ", this.metricsTableData[mtrcTbDtLength-1]);
-            this.$set(this.metricsTableData[mtrcTbDtLength-1], '$isEdit', true);
-            // this.addDmdItem = true;
+            if (this.metricsEditingNo != 0) {
+                this.$Message.error("存在尚未保存的测试需求，请先保存后再新建需求！");
+            } else {
+                this.metricsEditingNo = this.metricsEditingNo + 1;
+                let newDemandMtrc = {'metrics_type': '01', 'metrics_desc': '', 'is_add': true};
+                console.log("^^^ metricsTableData before push: ", this.metricsTableData);
+                let mtrcTbDtLength = this.metricsTableData.push(newDemandMtrc);
+                console.log("^^^ metricsTableData after push: ", this.metricsTableData);
+                // console.log("newDemandMtrc: ", newDemandMtrc);
+                // console.log("mtrcTbDtLength: ", mtrcTbDtLength);
+                // console.log("this.metricsTableData[mtrcTbDtLength-1]: ", this.metricsTableData[mtrcTbDtLength-1]);
+                this.$set(this.metricsTableData[mtrcTbDtLength-1], '$isEdit', true);
+                // this.addDmdItem = true;
+            }
         },
         /**数据编辑 */
         handleEdit:function(row) {
-            // console.log("row: ", row);
-            this.$set(row, '$isEdit', true);
-            // console.log(row);
+            if (this.metricsEditingNo != 0) {
+                this.$Message.error("存在尚未保存的测试需求，请先保存后再编辑下一个需求！")
+            } else {
+                this.metricsEditingNo = this.metricsEditingNo + 1;
+                // console.log("row: ", row);
+                this.$set(row, '$isEdit', true);
+                // console.log(row);
+            }
         },
         /**数据保存 */
         demandEditSave:function(row) {
@@ -1062,8 +1076,11 @@ export default {
                             _this.$Message.error(errDesc);
                             // console.log("^^^ metricsTblDataCopy: ", _this.metricsTblDataCopy);
                             _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
                         } else if (response.data.result == "ok") {
-                            _this.$set(row, 'metrics_desc', row.metrics_desc);
+                            // _this.$set(row, 'metrics_desc', row.metrics_desc);
+                            _this.$set(_this.metricsTableData, row._index, row);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
                         }
                     })
                 } else {
@@ -1094,7 +1111,8 @@ export default {
                             }
 
                             _this.$Message.error(errDesc);
-                            _this.metricsTableData.splice(row._index, 1); 
+                            _this.metricsTableData.splice(row._index, 1);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
                         } else if (response.data.result == "ok") {
                             let newDemandMtrc = {
                                 'id': response.data.resultMap.id, 
@@ -1104,6 +1122,7 @@ export default {
                                 '$isEdit': false
                             };
                             _this.$set(_this.metricsTableData, row._index, newDemandMtrc);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
                             // console.log("^^^ _this.metricsTableData: ", _this.metricsTableData);
                         }
                     })
