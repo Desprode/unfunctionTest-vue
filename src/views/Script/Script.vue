@@ -90,7 +90,7 @@
                                         :loading="srchCmploading"
                                         :transfer=false
                                         >
-                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" @click.native="getMoreCmpParams(option)">{{ option.label }}</Option>
+                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" @click.native="setMoreCmpParams(option)">{{ option.label }}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -527,10 +527,6 @@ export default {
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
                 this.script_id = res.resultList[0].script_id;
-                console.log(this.filesize)
-                console.log(this.script_filename)
-                console.log(this.script_filepath)
-                console.log(this.script_id)
             }
         },
         //the param set checkbox when onclick change the value to oppsite  
@@ -541,41 +537,8 @@ export default {
                 this.csvList[index].enable=true;
             }
         },
-        // srchComponent:function(query){
-        //     // console.log("now in srchComponent, this is ", this);
-        //     this.cmpOpts = [];
-        //     if(query !== ''){
-        //         this.srchCmploading = true;
-        //         setTimeout(()=>{
-        //             this.srchCmploading = false;
-        //             let _this = this;
-        //             this.$http.defaults.withCredentials = false;
-        //             this.$http.post('/myapi/component/searchFromITM',{
-        //                 headers:{},
-        //                 data:{
-        //                     kw: query,
-        //                     page: 1, 
-        //                     limit: 10, 
-        //                 },
-        //             }).then(function(response){
-        //                 //console.log('下拉框请求的响应',response);
-        //                 _this.list = response.data.resultList;
-        //                 _this.cmpOpts = _this.list.map(item =>{
-        //                     return {
-        //                         id: item.id,
-        //                         cloud_id: item.cloud_id, 
-        //                         com_name: item.com_name
-        //                     }
-        //                 });
-        //             })
-        //         },200)
-        //     }else{
-        //         this.cmpOpts = [];
-        //     }
-        // },
-        getMoreCmpParams: function(obj) {
+        setMoreCmpParams: function(obj) {
             this.addValidate.app_id = obj.value;
-            // this.addValidate.cloud_id = obj.cloud_id; 
             this.addValidate.app_name = obj.label;
         }, 
         searchAppname: function(query){
@@ -592,7 +555,6 @@ export default {
                             kw: query,
                             page: 1, 
                             limit: 10, 
-                            // name: _this.addValidate.app_name,    
                         },                        
                     }
                     ).then(function (response) {
