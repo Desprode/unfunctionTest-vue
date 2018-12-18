@@ -48,16 +48,19 @@
                     <span>参数化文件设置</span>
                 </p>
                 <div style="text-align:center">
-                    <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" label-position="left">
-                        <h3>请勾选可以拆分的参数化文件：</h3>
-                        <Row v-for="(item,index) in csvList" :key="index">
-
-                            <Col span="8">
-                                <FormItem :label-width="10" prop="fileName">
+                    <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" >
+                        <h3>请勾选可以拆分的参数化文件：</h3><br>
+                        <!-- <Row v-for="(item,index) in csvList" :key="index"> -->
+                            <Col span="8" v-for="(item,index) in csvList" :key="index" >
+                                <FormItem :label-width="20" prop="fileName" style="float:left">
                                     <Checkbox v-model="item.enable == 'true'?true:false" @on-change="isChecked(index)">{{item.fileName}}</Checkbox>  
                                 </FormItem>
+                                <br v-if="index/3 ==0">
                             </Col>
-                        </Row>
+                            <Row  v-for="(item,index) in csvList" :key="index">
+
+                            </Row>
+                        <!-- </Row> -->
                     </i-form>
                 </div>
                 <div slot="footer">
