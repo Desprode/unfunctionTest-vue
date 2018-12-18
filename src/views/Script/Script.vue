@@ -51,7 +51,8 @@
                     <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" label-position="left">
                         <h3>请勾选可以拆分的参数化文件：</h3>
                         <Row v-for="(item,index) in csvList" :key="index">
-                            <Col span="24">
+
+                            <Col span="8">
                                 <FormItem :label-width="10" prop="fileName">
                                     <Checkbox v-model="item.enable == 'true'?true:false" @on-change="isChecked(index)">{{item.fileName}}</Checkbox>  
                                 </FormItem>
@@ -175,7 +176,7 @@
             </Modal>
             <!--script edit end-->
             <!--script detail detail detail detail begin-->
-            <Modal v-model="showSetScript" width="800">
+            <Modal v-model="showDetail" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>脚本详情</span>
                 </p>
