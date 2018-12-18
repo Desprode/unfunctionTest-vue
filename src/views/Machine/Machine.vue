@@ -32,7 +32,7 @@
                         <Button @click="addMachine"  type="primary">新增</Button>
                         <Button @click="deleteMachine" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" ></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -584,6 +584,10 @@ export default {
         addMachine:function(){
             this.Deletips = true;
             console.log("显示模态框");
+        },
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            console.log(data)
         },
         setParam:function(){
             this.paramStatus = true;
