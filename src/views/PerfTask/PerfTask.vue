@@ -231,7 +231,7 @@
 
 
             <!--=================================== 测试需求的对话框 ===================================-->
-            <Modal v-model="demandMetricsModal" width="800">
+            <Modal v-model="demandMetricsModal" width="800" :closable="false">
                 <p slot="header" style="text-align:center" >
                     <span>测试需求</span>
                 </p>
@@ -241,10 +241,12 @@
                     </div>
                     <Table border  :columns="metricsCols" :data="metricsTableData" class="myTable"></Table>
                     <div class="pageBox" v-if="metricsTableData.length">
-                        <Page :total="parseInt(metricsTcount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                        <Page :total="parseInt(metricsTcount)" :current.sync="metricsPageno" show-elevator show-total show-sizer @on-change="metricsPageChange" @on-page-size-change="metricsPageSizeChange"></Page>
                     </div>
                 </div>
-                <div slot="footer"></div>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="closeDemandWin()">关闭</Button>
+                </div>
             </Modal>
         </Card>
     </div>
@@ -522,9 +524,9 @@ export default {
                     width: 150,
                     render : (h, params)=>{
                         let _this = this;
-                        console.log("^^^ params.row.metrics_type: ", params.row.metrics_type);
+                        // console.log("^^^ params.row.metrics_type: ", params.row.metrics_type);
                         let demandType = _this.$Global.demandTypeList;
-                        console.log("^^^ demandType: ", demandType);
+                        // console.log("^^^ demandType: ", demandType);
                         if (params.row.is_add == true && params.row.$isEdit) {
                             return h('div', [
                                 h("Select", {
@@ -533,13 +535,13 @@ export default {
                                     }, 
                                     on: {
                                         'on-change': (event) => {
-                                            console.log("^^^ event: ", event);
+                                            // console.log("^^^ event: ", event);
                                             params.row.metrics_type = event;
                                         }
                                     },
                                 },
                                 demandType.map(function(item) {
-                                    console.log("^^^ item: ", item);
+                                    // console.log("^^^ item: ", item);
                                     return [h(
                                         "Option", 
                                         {
@@ -594,11 +596,12 @@ export default {
                     key: 'opration',
                     width:130,
                     render: (h, params) => {
-                        if(params.row.$isEdit ){
+                        // if(params.row.$isEdit ){
                         return h('div', [
                             h('Button', {
                                 props: {
-                                    type: 'primary',
+                                    // type: 'primary',
+                                    type: params.row.$isEdit ? 'success' : 'primary', 
                                     size: 'small'
                                 },
                                 style: {
@@ -606,77 +609,116 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                          this.demandEditSave(params.row);
-                                        //   this.editCount --;
+                                        // this.demandEditSave(params.row);
+                                        if (params.row.$isEdit) {
+                                            this.demandEditSave(params.row);
+                                        } else {
+                                            this.handleDemandEdit(params.row);
+                                        }
                                     }
                                 }
-                            },'保存'),
-                            h('Button', {
+                            }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
+                            h('Poptip', {
                                 props: {
-                                    type: 'error',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
+                                    confirm: true, 
+                                    type: 'error', 
+                                    size: 'small', 
+                                    placement: 'left', 
+                                    title: '您确认删除这条内容吗？'
+                                }, 
                                 on: {
-                                    click: () => {
-                                        this.editPTaskModal = true;
-                                        this.editPTaskValidate.index = params.row._index;
-                                        this.editPTaskValidate.id = params.row.id;
-                                        this.editPTaskValidate.component_name = params.row.component_name;
-                                        this.editPTaskValidate.perftask_name = params.row.perftask_name;
+                                    'on-ok': () => {
+                                        let _this = this;
+
+                                        this.$http.defaults.withCredentials = false;
+                                        this.$http.post('/myapi/metrics/del',{
+                                            header:{},
+                                            data:{
+                                                id: params.row.id, 
+                                            }
+                                        }).then(function(response){
+                                            if (response.data.result == "fail") {
+                                                let errDesc = _this.handleErrCode(response);
+
+                                                _this.$Message.error(errDesc);
+                                            } else if (response.data.result == "ok") {
+                                                _this.metricsTableData.splice(params.row._index, 1);
+                                            }
+                                        })
                                     }
                                 }
-                            }, '删除'), 
-                        
+                            }, [
+                                h('Button', {
+                                    props: {
+                                        type: 'error', 
+                                        size: 'small'
+                                    }, 
+                                    style: {
+                                        marginRight: '5px'
+                                    }, 
+                                }, '删除')
+                            ]), 
+                            // h('Button', {
+                            //     props: {
+                            //         type: 'error',
+                            //         size: 'small'
+                            //     },
+                            //     style: {
+                            //         marginRight: '5px'
+                            //     },
+                            //     on: {
+                            //         click: () => {
+                            //             this.dmetricsDelModal = true;
+                            //         }
+                            //     }
+                            // }, '删除'), 
                         ])
-                        }else{
-                            return h('div', [
-                                h('Button', {
-                                    props: {
-                                        type: 'success',
-                                        size: 'small'
-                                    },
-                                    style: {
-                                        marginRight: '5px'
-                                    },
-                                    on: {
-                                        click: () => {
-                                            this.handleEdit(params.row);
-                                            // this.editCount ++;
-                                        }
-                                    }
-                                },'编辑'),
-                                h('Button', {
-                                    props: {
-                                        type: 'error',
-                                        size: 'small'
-                                    },
-                                    style: {
-                                        marginRight: '5px'
-                                    },
-                                    on: {
-                                        click: () => {
-                                            this.editPTaskModal = true;
-                                            this.editPTaskValidate.index = params.row._index;
-                                            this.editPTaskValidate.id = params.row.id;
-                                            this.editPTaskValidate.component_name = params.row.component_name;
-                                            this.editPTaskValidate.perftask_name = params.row.perftask_name;
-                                        }
-                                    }
-                                }, '删除'), 
-                            ])
-                        }
+                        // }else{
+                        //     return h('div', [
+                        //         h('Button', {
+                        //             props: {
+                        //                 type: 'success',
+                        //                 size: 'small'
+                        //             },
+                        //             style: {
+                        //                 marginRight: '5px'
+                        //             },
+                        //             on: {
+                        //                 click: () => {
+                        //                     this.handleDemandEdit(params.row);
+                        //                 }
+                        //             }
+                        //         },'编辑'),
+                        //         h('Button', {
+                        //             props: {
+                        //                 type: 'error',
+                        //                 size: 'small'
+                        //             },
+                        //             style: {
+                        //                 marginRight: '5px'
+                        //             },
+                        //             on: {
+                        //                 click: () => {
+                        //                     this.editPTaskModal = true;
+                        //                     this.editPTaskValidate.index = params.row._index;
+                        //                     this.editPTaskValidate.id = params.row.id;
+                        //                     this.editPTaskValidate.component_name = params.row.component_name;
+                        //                     this.editPTaskValidate.perftask_name = params.row.perftask_name;
+                        //                 }
+                        //             }
+                        //         }, '删除'), 
+                        //     ])
+                        // }
                     }
                 }
             ], 
             metricsTableData: [], 
-            metricsTcount: 0, 
+            metricsTcount: 0,                   // 共多少条数据
             metricsPageno:1,                    // 当前页
             metricsPagesize:10,                 // 每页显示多少条数据
             metricsTblDataCopy: [],             // 一份metricTable表格的副本，当编辑项被服务器拒绝的时候用来还原数据
             metricsEditingNo: 0,                // 记录当前处于新增或者编辑状态的测试需求个数，同时只允许1个
+            dmetricsDelModal: false, 
         }
     },
     created(){
@@ -705,17 +747,27 @@ export default {
                             limit: 10, 
                         },
                     }).then(function(response){
-                        //console.log('下拉框请求的响应',response);
-                        _this.list = response.data.resultList;
-                        _this.cmpOpts = _this.list.map(item =>{
-                            return {
-                                id: item.id,
-                                cloud_id: item.cloud_id, 
-                                com_name: item.com_name
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                        } else if (response.data.result == "ok") {
+                            //console.log('下拉框请求的响应',response);
+                            if (response.data['resultList']) {
+                                _this.list = response.data.resultList;
+                                _this.cmpOpts = _this.list.map(item =>{
+                                    return {
+                                        id: item.id,
+                                        cloud_id: item.cloud_id, 
+                                        com_name: item.com_name
+                                    }
+                                });
+                            } else {
+                                _this.$Message.error("返回结果无resultList");
                             }
-                        });
-                        //console.log('赋值给预选项',_this.cmpOpts);
+                        }
                     })
+                    // 原物理子系统获取方式（调用鲁振兴查询本地component表），该交易目前仍存在，调用方式也为改变，只是任务管理不再调用，场景中的监控会调用
                     // this.$http.post('/myapi/component/search',{
                     //     headers:{},
                     //     data:{
@@ -748,7 +800,7 @@ export default {
         /**==================== 任务列表相关事件 ====================*/
         listPTask: function() {
             let _this = this;
-            console.log("任务来源:", _this.sTaskSource);
+            // console.log("任务来源:", _this.sTaskSource);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
                 header: {},
@@ -765,21 +817,24 @@ export default {
                     ptask_source: _this.sTaskSource,            // 任务来源
 
                     pageno:this.pageno,                         // 当前页码
-                    pagesize:this.pagesize                      // 当前页面大小
+                    pagesize:this.pagesize                      // 每页展示条数
                     
                 }
             }).then(function (response) {
-                console.log("列表请求回来的分页数据",response.headers);
-                console.log("请求回来的模糊查询数据",response.data);
-                let result = response.data.result;
-                console.log("result: ", result);
-                if (result == "ok"){
-                    console.log("******** result ok *********");
+                if (response.data.result == "fail") {
+                    let errDesc = _this.handleErrCode(response);
+
+                    _this.$Message.error(errDesc);
+                } else if (response.data.result == "ok") {
+                    // console.log("列表请求回来的分页数据",response.headers);
+                    // console.log("请求回来的模糊查询数据",response.data);
+                    let result = response.data.result;
+                    // console.log("result: ", result);
+                    _this.totalcount = response.headers.totalcount;               //将总的数据条数赋值后渲染
+                    _this.tableData = response.data.resultList;
+                    // console.log("*****************_this.tableData: ", _this.tableData);
+                    // console.log("~~~~~~~~~~~~~~~~~~~columns: ", _this.columns);
                 }
-                _this.totalcount = response.headers.totalcount               //将总的数据条数赋值后渲染
-                _this.tableData = response.data.resultList;
-                // console.log("*****************_this.tableData: ", _this.tableData);
-                // console.log("~~~~~~~~~~~~~~~~~~~columns: ", _this.columns);
             })
         },
         /**分页查询功能----切换每页大小 */
@@ -845,18 +900,7 @@ export default {
                         }
                     }).then(function (response) {
                         if (response.data.result == "fail") {
-                            let errDesc = "";
-                            if (response.data.err_code != null) {
-                                errDesc = errDesc + "errCode: " + response.data.err_code;
-                            } else {
-                                errDesc = "no errCode";
-                            }
-
-                            if (response.data.err_desc != null) {
-                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
-                            } else {
-                                errDesc = errDesc + " —— no errDesc";
-                            }
+                            let errDesc = _this.handleErrCode(response);
 
                             _this.$Message.error(errDesc);
                             _this.addPTaskModal = false;
@@ -903,12 +947,19 @@ export default {
                             perftask_status: _this.editPTaskValidate.perftask_status, 
                         }
                     }).then(function (response) {
-                        _this.$Message.success('提交成功!');
-                        _this.editPTaskModal = false;
-                        // console.log('tableData before: ', _this.tableData);
-                        // console.log('index: ', _this.editPTaskValidate.index);
-                        _this.$set(_this.tableData, _this.editPTaskValidate.index, _this.editPTaskValidate);
-                        // console.log('tableData after: ', _this.tableData);
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                            _this.editPTaskModal = false;
+                        } else if (response.data.result == "ok") {
+                            _this.$Message.success('提交成功!');
+                            _this.editPTaskModal = false;
+                            // console.log('tableData before: ', _this.tableData);
+                            // console.log('index: ', _this.editPTaskValidate.index);
+                            _this.$set(_this.tableData, _this.editPTaskValidate.index, _this.editPTaskValidate);
+                            // console.log('tableData after: ', _this.tableData);
+                        }
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
@@ -924,14 +975,14 @@ export default {
         /*删除按钮功能*/
         delPTask: function() {
             let selectedData=this.selectedData;      //选中要删除的数据
-            console.log("selectedData", selectedData);
+            // console.log("selectedData", selectedData);
 
             if(selectedData.length>0){               //如果有选中的数据
                 this.delPTaskModal = true;
-                console.log("***********");
-                console.log("before: ", this.delPTaskValidate);
+                // console.log("***********");
+                // console.log("before: ", this.delPTaskValidate);
                 this.delPTaskValidate.delPTaskList = selectedData;
-                console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
+                // console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
             }else{
                     this.$Message.error("请选择要删除的数据")
             }
@@ -957,24 +1008,31 @@ export default {
                     ids: delIds
                 }
             }).then(function (response) {
-                _this.$Message.success('删除成功!');
-                _this.delPTaskModal = false;
-                for (let i in delIds) {
-                    // console.log("delIds[i]: ", delIds[i]);
-                    for (let index in tableData) {
-                        // console.log("tableData[index].id: ", tableData[index].id);
-                        if (tableData[index].id == delIds[i]) {
-                            // console.log("==now equal==");
-                            tableData.splice(index, 1);        //删除表格中展示的数据
-                            break;
+                if (response.data.result == "fail") {
+                    let errDesc = _this.handleErrCode(response);
+
+                    _this.$Message.error(errDesc);
+                    _this.delPTaskModal = false;
+                } else if (response.data.result == "ok") {
+                    _this.$Message.success('删除成功!');
+                    _this.delPTaskModal = false;
+                    for (let i in delIds) {
+                        // console.log("delIds[i]: ", delIds[i]);
+                        for (let index in tableData) {
+                            // console.log("tableData[index].id: ", tableData[index].id);
+                            if (tableData[index].id == delIds[i]) {
+                                // console.log("==now equal==");
+                                tableData.splice(index, 1);        //删除表格中展示的数据
+                                break;
+                            }
                         }
+                        // tableData.forEach((item,index) => {      //对原有的数据进行遍历
+                        //     if(item.id == id){       //当原有的数据与要删除的数据中有相同的数据时，
+                        //         // console.log("tableData index:", index);
+                        //         tableData.splice(index, 1);        //删除表格中展示的数据
+                        //     }
+                        // });
                     }
-                    // tableData.forEach((item,index) => {      //对原有的数据进行遍历
-                    //     if(item.id == id){       //当原有的数据与要删除的数据中有相同的数据时，
-                    //         // console.log("tableData index:", index);
-                    //         tableData.splice(index, 1);        //删除表格中展示的数据
-                    //     }
-                    // });
                 }
             })
         }, 
@@ -984,7 +1042,7 @@ export default {
         },
 
         /**==================== 测试需求相关事件 ====================*/
-        demandMetrics:function(){
+        demandMetrics: function(){
             let selectedData=this.selectedData; 
             // console.log("---selectedData: ", selectedData);
 
@@ -1002,24 +1060,47 @@ export default {
                     header: {},
                     data: {
                         perftask_id: selectedData[0].id, 
+
+                        pageno: _this.metricsPageno,                         // 当前页码
+                        pagesize: _this.metricsPagesize,                     // 每页展示条数
                     }
                 }).then(function (response) {
-                    // console.log("response.data.resultList: ", response.data.resultList);
-                    _this.metricsTableData = response.data.resultList;
-                    _this.metricsTblDataCopy = _this.metricsTableData;
-                    _this.metricsEditingNo = 0;
+                    if (response.data.result == "fail") {
+                        let errDesc = _this.handleErrCode(response);
+
+                        _this.$Message.error(errDesc);
+                        _this.metricsEditingNo = 0;
+                    } else if (response.data.result == "ok") {
+                        // console.log("response.data.resultList: ", response.data.resultList);
+                        _this.metricsTableData = response.data.resultList;
+                        _this.metricsTcount = response.headers.totalcount;
+                        _this.metricsTblDataCopy = _this.metricsTableData;
+                        _this.metricsEditingNo = 0;
+                    }
                 })
             }  
         }, 
+        /**分页查询功能----切换每页大小 */
+        metricsPageSizeChange: function(pagesize){
+            //console.log("页码大小切换",pagesize);
+            this.metricsPagesize = pagesize;                     //改变当前页大小后
+            this.demandMetrics();                             //重新请求数据
+        },
+        /**分页查询功能----切换当前页 */
+        metricsPageChange: function(pageno){
+            //console.log("页码切换",pageno);
+            this.metricsPageno = pageno; 
+            this.demandMetrics();
+        },
         addDemand: function () {
             if (this.metricsEditingNo != 0) {
                 this.$Message.error("存在尚未保存的测试需求，请先保存后再新建需求！");
             } else {
                 this.metricsEditingNo = this.metricsEditingNo + 1;
                 let newDemandMtrc = {'metrics_type': '01', 'metrics_desc': '', 'is_add': true};
-                console.log("^^^ metricsTableData before push: ", this.metricsTableData);
+                // console.log("^^^ metricsTableData before push: ", this.metricsTableData);
                 let mtrcTbDtLength = this.metricsTableData.push(newDemandMtrc);
-                console.log("^^^ metricsTableData after push: ", this.metricsTableData);
+                // console.log("^^^ metricsTableData after push: ", this.metricsTableData);
                 // console.log("newDemandMtrc: ", newDemandMtrc);
                 // console.log("mtrcTbDtLength: ", mtrcTbDtLength);
                 // console.log("this.metricsTableData[mtrcTbDtLength-1]: ", this.metricsTableData[mtrcTbDtLength-1]);
@@ -1028,7 +1109,7 @@ export default {
             }
         },
         /**数据编辑 */
-        handleEdit:function(row) {
+        handleDemandEdit: function(row) {
             if (this.metricsEditingNo != 0) {
                 this.$Message.error("存在尚未保存的测试需求，请先保存后再编辑下一个需求！")
             } else {
@@ -1039,7 +1120,7 @@ export default {
             }
         },
         /**数据保存 */
-        demandEditSave:function(row) {
+        demandEditSave: function(row) {
             if (row.metrics_desc == '') {
                 this.$Message.error("需求描述不能为空");
             } else {
@@ -1060,26 +1141,14 @@ export default {
                         }
                     }).then(function(response){
                         if (response.data.result == "fail") {
-                            let errDesc = "";
-                            if (response.data.err_code != null) {
-                                errDesc = errDesc + "errCode: " + response.data.err_code;
-                            } else {
-                                errDesc = "no errCode";
-                            }
-
-                            if (response.data.err_desc != null) {
-                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
-                            } else {
-                                errDesc = errDesc + " —— no errDesc";
-                            }
+                            let errDesc = _this.handleErrCode(response);
 
                             _this.$Message.error(errDesc);
                             // console.log("^^^ metricsTblDataCopy: ", _this.metricsTblDataCopy);
-                            _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc);
+                            _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc); // 临时性的
                             _this.metricsEditingNo = _this.metricsEditingNo - 1;
                         } else if (response.data.result == "ok") {
-                            // _this.$set(row, 'metrics_desc', row.metrics_desc);
-                            _this.$set(_this.metricsTableData, row._index, row);
+                            _this.$set(_this.metricsTableData, row._index, row);    // 真实的修改
                             _this.metricsEditingNo = _this.metricsEditingNo - 1;
                         }
                     })
@@ -1097,18 +1166,7 @@ export default {
                         }
                     }).then(function(response){
                         if (response.data.result == "fail") {
-                            let errDesc = "";
-                            if (response.data.err_code != null) {
-                                errDesc = errDesc + "errCode: " + response.data.err_code;
-                            } else {
-                                errDesc = "no errCode";
-                            }
-
-                            if (response.data.err_desc != null) {
-                                errDesc = errDesc + " —— errDesc: " + response.data.err_desc;
-                            } else {
-                                errDesc = errDesc + " —— no errDesc";
-                            }
+                            let errDesc = _this.handleErrCode(response);
 
                             _this.$Message.error(errDesc);
                             _this.metricsTableData.splice(row._index, 1);
@@ -1129,12 +1187,38 @@ export default {
                 }
             }
         },
+        /**关闭测试需求窗口 */
+        closeDemandWin (){
+            this.metricsPagesize = 10;
+            this.metricsPageno = 1;
+            this.demandMetricsModal = false;
+            // this.demandMetrics();
+        }, 
+        
 
         /**清除搜索条件 */
         handleReset (name) {
             //console.log(this.$refs)
             this.$refs[name].resetFields();
-        }
+        }, 
+
+        /**错误信息处理函数 */
+        handleErrCode (resp) {
+            let errDesc = "";
+            if (resp.data.err_code != null) {
+                errDesc = errDesc + "errCode: " + resp.data.err_code;
+            } else {
+                errDesc = "no errCode";
+            }
+
+            if (resp.data.err_desc != null) {
+                errDesc = errDesc + " —— errDesc: " + resp.data.err_desc;
+            } else {
+                errDesc = errDesc + " —— no errDesc";
+            }
+
+            return errDesc;
+        }, 
     }
 }
 </script>
