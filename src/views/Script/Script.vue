@@ -538,6 +538,38 @@ export default {
                 this.csvList[index].enable=true;
             }
         },
+        srchComponent:function(query){
+            // console.log("now in srchComponent, this is ", this);
+            this.cmpOpts = [];
+            if(query !== ''){
+                this.srchCmploading = true;
+                setTimeout(()=>{
+                    this.srchCmploading = false;
+                    let _this = this;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/component/searchFromITM',{
+                        headers:{},
+                        data:{
+                            kw: query,
+                            page: 1, 
+                            limit: 10, 
+                        },
+                    }).then(function(response){
+                        //console.log('下拉框请求的响应',response);
+                        _this.list = response.data.resultList;
+                        _this.cmpOpts = _this.list.map(item =>{
+                            return {
+                                id: item.id,
+                                cloud_id: item.cloud_id, 
+                                com_name: item.com_name
+                            }
+                        });
+                    })
+                },200)
+            }else{
+                this.cmpOpts = [];
+            }
+        },
         searchAppname: function(query){
             this.appNameOpts = [];
             if (query !== '') {
@@ -546,10 +578,13 @@ export default {
                     this.srchCmploading = false;
                     let _this = this
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/search', 
+                    this.$http.post('/myapi/component/searchFromITM', 
                     {
                         data: {
-                            name: _this.addValidate.app_name,                            
+                            kw: query,
+                            page: 1, 
+                            limit: 10, 
+                            // name: _this.addValidate.app_name,    
                         },                        
                     }
                     ).then(function (response) {
@@ -559,8 +594,11 @@ export default {
                         console.log('list-after: ', _this.list);
                         const list = _this.list.map(item => {
                             return {
+                                // value: item.id,
+                                // label: item.comp_name
                                 value: item.id,
-                                label: item.comp_name
+                                // cloud_id: item.cloud_id, 
+                                label: item.com_name
                             };
                         });
                         _this.appNameOpts = list
