@@ -324,7 +324,7 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                    this.showSetScript = true;
+                                    this.editMachineStatus = true;                                    
                                     console.log(item.row);
                                     let _this = this;
                                     this.$http.defaults.withCredentials = false;
@@ -674,7 +674,7 @@ export default {
                             }else{
                                 _this.$Message.error('编辑失败'+response.data.err_desc);
                             }
-                            _this.Deletips = false;
+                            _this.editMachineStatus = false;
                             _this.$refs[name].resetFields();
                         }
                     })
@@ -685,8 +685,9 @@ export default {
         },       
         /**模态框弹出取消事件 */
         cancel () {
-            this.$Message.info('您取消了添加机器!');
+            // this.$Message.info('您取消了添加机器!');
             this.Deletips = false;
+            this.editMachineStatus=false;
         },
         /**清除搜索条件 */
         handleReset (name) {
