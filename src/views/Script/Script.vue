@@ -82,9 +82,15 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="物理子系统" >
-                                    <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" filterable remote 
-                                        :remote-method="searchAppname" :loading="srchCmploading">
-                                    <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
+                                    <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" 
+                                        clearable
+                                        filterable 
+                                        remote 
+                                        :remote-method="searchAppname" 
+                                        :loading="srchCmploading"
+                                        :transfer=false
+                                        >
+                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" @click.native="getMoreCmpParams(option)">{{ option.label }}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -99,7 +105,7 @@
                         <Row>
                             <i-col span="20">
                                 <Form-item label="上传文件：" prop="script_filename">
-                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)"></i-input>
+                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
@@ -123,7 +129,7 @@
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框end-->
-            <!--script edit begin-->
+            <!--script edit editeditediteditediteditbegin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>编辑脚本</span>
@@ -133,23 +139,20 @@
                         <Input v-model="setValidate.script_id"></Input>
                     </FormItem> -->
                     <FormItem label="脚本名称:" prop="script_name">                      
-                    <Input v-model="setValidate.script_name"></Input>
+                        <Input v-model="setValidate.script_name"></Input>
                     </FormItem>
-                    <FormItem label="物理子系统:" >                      
-                        <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
-                            :remote-method="searchAppname" :loading="srchCmploading">
-                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
-                        </Select>
+                    <FormItem label="物理子系统:" prop="app_name">                      
+                        <Input v-model="setValidate.app_name" readonly="readonly"></Input>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
                         <Input v-model="setValidate.memo"></Input>
                     </FormItem>
                     <FormItem label="创建时间:" prop="create_time">                      
-                        <Input v-model="setValidate.create_time"></Input>
+                        <Input v-model="setValidate.create_time" readonly="readonly"></Input>
                     </FormItem>
                     <i-col span="20">
                         <Form-item label="更新脚本：" prop="script_filename">
-                            <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)"></i-input>
+                            <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
                         </Form-item>                                
                     </i-col>        
                     <i-col span=4 >
@@ -171,23 +174,23 @@
                 </div>
             </Modal>
             <!--script edit end-->
-            <!--script detail begin-->
+            <!--script detail detail detail detail begin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
-                    <span>编辑脚本</span>
+                    <span>脚本详情</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                    <!-- <FormItem label="脚本ID:" prop="script_id" >                      
+                    <FormItem label="脚本ID:" prop="script_id" >                      
                         <Input v-model="setValidate.script_id"></Input>
-                    </FormItem> -->
-                    <FormItem label="脚本名称:" prop="script_name">                      
-                    <Input v-model="setValidate.script_name"></Input>
                     </FormItem>
-                    <FormItem label="物理子系统:" >                      
-                        <Select  clearable v-model="setValidate.app_name" placeholder="请选择物理子系统" filterable remote 
-                            :remote-method="searchAppname" :loading="srchCmploading">
-                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index">{{ option.label }}</Option>
-                        </Select>
+                    <FormItem label="脚本名称:" prop="script_name">                      
+                        <Input v-model="setValidate.script_name"></Input>
+                    </FormItem>
+                    <FormItem label="脚本大小:" prop="filesize">                      
+                        <Input v-model="setValidate.filesize"></Input>
+                    </FormItem>
+                    <FormItem label="物理子系统:" prop="app_name">                      
+                        <Input v-model="setValidate.app_name"></Input>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
                         <Input v-model="setValidate.memo"></Input>
@@ -195,23 +198,12 @@
                     <FormItem label="创建时间:" prop="create_time">                      
                         <Input v-model="setValidate.create_time"></Input>
                     </FormItem>
-                    <i-col span="20">
-                        <Form-item label="更新脚本：" prop="script_filename">
-                            <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)"></i-input>
-                        </Form-item>                                
-                    </i-col>        
-                    <i-col span=4 >
-                        <Upload ref="upload"
-                                name="file"
-                                action="/myapi/scripts/upload" 
-                                :before-upload="handleUpload" 
-                                :format="['zip']" 
-                                :on-success="uploadSuccess"
-                                :on-format-error="handleFormatError"
-                                v-model="setValidate.script_filename">
-                            <Button icon="ios-cloud-upload-outline">上传文件</Button>
-                        </Upload>
-                    </i-col> 
+                    <FormItem label="更新时间:" prop="update_time">                      
+                        <Input v-model="setValidate.update_time"></Input>
+                    </FormItem>
+                    <FormItem label="创建人:" prop="script_manager_id">                      
+                        <Input v-model="setValidate.script_manager_id"></Input>
+                    </FormItem>
                 </Form>
                 <div slot="footer">
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
@@ -386,15 +378,22 @@ export default {
                                         console.log(item.row);
                                         let _this = this;
                                         this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/scripts/checkEdit',{
+                                        this.$http.post('/myapi/scripts/view',{
                                             data:{
                                                 id:item.row.id,
                                             }
                                         }).then(function(response){
                                             console.log("script编辑接口response.data",response.data);
-                                            // _this.rowid=response.data.executor_id;
-                                            // _this.csvList = response.data.resultList;
-                                            // console.log("_this.csvList======"+_this.csvList);
+                                            _this.setValidate.script_name= response.data.resultList[0].script_name;
+                                            _this.setValidate.script_id= response.data.resultList[0].script_id;
+                                            _this.setValidate.app_name= response.data.resultList[0].app_name;
+                                            _this.setValidate.memo= response.data.resultList[0].memo;
+                                            _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                            _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                                            _this.setValidate.update_time= response.data.resultList[0].updated_time;
+                                            _this.setValidate.filesize= response.data.resultList[0].filesize;
+                                            // _this.setValidate.update_time= response.data.resultList[0].updated_time;
+                                            
                                         })
                                     }
                                 }
@@ -428,6 +427,7 @@ export default {
             addValidate: {
                     script_name: '',
                     app_name: '',
+                    app_id:'',
                     memo: '',
                     script_filename: ''
                 },
@@ -438,9 +438,9 @@ export default {
                 // app_name: [
                 //     { required: true, message: '此项为必填项', trigger: 'blur' }
                 // ],
-                memo: [
-                    { required: true, message: '此项为必填项', trigger: 'blur' }
-                ],
+                // memo: [
+                //     { required: true, message: '此项为必填项', trigger: 'blur' }
+                // ],
                 script_filename: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ]
@@ -451,18 +451,21 @@ export default {
                 app_name:'',
                 memo:'',                                
                 create_time:'',                                       
-                script_filename:'',                                       
+                script_filename:'',
+                update_time:'',
+                script_manager_id:'' ,
+                filesize:''                                      
             },
             setRuleValidate:{
                 script_name:[
                     {required:false,message:'',trigger:'blur'}
                 ],
-                app_name:[
-                    {required:true,message:'',trigger:'blur'}
-                ],
-                memo:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ],
+                // app_name:[
+                //     {required:true,message:'',trigger:'blur'}
+                // ],
+                // memo:[
+                //     {required:true,message:'这是必输字段',trigger:'blur'}
+                // ],
                 script_filename:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
@@ -507,7 +510,7 @@ export default {
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
         handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
+            var reg=new RegExp("[^a-zA-Z0-9\_\-\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
             if(reg.test(fname)==true){
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
@@ -538,38 +541,43 @@ export default {
                 this.csvList[index].enable=true;
             }
         },
-        srchComponent:function(query){
-            // console.log("now in srchComponent, this is ", this);
-            this.cmpOpts = [];
-            if(query !== ''){
-                this.srchCmploading = true;
-                setTimeout(()=>{
-                    this.srchCmploading = false;
-                    let _this = this;
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/searchFromITM',{
-                        headers:{},
-                        data:{
-                            kw: query,
-                            page: 1, 
-                            limit: 10, 
-                        },
-                    }).then(function(response){
-                        //console.log('下拉框请求的响应',response);
-                        _this.list = response.data.resultList;
-                        _this.cmpOpts = _this.list.map(item =>{
-                            return {
-                                id: item.id,
-                                cloud_id: item.cloud_id, 
-                                com_name: item.com_name
-                            }
-                        });
-                    })
-                },200)
-            }else{
-                this.cmpOpts = [];
-            }
-        },
+        // srchComponent:function(query){
+        //     // console.log("now in srchComponent, this is ", this);
+        //     this.cmpOpts = [];
+        //     if(query !== ''){
+        //         this.srchCmploading = true;
+        //         setTimeout(()=>{
+        //             this.srchCmploading = false;
+        //             let _this = this;
+        //             this.$http.defaults.withCredentials = false;
+        //             this.$http.post('/myapi/component/searchFromITM',{
+        //                 headers:{},
+        //                 data:{
+        //                     kw: query,
+        //                     page: 1, 
+        //                     limit: 10, 
+        //                 },
+        //             }).then(function(response){
+        //                 //console.log('下拉框请求的响应',response);
+        //                 _this.list = response.data.resultList;
+        //                 _this.cmpOpts = _this.list.map(item =>{
+        //                     return {
+        //                         id: item.id,
+        //                         cloud_id: item.cloud_id, 
+        //                         com_name: item.com_name
+        //                     }
+        //                 });
+        //             })
+        //         },200)
+        //     }else{
+        //         this.cmpOpts = [];
+        //     }
+        // },
+        getMoreCmpParams: function(obj) {
+            this.addValidate.app_id = obj.value;
+            // this.addValidate.cloud_id = obj.cloud_id; 
+            this.addValidate.app_name = obj.label;
+        }, 
         searchAppname: function(query){
             this.appNameOpts = [];
             if (query !== '') {
@@ -863,6 +871,7 @@ export default {
                         data:{
                             script_name:_this.addValidate.script_name,
                             app_name:_this.addValidate.app_name,
+                            app_id:_this.addValidate.app_id,
                             memo:_this.addValidate.memo,
                             script_filename:_this.addValidate.script_filename,
                             filesize:_this.filesize,
