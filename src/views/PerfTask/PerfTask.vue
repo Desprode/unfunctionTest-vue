@@ -800,7 +800,7 @@ export default {
         /**==================== 任务列表相关事件 ====================*/
         listPTask: function() {
             let _this = this;
-            console.log("任务来源:", _this.sTaskSource);
+            // console.log("任务来源:", _this.sTaskSource);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
                 header: {},
@@ -826,10 +826,10 @@ export default {
 
                     _this.$Message.error(errDesc);
                 } else if (response.data.result == "ok") {
-                    console.log("列表请求回来的分页数据",response.headers);
-                    console.log("请求回来的模糊查询数据",response.data);
+                    // console.log("列表请求回来的分页数据",response.headers);
+                    // console.log("请求回来的模糊查询数据",response.data);
                     let result = response.data.result;
-                    console.log("result: ", result);
+                    // console.log("result: ", result);
                     _this.totalcount = response.headers.totalcount;               //将总的数据条数赋值后渲染
                     _this.tableData = response.data.resultList;
                     // console.log("*****************_this.tableData: ", _this.tableData);
@@ -975,14 +975,14 @@ export default {
         /*删除按钮功能*/
         delPTask: function() {
             let selectedData=this.selectedData;      //选中要删除的数据
-            console.log("selectedData", selectedData);
+            // console.log("selectedData", selectedData);
 
             if(selectedData.length>0){               //如果有选中的数据
                 this.delPTaskModal = true;
-                console.log("***********");
-                console.log("before: ", this.delPTaskValidate);
+                // console.log("***********");
+                // console.log("before: ", this.delPTaskValidate);
                 this.delPTaskValidate.delPTaskList = selectedData;
-                console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
+                // console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
             }else{
                     this.$Message.error("请选择要删除的数据")
             }
@@ -1098,9 +1098,9 @@ export default {
             } else {
                 this.metricsEditingNo = this.metricsEditingNo + 1;
                 let newDemandMtrc = {'metrics_type': '01', 'metrics_desc': '', 'is_add': true};
-                console.log("^^^ metricsTableData before push: ", this.metricsTableData);
+                // console.log("^^^ metricsTableData before push: ", this.metricsTableData);
                 let mtrcTbDtLength = this.metricsTableData.push(newDemandMtrc);
-                console.log("^^^ metricsTableData after push: ", this.metricsTableData);
+                // console.log("^^^ metricsTableData after push: ", this.metricsTableData);
                 // console.log("newDemandMtrc: ", newDemandMtrc);
                 // console.log("mtrcTbDtLength: ", mtrcTbDtLength);
                 // console.log("this.metricsTableData[mtrcTbDtLength-1]: ", this.metricsTableData[mtrcTbDtLength-1]);
