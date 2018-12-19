@@ -20,6 +20,7 @@ import Base from   '@/views/ExeResult/Report/Mix.vue'
 import Machine from '@/views/Machine/Machine.vue'
 import SysPluginMgr from '@/views/SysPluginMgr/SysPluginMgr.vue'
 import UserPluginMgr from '@/views/UserPluginMgr/UserPluginMgr.vue'
+import MonitorEcharts from '@/views/ExeQueue/MonitorEcharts.vue'
 
 //合并挡板配置
 // const BaffleConfiguration = resolve => require(['@/views/BaffleConfiguration/BaffleConfigurationIndex/BaffleConfiguration'],resolve);
@@ -108,6 +109,11 @@ export default new Router({
           name:'monitoring',
           component:Monitoring,
           props:true
+        },
+        {
+          path:'/monitorEcharts',
+          name:'monitorEcharts',
+          component:MonitorEcharts,
         },
         
         // {

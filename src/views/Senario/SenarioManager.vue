@@ -1210,7 +1210,7 @@ export default {
                     console.log(response);
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='1';
-                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id}});
+                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name}});
                 })
             }else{
                 console.log(this.eveValidate.exeDateTime);
@@ -1227,7 +1227,7 @@ export default {
                     console.log(response.data.resultMap.exec_id);
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='0';
-                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id}});
+                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name}});
                 })
             }
         },
