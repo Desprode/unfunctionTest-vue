@@ -86,7 +86,8 @@
                 CPUData:[
                     {
 						label:"分类一",
-						children:[{label:"128.196.52.134"},{label:"128.196.52.135"},{label:"128.196.52.136"}]
+                        checked:true,
+						children:[{label:"128.196.52.134",checked:true},{label:"128.196.52.135",checked:true},{label:"128.196.52.136",checked:true}]
 					},
 					{
 						label:"分类二",
