@@ -7,6 +7,11 @@ import 'iview/dist/styles/iview.css';
 import axios from 'axios';
 import store from './store/index.js';
 import router from './router';
+//引入图标echarts
+import echarts from 'echarts';
+//添加主题
+import 'echarts/theme/infographic.js';
+
 
 Vue.use(iView);
 Vue.prototype.$Message.config({
@@ -29,6 +34,8 @@ Vue.config.productionTip = false
 //axios.defaults.baseURL = 'http://128.195.0.12:8080/'
 // 配置axios
 Vue.prototype.$http = axios;
+//配置echarts
+Vue.prototype.$echarts = echarts
 
 /* eslint-disable no-new */
 new Vue({
