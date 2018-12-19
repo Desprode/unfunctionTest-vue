@@ -57,9 +57,9 @@
                                 </FormItem>
                                 <br v-if="index/3 ==0">
                             </Col>
-                            <Row  v-for="(item,index) in csvList" :key="index">
+                           <Row  v-for="(item,index) in csvList" :key="index">
 
-                            </Row>
+                            </Row> 
                         <!-- </Row> -->
                     </i-form>
                 </div>
@@ -79,7 +79,7 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" on-blur="checkScriptName();"></i-input>
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" ></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
@@ -224,6 +224,15 @@
 export default {
 	name: 'TestCase',
     data () {
+        const validateScriptName = function(rule, value, callback) {
+            // var flag = this.checkScriptName(value);
+            // if(flag){
+            //     callback(new Error('脚本名称重复!'));
+            // }else{
+            //     callback();
+            // }
+            callback();
+        };
         return {
             /* 窗口设置开关 */
             showParamStatus:false,
@@ -394,8 +403,9 @@ export default {
                                             _this.setValidate.memo= response.data.resultList[0].memo;
                                             _this.setValidate.create_time= response.data.resultList[0].created_time;
                                             _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                            _this.setValidate.update_time= response.data.resultList[0].updated_time;
-                                            _this.setValidate.filesize= response.data.resultList[0].filesize;
+                                            _this.setValidate.update_time= response.data.resultList[0].modified_time;
+                                            _this.setValidate.filesize= response.data.resultList[0].script_filesize;
+                                            _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
                                             // _this.setValidate.update_time= response.data.resultList[0].updated_time;
                                             
                                         })
@@ -409,10 +419,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-
                                         this.handleDownload(item.row.id,item.row.script_filename);
-                                        
-                                        
                                     }
                                 }
                             }, '下载')
@@ -437,7 +444,7 @@ export default {
                 },
             ruleValidate: {
                 script_name: [
-                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                    {validator: validateScriptName, required: true,trigger: 'blur' }
                 ],
                 // app_name: [
                 //     { required: true, message: '此项为必填项', trigger: 'blur' }
@@ -739,14 +746,14 @@ export default {
                 }
             })           
         },
-        checkScriptName: function() {
+        checkScriptName(value) {
             let _this = this;
              //检查脚本名称是否重复
             console.log("开始验证脚本名称");
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/checkName',{
                 data:{
-                    script_name:_this.addValidate.script_name,
+                    script_name:value,
                 }
             }).then(function(response){
                 if(response.status == 500){
@@ -757,8 +764,10 @@ export default {
                     console.log("检查脚本响应数据flag",flag);
                     if("fail" == flag){
                         console.log("检查脚本响应数据flag22",flag);
-                        _this.$Message.error('脚本名称重复!');
-                        return ;
+                        //_this.$Message.error('脚本名称重复!');
+                        return true;
+                    }else{
+                        return false;
                     }
                 }
                
