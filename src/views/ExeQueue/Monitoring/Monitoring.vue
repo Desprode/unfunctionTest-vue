@@ -373,7 +373,8 @@ export default {
                 })
             },
             onRowDblClick: function(row) {
-            this.$router.push({path:'/ExeQueue',query:{executor_id:row.executor_id}});
+                console.log(row);
+                this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc}});
         },
         }
     }
