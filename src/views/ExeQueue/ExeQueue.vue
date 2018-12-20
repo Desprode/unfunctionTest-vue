@@ -33,8 +33,8 @@
                                     <Col span="2" class="searchLable">执行状态</Col>
                                 <Col span="9">
                                         <Select v-model="exe_status" style="" clearable>
-                                        <Option  value="10">执行中</Option>
-                                        <Option  value="00">等待执行</Option>
+                                        <Option  value="02">执行中</Option>
+                                        <Option  value="01">等待执行</Option>
                                     </Select>
                                 </Col>
                         </Row>   
@@ -115,9 +115,15 @@ export default {
                 render: (h, params) => {
                     let _this = this;
                     let texts='';
-                    if(params.row.exe_status=='10'){
+                    if(params.row.exe_status=='02'){
                          texts = '执行中'
-                    }else if(params.row.exe_status=='00'){
+                    }else if(params.row.exe_status=='03'){
+                        texts = '执行中'
+                    }else if(params.row.exe_status=='04'){
+                        texts = '执行中'
+                    }else if(params.row.exe_status=='05'){
+                        texts = '执行中'
+                    }else if(params.row.exe_status=='01'){
                         texts = '等待执行'
                     }
                     return h('div',{
@@ -164,49 +170,6 @@ export default {
         this.listCase();
     },
     methods: {
-        srchComponent: function(query) {
-            this.cmpOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-
-                    let _this = this
-                    console.log('srchComponent');
-                    console.log('list-before: ', this.list);
-                    console.log('query: ', query)
-
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/testresult/runtests/list', 
-                    {
-                        headers: {
-                        },
-                        data: {
-                            name: query,
-                            endTime: '',
-                        },
-                        
-                    }
-                    ).then(function (response) {
-                        console.log('response:', response);
-                        console.log('response.data: ', response.data);
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                value: item.id,
-                                label: item.name
-                            };
-                        });
-                        _this.cmpOpts = list
-                        console.log('this.cmpOpts:', _this.cmpOpts);
-                    })
-                }, 200);
-            } else {
-                this.cmpOpts = [];
-            }
-        },
-
         deleteCase: function () {
             //console.log("停止多条按钮");
             let selectedData = this.selectedData;      //选中要停止的数据
@@ -301,7 +264,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id}});
+            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id,senario_name:row.senario_name}});
         },
 
         // addCase: function() {
