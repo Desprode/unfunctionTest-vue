@@ -1,13 +1,13 @@
 <template>
 <div>
-    <div align="left" >
+    <div align="left">
             <font size="5" color="#01babc">实时监控</font>
     </div></br>
             <!--<div align="right" >右对齐，<div align="left" >左对齐  deleteCase-->
             <Button style="float:right" @click="" type="error" class="actionBtn">停止</Button>
     <div>
         <div align="left">
-            <font size="3" color="#01babc" v-model="senario_name">场景名称:</font>123456
+            <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
         </div></br>
         <div align="left">
                     <font size="3" color="#01babc">已运行时间:</font>
@@ -17,7 +17,7 @@
         </div>
         <div align="left">
             <font size="3" color="#01babc">详细描述:</font>
-            <Input style="width:400px"  readonly="readonly"  v-model="senario_name" type="textarea" :autosize="{minRows:2,maxRows:3}"></Input>
+            <Input style="width:400px"  readonly="readonly" name="mass" type="textarea" :autosize="{minRows:2,maxRows:3}"></Input>
         </div>
     </div>
     <div align="left">
@@ -34,9 +34,6 @@
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
                 </div>
-                <div >
-
-                </div>
             </Tab-pane>
             <!---------------------分割线-------------------------->
             <Tab-pane label="压力机资源">
@@ -47,10 +44,11 @@
 </div> 
 </template>
 <script> 
+var websocket = null;
 export default {
         data () {
             return { 
-                executor_id:'',
+                senario_name:this.$route.query.senario_name,
                 iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                  iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                 formItem: {
@@ -190,22 +188,69 @@ export default {
                 pageNo:1,                            //当前页
                 pageSize:10,                           //每页显示多少条数据
                 totalPage:0,                           //共多少页
-                editPTaskValidate: {
-                senario_name: '',                     // 场景名称
-                exe_status: '',         // 已运行时间
-                exe_status: '',          // 任务状态
-                exe_detail_status: '',    // 详细描述
-            },
             }
         },
         
         created(){
             this.pressCase();
             this.listCase();
+            this.initWs();
         },
         
         methods:{
+       initWs() {
+        //check if your browser supports WebSocket
+        console.log("开始了++++++");
+		if ('WebSocket' in window) {//{{executor_id}}
+            websocket = new WebSocket("ws://128.195.0.12:8080/message/"+this.$route.query.executor_id+"");
+		}
+		else {
+			alert('Sorry, websocket not supported by your browser.')
+        }
+        // 连接发生错误的回调方法
+        websocket.onerror = function () {
+			setMessageContent("error!");
+            wsVue.opened = false;
+        };
+        //message received callback    结束
+		websocket.onmessage = function (event) {
+            console.log("开始了1++++++",event.data);
+            console.log("开始了2++++++",str);
+            var str = event.data;
+             var mas =str.substr(0,1);
+             if(mas =='1'){
+           //  var  aaa = event.data
+           //  console.log("开始了3++++++",aaa);
+             }else if(mas =='0'){
+            // var  bbb = event.data
+            // console.log("开始了4++++++",bbb);
+             }
+        }
+        //socket closed callback  连接关闭等待回调方法
+		websocket.onclose = function () {
+			setMessageContent("websocket closed");
+            wsVue.opened = false;
+        }
+        window.onbeforeunload = function () {
+			websocket.close();
+		}
+    },
+    //click to close the websocket  关闭连接
+	 closeWS() {
+		websocket.close();
+		wsVue.opened = false;
+	},
 
+	//click to open the websocket
+	 openWS() {
+		initWs();
+        },
+        
+        //click to send message
+	sendMsg() {
+		var message = document.getElementById('text').value;
+		websocket.send(message);
+	},
             
             //srchComponent: function(query) {
             //this.cmpOpts = [];
@@ -260,9 +305,9 @@ export default {
                 this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/monitor/serverlist', {
                     data: {
-                        scenarioId: 300,
-                        start: 1544519137,
-                        end: 1544519451,
+                        scenarioId: 350,
+                        start: 1545206338,
+                        end: 1545206538,
                         pageNo:_this.pageNo,
                         pageSize:_this.pageSize,
                     }
@@ -314,8 +359,10 @@ export default {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值 '+this.$route.query.executor_id+'
                 console.log("第二个页面接收的ID",executor_id);
+                var senario_name = this.$route.query.senario_name; 
+                console.log("第二个页面接收的场景名称",senario_name);
                 this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start=1543567995&end=1543568195', {
+                this.$http.post('/myapi/monitor/pressureagentlist?executorId=1543568019509&start=1543567995&end=1543568195', {
                     data: {
                     }
                 }).then(function (response) {
