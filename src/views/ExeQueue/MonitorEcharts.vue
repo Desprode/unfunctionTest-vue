@@ -3,20 +3,28 @@
         <Card>
             <Form :label-width="50">
                 <Row>
-                    <Col>
+                    <Col span="11">
                         <FormItem label="服务器">
-                            <Select v-model="model">
-                                <Option v-for="(item,index) in subsys" :key="index" :value="index" @on-change="funsChange(index)">{{item.funDesc}}</Option>
+                            <Select v-model="model" @on-change="funsChange">
+                                <Option v-for="(item,index) in subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <!-- <Col>
-                        <FormItem label="服务器">
+                    <Col span="11">
+                        <FormItem label="服务器地址"  :label-width="100">
                             <Select v-model="model" multiple>
-                                <Option v-for="itemOption in subsys[index].ip" :value="itemOption" :key="itemOption" placeholder="Select IP List">{{itemOption}}</Option>
+                                <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
-                    </Col> -->
+                    </Col>
+                </Row>
+                <Row>
+                    <FormItem label="服务器地址"  :label-width="100">
+                        <Select v-model="model"v-for="item in prodIP" :value="item" :key="item">
+                            <Option value="01">否</Option>
+                            <Option value="02">是</Option>
+                        </Select>
+                    </FormItem>
                 </Row>
                 <Row>
                     <Col span="10">
@@ -55,6 +63,7 @@
             </Row>
                     <div id="container_io" :style="{width: '1000px',  height:'500px'}" ></div>
                     <div id="container_net" :style="{width: '1000px',  height:'500px'}" ></div>
+                    <Button @click="returnBack">返回</Button>
             
         </Card>
     </div>
@@ -103,9 +112,11 @@
 						},
 						{
 						"funDesc":"分类三",
-						"ip":["128.196.53.148","128.196.52.124","128.196.52.132","128.196.52.133"]
+						"ip":["128.196.53.148","128.196.52.124","128.196.52.132","128.196.52.133","128.196.53.148","128.196.52.124","128.196.52.132","128.196.52.133"]
 						}
-					],
+                    ],
+                prodIP:[],
+                funDesc:[],
                 value1:[],
                 CPUData:[
                     {
@@ -199,8 +210,20 @@
             setInterval(this.realTimeCl, 5000);
         },
         methods: {
+            returnBack:function(){
+                this.$router.back(-1);
+            },
             funsChange:function(){
-                console.log(index);
+                console.log("选项改变了");
+                console.log(this.model);
+                let _this = this;
+                _this.subsys.map(item=>{
+                    console.log(item.funDesc);
+                    if(item.funDesc == _this.model){
+                        _this.prodIP = item.ip;
+                    }
+                })
+                console.log(_this.prodIP);
             },
             confirm:function(){
                 for(var i=0;i<this.subsys.length;i++){
