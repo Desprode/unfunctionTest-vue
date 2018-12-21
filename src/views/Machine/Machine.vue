@@ -327,7 +327,7 @@ export default {
                                     this.editMachineStatus = true;                                    
                                     console.log(item.row);
                                     let _this = this;
-                                    this.$http.defaults.withCredentials = false;
+                                    // this.$http.defaults.withCredentials = false;
                                     this.$http.post('/myapi/machine/view',{
                                         data:{
                                             id:item.row.id,
@@ -429,7 +429,7 @@ export default {
         //deploy  the machine 
         deployMachine (ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/machine/exe',{
                 data:{
                     ip:ip,
@@ -443,7 +443,7 @@ export default {
                     if("ok" == response.data.result){
                         _this.$Message.success('部署成功！');
                     }else{
-                        _this.$Message.error('部署失败'+response.data.err_desc);
+                        _this.$Message.error('部署失败,'+response.data.err_desc);
                     }
                     _this.Deletips = false;
                 }
@@ -452,8 +452,8 @@ export default {
         //restart the machine 
         restartMachine (id,ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/machine/restartAgent',{
+            // this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/machine/resetAgent',{
                 data:{
                     id:id,
                     ip:ip,
@@ -467,7 +467,7 @@ export default {
                     if("ok" == response.data.result){
                         _this.$Message.success('重启成功！');
                     }else{
-                        _this.$Message.error('重启失败'+response.data.err_desc);
+                        _this.$Message.error('重启失败,'+response.data.err_desc);
                     }
                     _this.Deletips = false;
                 }
@@ -476,7 +476,7 @@ export default {
         // stop the machine 
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/machine/stopAgent',{
                 data:{
                     id:id,
@@ -491,7 +491,7 @@ export default {
                     if("ok" == response.data.result){
                         _this.$Message.success('停止成功！');
                     }else{
-                        _this.$Message.error('停止失败'+response.data.err_desc);
+                        _this.$Message.error('停止失败,'+response.data.err_desc);
                     }
                     _this.Deletips = false;
                 }
@@ -523,7 +523,7 @@ export default {
                         title:'确认',
                         content: '是否删除该数据',
                         onOk: () => {
-                            this.$http.defaults.withCredentials = false;
+                            // this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/machine/delete",{
                                 header:{},
                                 data:{
@@ -552,7 +552,7 @@ export default {
         },
         listCase: function() {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/machine/list', {
                 header: {
                 },
@@ -614,7 +614,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/machine/add',{
                         data:{
                             machineName: _this.addValidate.machineName,
@@ -652,7 +652,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("begin edit");
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/machine/edit',{
                         data:{
                             id:_this.rowid,
