@@ -17,7 +17,7 @@
         </div>
         <div align="left">
             <font size="3" color="#01babc">详细描述:</font>
-            <Input style="width:400px"  readonly="readonly" name="mass" type="textarea" :autosize="{minRows:2,maxRows:3}"></Input>
+            <Input style="width:400px"  readonly="readonly"  type="textarea" :autosize="{minRows:2,maxRows:3}" v-model="describe">{{describe}}</Input>
         </div>
     </div>
     <div align="left">
@@ -49,6 +49,8 @@ export default {
         data () {
             return { 
                 senario_name:this.$route.query.senario_name,
+                eventData: '',
+                describe: '',
                 iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                  iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                 formItem: {
@@ -61,6 +63,8 @@ export default {
                     switch: true,
                     date: '',
                     executor_id:'',
+                    eventData: '',
+                    describe: '',
                     textarea: ''
                 },
                 //压力机日志
@@ -201,7 +205,7 @@ export default {
        initWs() {
         //check if your browser supports WebSocket
         console.log("开始了++++++");
-		if ('WebSocket' in window) {//{{executor_id}}
+		if ('WebSocket' in window) {
             websocket = new WebSocket("ws://128.195.0.12:8080/message/"+this.$route.query.executor_id+"");
 		}
 		else {
@@ -215,15 +219,15 @@ export default {
         //message received callback    结束
 		websocket.onmessage = function (event) {
             console.log("开始了1++++++",event.data);
-            console.log("开始了2++++++",str);
             var str = event.data;
-             var mas =str.substr(0,1);
-             if(mas =='1'){
-           //  var  aaa = event.data
-           //  console.log("开始了3++++++",aaa);
-             }else if(mas =='0'){
-            // var  bbb = event.data
-            // console.log("开始了4++++++",bbb);
+            let _this = this;
+             var cutting =str.substr(0,1);
+             if(cutting =='1'){
+             _this.describe = event.data;
+             console.log("带1的数据",event.data);
+             }else if(cutting =='0'){
+             _this.eventDate = event.date;
+             console.log("带0的数据",event.data);
              }
         }
         //socket closed callback  连接关闭等待回调方法
@@ -302,7 +306,9 @@ export default {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                 console.log("第二个页面接收的ID",executor_id);
-                this.$http.defaults.withCredentials = false;
+                var senario_name = this.$route.query.senario_name; 
+                console.log("第二个页面接收的场景名称",senario_name);
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/monitor/serverlist', {
                     data: {
                         scenarioId: 350,
@@ -361,8 +367,8 @@ export default {
                 console.log("第二个页面接收的ID",executor_id);
                 var senario_name = this.$route.query.senario_name; 
                 console.log("第二个页面接收的场景名称",senario_name);
-                this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/monitor/pressureagentlist?executorId=1543568019509&start=1543567995&end=1543568195', {
+               // this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start=1543567995&end=1543568195', {
                     data: {
                     }
                 }).then(function (response) {
