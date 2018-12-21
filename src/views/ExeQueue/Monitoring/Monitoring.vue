@@ -49,7 +49,7 @@ export default {
         data () {
             return { 
                 senario_name:this.$route.query.senario_name,
-                eventData: '',
+                eventDate: '',
                 describe: '',
                 iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                  iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
@@ -63,7 +63,7 @@ export default {
                     switch: true,
                     date: '',
                     executor_id:'',
-                    eventData: '',
+                    eventDate: '',
                     describe: '',
                     textarea: ''
                 },
