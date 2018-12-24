@@ -81,7 +81,7 @@ export default {
             exe_status:'',    //执行状态
             endTime:'',
 
-            columns: [
+            columns: [  
             {
                 type: 'selection',
                 width: 50,
