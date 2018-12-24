@@ -1,167 +1,209 @@
 <template>
 	<div class="pageContent">
-            <div class="caseBox">
-                <h3 class="Title">
-                    <span>执行结果</span>
-                </h3>
-                <Form ref="formValidate" class="formValidate">
-                    <div class="rowbox">
-                        <Row :gutter="16">
-                            <Col span="2" class="searchLable">任务名称</Col>
-                            <Col span="5">
-                                <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
+        <div class="caseBox">
+            <h3 class="Title">
+                <span>执行结果</span>
+            </h3>
+            <Form class="formValidate">
+                <div class="rowbox">
+                    <Row :gutter="16">
+                        <Col span="2" class="searchLable">任务名称</Col>
+                        <Col span="4">
+                            <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
+                        </Col>
+                        <Col span="2" class="searchLable">场景名称</Col>
+                        <Col span="4">
+                            <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
+                        </Col>
+                        <Col span="2" class="searchLable">场景类型</Col>
+                        <Col span="4">
+                            <Select v-model="type_name" >
+                                <Option value="混合交易" >混合交易</Option>
+                                <Option value="单交易基准" >单交易基准</Option>
+                                <Option value="单交易负载" >单交易负载</Option>
+                            </Select>
+                        </Col>
+                        <Col span="3">
+                            <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
+                            <Button @click="handleReset">重置</Button>
+                        </Col>
+                    </Row>
+                    <Row :gutter="16" v-show="isShowMoreShow">
+                        <Col span="2" class="searchLable">执行状态</Col>
+                        <Col span="4">
+                            <Select v-model="exe_status" >
+                                <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                            </Select>
+                        </Col>
+                        <Col span="2" class="searchLable">执行人</Col>
+                        <Col span="4">
+                            <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
+                        </Col>
+                    </Row>
+                    <Row :gutter="17" v-show="isShowMoreShow">
+                        <Col span="2" class="searchLable">开始日期</Col>
+                        <Col span="4">
+                            <Col span="11">
+                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time"></DatePicker>
                             </Col>
-                            <Col span="2" class="searchLable">场景名称</Col>
-                            <Col span="5">
-                                <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
+                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
+                            <Col span="11">
+                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time"></DatePicker>
                             </Col>
-                            <Col span="2" class="searchLable">场景类型</Col>
-                            <Col span="5">
-                                <Select v-model="type_name" >
-                                    <Option value="混合交易" >混合交易</Option>
-                                    <Option value="单交易基准" >单交易基准</Option>
-                                    <Option value="单交易负载" >单交易负载</Option>
-                                </Select>
+                            <Col span="1"></Col>
+                        </Col>
+                        <Col span="2" class="searchLable">结束日期</Col>
+                        <Col span="4">
+                            <Col span="11">
+                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time"></DatePicker>
                             </Col>
-                            <Col span="3">
-                                <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
+                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
+                            <Col span="11">
+                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time"></DatePicker>
                             </Col>
-                        </Row>
-                        <Row :gutter="16" v-show="isShowMoreShow">
-                            <Col span="2" class="searchLable">执行状态</Col>
-                            <Col span="5">
-                                <Select v-model="exe_status" >
-                                    <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                                </Select>
-                            </Col>
-                            <Col span="2" class="searchLable">执行人</Col>
-                            <Col span="5">
-                                <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
-                            </Col>
-                        </Row>
-                        <Row :gutter="17" v-show="isShowMoreShow">
-                            <Col span="2" class="searchLable">开始日期</Col>
-                            <Col span="5">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time"></DatePicker>
-                                </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time"></DatePicker>
-                                </Col>
-                                <Col span="1"></Col>
-                            </Col>
-                            <Col span="2" class="searchLable">结束日期</Col>
-                            <Col span="5">
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time"></DatePicker>
-                                </Col>
-                                <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                                <Col span="11">
-                                    <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time"></DatePicker>
-                                </Col>
-                            </Col>
-                            <Col span="2"></Col>
-                        </Row>
-                    </div>
-                    <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                    </div>
-                </Form>
-                <div align="left">
-                    <Button @click="aggregCase" type="success"  >聚合报告</Button>
-                    <Button @click="deleteCase" type="error">删除结果</Button>
-                    <!-- <Button @click="loadCase" type="error">负载测试</Button>
-                    <Button @click="baseCase" type="error">基准测试</Button> -->
+                        </Col>
+                        <Col span="2"></Col>
+                    </Row>
                 </div>
-                <div class="tableBox">
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
-                    <div class="pageBox" v-if="tableData.length">
-                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
-                        <p>总共{{totalPage}}页</p>
-                    </div>
+                <div class="formValidateMoreBtnBox" :class="isShowMoreShow ?'arrUp':'arrDown'" @click="isShowMoreShow = !isShowMoreShow">
+                    <Icon type="chevron-down" color="#fff" ></Icon>
+                    <Icon type="chevron-down" color="#fff" ></Icon>
+                </div>
+            </Form>
+            <div align="left">
+                <Button @click="aggregCase" type="success"  >聚合报告</Button>
+                <Button @click="deleteCase" type="error">删除结果</Button>
+                <!-- <Button @click="loadCase" type="error">负载测试</Button>
+                <Button @click="baseCase" type="error">基准测试</Button> -->
+            </div>
+            <div class="tableBox">
+                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <div class="pageBox" v-if="tableData.length">
+                    <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                    <p>总共{{totalPage}}页</p>
                 </div>
             </div>
-            <!-- ========================================聚合报告===================================================== -->
-            <Modal v-model="showAddModal" width="1100px">
-                <p slot="header" style="color:#f60" >
-                    <span>生成聚合报告预编译</span>
-                </p>
-                <div style="text-align:center;height:240px" >
-                    <Form label-width="80">
-                        <FormItem label="报告名称" align="left">
-                            <Input placeholder="Enter something..." style="width:400px">{{task_name}}}</Input>
-                        </FormItem>
-                    </Form>
-                    <div style="float:left;width:100px">
-                        <Button color="#1c2438"  @click="">上移</Button><br/>
-                        <Button color="#1c2438"  @click="">下移</Button>
-                    </div>
-                    <div style="float:left;width:900px">
-                        <Form >
-                            <FormItem label="场景名称" align="left" >
-                                <Input placeholder="Enter something..." style="width:300px">{{senario_name}}</Input>
+        </div>
+        <!-- ========================================聚合报告===================================================== -->
+        <Modal v-model="showAddModal" width="1100px">
+            <p slot="header" style="color:#f60"  >
+                <span>生成聚合报告预编译</span>
+            </p>
+            <div ref="setValidate" :model="setValidate">
+                <div align="left" >
+                    <font size="5" >报告名称:{{setValidate.task_name}}报告</font>
+                </div>
+                <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
+                    <Icon type="chevron-down" color="#fff" >展开</Icon>
+                    <Icon type="chevron-down" color="#fff" >关闭</Icon>
+                </div>
+                <div v-for="(Item,index) in setValidates" :key="index" style="display:inline-block">
+                    <Form ref="setValidate" :model="setValidate" >
+                        <div style="float:left;width:150px">
+                            <Button color="#1c2438"  @click="">上移</Button>
+                            <Button color="#1c2438"  @click="">下移</Button>
+                        </div>
+                        <div style="float:left;width:900px" >
+                            <FormItem label="场景名称：" align="left" >
+                                <Input placeholder="Enter something..." style="width:300px" v-model="Item.senario_name" readonly></Input>
                             </FormItem>
                             <div v-show="isShowMore">
                                 <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
                                     执行是否成功：
-                                    <Select style="width:80px">
-                                        <Option>{{result_is_pass}}</Option>
+                                    <Select style="width:80px" v-model="Item.result_is_pass" disabled>
+                                        <Option value="1">是</Option>
+                                        <Option value="0">否</Option>
                                     </Select>
                                     测试结果分析描述：
-                                    <Input placeholder="Enter something..." style="width:400px">{{err_desc}}</Input>
+                                    <Input placeholder="Enter something..." style="width:400px" v-model="Item.result_desc" readonly></Input>
                                 </FormItem>
                                 <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
                                     显示性能数据表：
-                                    <Select style="width:80px">
-                                        <Option value="0">否</Option>
+                                    <Select style="width:80px" v-model="Item.data_sgeet">
                                         <Option value="1">是</Option>
+                                        <Option value="0">否</Option>
                                     </Select>
                                     显示性能曲线图：
-                                    <Select style="width:80px">
-                                        <Option value="0">否</Option>
+                                    <Select style="width:80px" v-model="Item.diagram">
                                         <Option value="1">是</Option>
+                                        <Option value="0">否</Option>
                                     </Select>
                                     显示资源监控图：
-                                    <Select style="width:80px">
-                                        <Option value="0">否</Option>
+                                    <Select style="width:80px" v-model="Item.control_chart">
                                         <Option value="1">是</Option>
+                                        <Option value="0">否</Option>
                                     </Select>
                                     显示失败事务分析：
-                                    <Select style="width:80px">
-                                        <Option value="0">否</Option>
+                                    <Select style="width:80px" v-model="Item.analysis_things">
                                         <Option value="1">是</Option>
+                                        <Option value="0">否</Option>
                                     </Select>
                                 </FormItem>
                             </div>
-                        </Form>
-                    </div>
-                    <div class="formValidateMoreBtnBox" :class="isShowMore ?'arrUp':'arrDown'" @click="isShowMore = !isShowMore">
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                        <Icon type="chevron-down" color="#fff" ></Icon>
-                    </div>
+                        </div>
+                    </Form>
                 </div>
-                <Table border  ref="index" :columns="columnss" :data="tableDatas" class="myTable"></Table>
-                <div slot="footer">
+                <div style="display:inline-block;margin-left:10px">
+                    <Table border  ref="index" :columns="aggregColumns" :data="aggregTableData" class="myTable"></Table>
+                </div>
+            </div>
+            <div slot="footer" >
                     <Button color="#1c2438"  @click="cancel">取消</Button>
-                    <Button type="primary" @click="handleSubmit('addValidate')">生成报告</Button>
-                </div>
-            </Modal>
+                    <Button type="primary" @click="saveResult">生成报告</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
 export default {
-	name: 'TestCase',
+    name: 'TestCase',
     data () {
         return {
+            /**==============================聚合报告====================================*/
+            setValidate:{
+                task_name:'',                       //关联任务
+                senario_name:'',                    //场景名称
+                result_is_pass:'',                  //是否通过
+                result_desc:'',                     //结果描述 
+                data_sgeet:'1',                      //显示性能数据表
+                diagram:'1',                         //显示性能曲线图
+                control_chart:'1',                   //显示资源监控图
+                analysis_things:'1'                  //显示失败事务分析
+            },
+            setValidates:[],
+            isShowMore:false,                   //聚合报告弹框
+            /**-----------聚合报告信息展示-----------*/
+            metrics_desc:'',                    //测试需求描述
+            aggregColumns:[
+                {
+                    title: '序号',
+                    type: 'index2',
+                    align: 'center',
+                    width: 80
+                },
+                {
+                    title: '测试需求描述',
+                    key: 'metrics_desc',
+                    align: 'center',
+                },
+                {
+                    title: '是否满足需求',
+                    key: 'type',
+                    align: 'center',
+                },
+                {
+                    title: '备注描述',
+                    key: 'age',
+                    align: 'center',
+                    ellipsis: true
+                },
+            ],
+            aggregTableData:[],
+            /**==============================执行结果====================================*/
             isShowMoreShow:false,               //是否显示更多查询条件
-            isShowMore:false,               //是否显示更多查询条件  聚合报告
-            srchCmploading: false,
-            exeStatusList: this.$Global.exeStatusList,  
-            result_is_pass:'',                  //执行是否通过
-            err_desc:'',                        //测试结果分析描述
+            exeStatusList: this.$Global.exeStatusList,  //执行状态
+            id:'',                              //任务id
             showAddModal:false,                 //聚合窗口
             executor_id:'',                     //执行编号
             component_name:'',                  //物理子系统
@@ -184,6 +226,7 @@ export default {
                     type: 'selection',
                     width: 50,
                     align: 'center',
+                    key:'id'
                 },
                 {
                     title: '执行编号',
@@ -258,38 +301,6 @@ export default {
                 }
             ],
             tableData: [],
-            //聚合报告信息展示
-            columnss:[
-                {
-                    title: '序号',
-                    type: 'index',
-                    align: 'center',
-                    width: 80
-                },
-                {
-                    title: '测试需求描述',
-                    key: 'name',
-                    align: 'center',
-                },
-                {
-                    title: '是否满足需求',
-                    key: 'type',
-                    align: 'center',
-                },
-                {
-                    title: '备注描述',
-                    key: 'age',
-                    align: 'center',
-                    ellipsis: true
-                },
-            ],
-            tableDatas:[
-                {
-                    name:'json',
-                    type:'1',
-                    age:'11'
-                }
-            ],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],                    //选中的项的数组
@@ -328,15 +339,22 @@ export default {
                         title:'确认',
                         content: '是否删除该数据',
                         onOk: () => {
-                            this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/testresult/del",{
                                 header:{},
                                 data:{
                                     ids:deleArr,
                                 }
-                            }).then(function(){
-                                tableData.splice(index, 1);        //即删除该数据上
+                            }).then(function(response){
+                                //tableData.splice(index, 1);        //即删除该数据上
                                 _this.$Message.info('删除成功');
+                                for (let i in deleArr) {
+                                    for (let index in tableData) {
+                                        if (tableData[index].id == deleArr[i]) {
+                                            tableData.splice(index, 1);        //删除表格中展示的数据
+                                            break;
+                                        }
+                                    }
+                                }
                                 _this.listCase(); 
                             })
                         },
@@ -351,7 +369,7 @@ export default {
         //页面展示
         listCase: function() {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
                 data: {
                     task_name:_this.task_name,
@@ -359,39 +377,98 @@ export default {
                     execution_name:_this.execution_name,
                     exe_status:_this.exe_status,
                     type_name:_this.type_name,
+                    start_time:_this.start_time,
+                    end_time:_this.end_time,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
+                    
                 }
             }).then(function (response) {
+                let result =  response.data.result;
+                console.log("result: ", result);
+                if (result == "ok"){
+                    console.log("******** result ok *********");
+                }
                 _this.tableData =  response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
-                
             })
         },
         //聚合报告
         aggregCase:function(){
             let _this = this;
-            let selectedData = this.selectedData;      //选中要聚合的数据
+            this.setValidates = [];                         //初始化Form表单
+            let selectedDataList = this.selectedData;       //选中要聚合的数据
+            //定义数组和集合
             let resArr = [];
-            let deleteId = [];                       //选中数据的id
-            if (selectedData.length > 0) {               //如果有选中的数据
-                for (let i in selectedData) {         //进行遍历
-                    //deleteId.push(selectedData[i].executor_id);  //将选中的而数据的id放入集合中
-                    //this.$http.post('/myapi/testresult/mergeReport', {
-                    //    data: {
-                    //        executor_id:_this.selectedData[i].executor_id,
-                    //    },
-                    //}).then(function (response) {
-                    //    _this.tableData =  response.data.resultList;                      
-                    //}),
-                    this.showAddModal = true;
+            let deleteId = [];                              
+            let senario_name = [];
+            let task_name = [];
+            let result_is_pass = [];
+            let result_desc = [];
+            let executor_id = [];
+            if (this.selectedData.length > 0) {                  //如果有选中的数据
+                for (let i in selectedDataList) {               //进行遍历
+                    //放入数组
+                    deleteId.push(_this.selectedData[i].id);    
+                    executor_id.push(_this.selectedData[i].executor_id);
+                    senario_name.push(_this.selectedData[i].senario_name);
+                    task_name.push(_this.selectedData[i].task_name);
+                    result_is_pass.push(_this.selectedData[i].result_is_pass);
+                    result_desc.push(_this.selectedData[i].result_desc);
+                    //放入集合中
+                    let aggregData ={};  
+                    aggregData.result_desc = _this.selectedData[i].result_desc;
+                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass;
+                    aggregData.senario_name  = _this.selectedData[i].senario_name;
+                    aggregData.executor_id = _this.selectedData[i].executor_id;
+                    _this.setValidate.task_name = _this.selectedData[i].task_name;
+                    _this.setValidates.push(aggregData);
+                }
+                //判断集合中的最大值和最小值，是否有不同的任务id
+                if(Math.max.apply(null,deleteId) === Math.min.apply(null,deleteId) ){   
+                    this.showAddModal=true;
+                    this.$http.post('/myapi/metrics/list', {
+                    header: {},
+                    data: {
+                        perftask_id: selectedDataList[0].id, 
+                    }
+                    }).then(function (response) {
+                        let result =  response.data.result;
+                    })
+                }else{
+                    this.$Message.error("请选择相同的任务进行聚合！")
                 }
             } else {
                 this.$Message.error("请选择要聚合的数据")
             }
         },
-       
+        /**生成聚合报告*/
+        saveResult:function () {
+            let _this = this;
+            let setValidates = this.setValidates;
+            this.$http.post('/myapi/testresult/merge', {
+                data:_this.setValidates
+            }).then(function (response) {
+                _this.result = response.data.result;
+                console.log("result: ", _this.result);
+                if(_this.result == "ok"){
+                    console.log("******** result ok *********");
+                    console.log(_this.id);
+                    this.$http.post('/myapi/testresult/getMergeReport', {
+                        data:_this.id
+                    }).then(function (response) {
+                        _this.aggregTableData = response.data.resultList;
+                        this.$router.push({
+                            path:'/details',
+                            query:{html:tableDatas.html}
+                        });
+                    })
+                }else{
+                    _this.$Message.info('生成失败');
+                }
+            })
+        },
         /**切换页码 */
         pageChange:function(pageNo){
             console.log(pageNo);
@@ -426,33 +503,20 @@ export default {
                 query:{executor_id:tableData[index].executor_id}
             });
         },
-        //负载测试
-        loadCase:function(){
-            let _this = this;
-            let tableData = _this.tableData;
-            this.$router.push({
-                path:'/load',
-                query:{}
-            });
-        },
-        //基准测试
-        baseCase:function(){
-            let _this = this;
-            let tableData = _this.tableData;
-            this.$router.push({
-                path:'/base',
-                query:{}
-            });
-        },
-           
         /**模态框弹出取消事件 */
         cancel:function () {
             this.showAddModal = false;
         },
         /**清除搜索条件 */
-        handleReset:function (name) {
-            console.log(this.$refs)
-            this.$refs[name].listCase();
+        handleReset:function () {
+            let _this = this;
+            _this.task_name = '',
+            _this.senario_name = '',
+            _this.execution_name = '',
+            _this.exe_status = '',
+            _this.type_name = '',
+            _this.start_time = '', 
+            _this.end_time = '' 
         }
     }
 }
@@ -608,9 +672,9 @@ export default {
 /* add by xin */
 /*三个操作按钮样式*/
 .btnOpera{
-margin-top: 30px;
-text-align: left;
-display: flex;
+    margin-top: 30px;
+    text-align: left;
+    display: flex;
 }
 .btnOpera .btn_border{
         width: 50px;

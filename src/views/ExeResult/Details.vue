@@ -23,8 +23,8 @@
         <Tab-pane label="执行结果">
             <FormItem label="执行结果是否通过：" align="left" >
                 <Select v-model="result_is_pass" style="width:200px" align="center">
-                        <Option value="true"  >是</Option>
-                        <Option value="false" >否</Option>
+                        <Option value="1" >是</Option>
+                        <Option value="0" >否</Option>
                         <Option value="as" >待确定</Option>
                 </Select>
             </FormItem>   
@@ -138,7 +138,7 @@
             listCase: function() {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;  
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/report', {
                     data: {
                         executor_id:executor_id
@@ -154,7 +154,7 @@
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;        //获取上个页面传的id值
                 console.log("第二个页面接收的ID",executor_id);
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/agentLog', {
                     data: {
                         executor_id:executor_id,
@@ -169,7 +169,7 @@
             platfCase: function() {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/platformLog', {
                     data: {
                         executor_id:executor_id,
@@ -183,7 +183,7 @@
             resulCase: function() {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/result', {
                     data: {
                         executor_id:executor_id,
@@ -199,7 +199,7 @@
             saveResult:function () {
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/saveResult', {
                     data: {
                         executor_id:executor_id,
@@ -207,7 +207,7 @@
                         result_desc:_this.result_desc
                     }
                 }).then(function (response) {
-                    _this.tableDatas =  response.data.result;
+                    _this.tableDatas =  response.data.resultList;
                     if(_this.tableDatas=="ok"){
                         _this.$Message.info('保存成功');
                     }else{
@@ -222,7 +222,7 @@
             downloadCase:function(){
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/download',{
                     data:{
                         executor_id:executor_id,
