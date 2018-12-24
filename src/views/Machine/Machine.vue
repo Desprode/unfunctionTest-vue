@@ -201,6 +201,33 @@
                 </div>
             </Modal>
             <!--编辑机器时弹出的对话框end-->
+            <!--deploy begin -->
+            <Modal
+                v-model="deployModel"
+                title="部署"
+                :loading="loading"
+                @on-ok="asyncOK">
+                <p>部署中...</p>
+            </Modal>
+            <!--deploy end -->
+            <!--stop begin -->
+            <Modal
+                v-model="stopModel"
+                title="停止"
+                :loading="loading"
+                @on-ok="asyncOK">
+                <p>停止中...</p>
+            </Modal>
+            <!--stop end -->
+            <!--restart begin -->
+            <Modal
+                v-model="restartModel"
+                title="重启"
+                :loading="loading"
+                @on-ok="asyncOK">
+                <p>正在重启中...</p>
+            </Modal>
+            <!--restart end -->
         </Card>
     </div>
 </template>
@@ -387,6 +414,9 @@ export default {
             selectedData:[],
             Deletips:false, 
             editMachineStatus:false,
+            deployModel:false,
+            restartModel:false,
+            stopModel:false,
             formValidate: {
 
             },
@@ -426,10 +456,23 @@ export default {
         this.listCase();
     },
     methods: {
-        //deploy  the machine 
+        //deploy  the machine  begin
         deployMachine (ip,userName,userPwd) {
             let _this = this;
-            // this.$http.defaults.withCredentials = false;
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'部署中...')
+                        ])
+                    }
+                });
             this.$http.post('/myapi/machine/exe',{
                 data:{
                     ip:ip,
@@ -445,14 +488,28 @@ export default {
                     }else{
                         _this.$Message.error('部署失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
+                    _this.$Spin.hide();
                 }
             })
         },  
         //restart the machine 
         restartMachine (id,ip,userName,userPwd) {
             let _this = this;
-            // this.$http.defaults.withCredentials = false;
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'重启中...')
+                        ])
+                    }
+                });
             this.$http.post('/myapi/machine/resetAgent',{
                 data:{
                     id:id,
@@ -469,14 +526,28 @@ export default {
                     }else{
                         _this.$Message.error('重启失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
+                    _this.$Spin.hide();
                 }
             })
         },  
         // stop the machine 
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
-            // this.$http.defaults.withCredentials = false;
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'停止中...')
+                        ])
+                    }
+                });
             this.$http.post('/myapi/machine/stopAgent',{
                 data:{
                     id:id,
@@ -493,7 +564,8 @@ export default {
                     }else{
                         _this.$Message.error('停止失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
+                    _this.$Spin.hide();
                 }
             })
         },  
@@ -869,4 +941,7 @@ display: flex;
     word-break: break-all;
     box-sizing: border-box;
 }
+.demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
 </style>
