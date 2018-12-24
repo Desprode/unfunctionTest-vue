@@ -461,7 +461,8 @@ export default {
                     }
                     _this.listCase();
                 }
-            }).catch(function(response){
+            }).catch(function(error){
+                console.log('deploy :'+error);
                 _this.$Spin.hide();
             })
         },  
@@ -502,7 +503,8 @@ export default {
                     _this.listCase();
                     
                 }
-            }).catch(function(response){
+            }).catch(function(error){
+                console.log('restart :'+error);
                 _this.$Spin.hide();
             })
         },  
@@ -542,7 +544,8 @@ export default {
                     }
                     _this.listCase();
                 }
-            }).catch(function(response){
+            }).catch(function(error){
+                console.log('stop :'+error);
                 _this.$Spin.hide();
             })
         },  
