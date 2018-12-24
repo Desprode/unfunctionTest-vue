@@ -327,7 +327,7 @@ export default {
                                     this.editMachineStatus = true;                                    
                                     console.log(item.row);
                                     let _this = this;
-                                    this.$http.defaults.withCredentials = false;
+                                    // this.$http.defaults.withCredentials = false;
                                     this.$http.post('/myapi/machine/view',{
                                         data:{
                                             id:item.row.id,
@@ -426,10 +426,23 @@ export default {
         this.listCase();
     },
     methods: {
-        //deploy  the machine 
+        //deploy  the machine  begin
         deployMachine (ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'部署中...')
+                        ])
+                    }
+                });
             this.$http.post('/myapi/machine/exe',{
                 data:{
                     ip:ip,
@@ -437,23 +450,40 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('部署成功！');
+                        _this.$Message.success(ip+'部署成功！');
                     }else{
-                        _this.$Message.error('部署失败'+response.data.err_desc);
+                        _this.$Message.error(ip+'部署失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
                 }
+            }).catch(function(error){
+                console.log('deploy :'+error);
+                _this.$Spin.hide();
             })
         },  
         //restart the machine 
         restartMachine (id,ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/machine/restartAgent',{
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'重启中...')
+                        ])
+                    }
+                });
+            this.$http.post('/myapi/machine/resetAgent',{
                 data:{
                     id:id,
                     ip:ip,
@@ -461,22 +491,40 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('重启成功！');
+                        _this.$Message.success(ip+'重启成功！');
                     }else{
-                        _this.$Message.error('重启失败'+response.data.err_desc);
+                        _this.$Message.error(ip+'重启失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
+                    
                 }
+            }).catch(function(error){
+                console.log('restart :'+error);
+                _this.$Spin.hide();
             })
         },  
-        // stop the machine 
+        // stop the machine begin
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            _this.$Spin.show({
+                    render: (h) => {
+                        return h('div', [
+                            h('Icon', {
+                                'class': 'demo-spin-icon-load',
+                                props: {
+                                    type: 'load-c',
+                                    size: 18
+                                }
+                            }),
+                            h('div', '机器'+ip+'停止中...')
+                        ])
+                    }
+                });
             this.$http.post('/myapi/machine/stopAgent',{
                 data:{
                     id:id,
@@ -485,18 +533,23 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('停止成功！');
+                        _this.$Message.success(ip+'停止成功！');
                     }else{
-                        _this.$Message.error('停止失败'+response.data.err_desc);
+                        _this.$Message.error(ip+'停止失败,'+response.data.err_desc);
                     }
-                    _this.Deletips = false;
+                    _this.listCase();
                 }
+            }).catch(function(error){
+                console.log('stop :'+error);
+                _this.$Spin.hide();
             })
         },  
+        // stop the machine end
         /*删除按钮功能*/
         deleteMachine: function() {
             console.log("删除多条按钮");
@@ -523,7 +576,7 @@ export default {
                         title:'确认',
                         content: '是否删除该数据',
                         onOk: () => {
-                            this.$http.defaults.withCredentials = false;
+                            // this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/machine/delete",{
                                 header:{},
                                 data:{
@@ -552,7 +605,7 @@ export default {
         },
         listCase: function() {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/machine/list', {
                 header: {
                 },
@@ -614,7 +667,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/machine/add',{
                         data:{
                             machineName: _this.addValidate.machineName,
@@ -652,7 +705,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("begin edit");
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/machine/edit',{
                         data:{
                             id:_this.rowid,
@@ -869,4 +922,7 @@ display: flex;
     word-break: break-all;
     box-sizing: border-box;
 }
+.demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
 </style>

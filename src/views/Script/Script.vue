@@ -329,7 +329,7 @@ export default {
                                         this.showSetScript = true;
                                         console.log(item.row);
                                         let _this = this;
-                                        this.$http.defaults.withCredentials = false;
+                                        // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/checkEdit',{
                                             data:{
                                                 id:item.row.id,
@@ -363,7 +363,7 @@ export default {
                                         this.showParamStatus = true;
                                         console.log(item.row);
                                         let _this = this;
-                                        this.$http.defaults.withCredentials = false;
+                                        // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/param',{
                                             data:{
                                                 id:item.row.id,
@@ -390,7 +390,7 @@ export default {
                                         this.showDetail = true;
                                         console.log(item.row);
                                         let _this = this;
-                                        this.$http.defaults.withCredentials = false;
+                                        // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/view',{
                                             data:{
                                                 id:item.row.id,
@@ -489,7 +489,7 @@ export default {
     methods: {
         handleDownload:function(rowid,fileName){
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/download',{
                 data:{
                     id:rowid,
@@ -559,7 +559,7 @@ export default {
                 setTimeout(() => {
                     this.srchCmploading = false;
                     let _this = this
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/component/searchFromITM', 
                     {
                         data: {
@@ -569,7 +569,6 @@ export default {
                         },                        
                     }
                     ).then(function (response) {
-                        console.log('response:', response);
                         console.log('response.data: ', response.data);
                         _this.list = response.data.resultList;
                         console.log('list-after: ', _this.list);
@@ -597,7 +596,7 @@ export default {
                 setTimeout(() => {
                     this.srchCmploading = false;
                     let _this = this
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/user/search', 
                     {
                         data: {
@@ -650,7 +649,7 @@ export default {
                         title:'确认',
                         content: '是否删除该数据',
                         onOk: () => {
-                            this.$http.defaults.withCredentials = false;
+                            // this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/scripts/delete",{
                                 data:{
                                    // ids:deleArr,
@@ -675,7 +674,7 @@ export default {
         },
         listCase: function() {
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/list', {
                 header: {
                 },
@@ -705,7 +704,7 @@ export default {
         findCase: function(id) {
             let _this = this
             console.log('findCase')
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('caseHandler', {
                 header: {
                     txCode:'setCiFlag',
@@ -731,7 +730,7 @@ export default {
                 ids.push(e.id)
             });
             console.log('setCiFlag')
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('caseHandler', {
                 header: {
                     txCode:'setCiFlag',
@@ -750,7 +749,7 @@ export default {
             let _this = this;
              //检查脚本名称是否重复
             console.log("开始验证脚本名称");
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/checkName',{
                 data:{
                     script_name:value,
@@ -807,7 +806,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 let _this = this;
                 if (valid) {
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/scripts/doParam",{
                         data:{
                             id:_this.rowid,
@@ -841,7 +840,7 @@ export default {
                 if (valid) {
                     console.log("开始添加");
                     console.log("app_name0000000"+_this.addValidate.app_name);
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/scripts/add',{
                         data:{
                             script_name:_this.addValidate.script_name,
@@ -881,7 +880,7 @@ export default {
                 if (valid) {
                     console.log("开始修改");
                     console.log("app_name0000000"+_this.setValidate.app_name);
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/scripts/edit',{
                         data:{
                             id:_this.rowid,
