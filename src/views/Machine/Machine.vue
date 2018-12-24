@@ -201,33 +201,6 @@
                 </div>
             </Modal>
             <!--编辑机器时弹出的对话框end-->
-            <!--deploy begin -->
-            <Modal
-                v-model="deployModel"
-                title="部署"
-                :loading="loading"
-                @on-ok="asyncOK">
-                <p>部署中...</p>
-            </Modal>
-            <!--deploy end -->
-            <!--stop begin -->
-            <Modal
-                v-model="stopModel"
-                title="停止"
-                :loading="loading"
-                @on-ok="asyncOK">
-                <p>停止中...</p>
-            </Modal>
-            <!--stop end -->
-            <!--restart begin -->
-            <Modal
-                v-model="restartModel"
-                title="重启"
-                :loading="loading"
-                @on-ok="asyncOK">
-                <p>正在重启中...</p>
-            </Modal>
-            <!--restart end -->
         </Card>
     </div>
 </template>
@@ -414,9 +387,6 @@ export default {
             selectedData:[],
             Deletips:false, 
             editMachineStatus:false,
-            deployModel:false,
-            restartModel:false,
-            stopModel:false,
             formValidate: {
 
             },
@@ -480,17 +450,19 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('部署成功！');
+                        _this.$Message.success(ip+'部署成功！');
                     }else{
-                        _this.$Message.error('部署失败,'+response.data.err_desc);
+                        _this.$Message.error(ip+'部署失败,'+response.data.err_desc);
                     }
                     _this.listCase();
-                    _this.$Spin.hide();
                 }
+            }).catch(function(response){
+                _this.$Spin.hide();
             })
         },  
         //restart the machine 
@@ -518,20 +490,23 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('重启成功！');
+                        _this.$Message.success(ip+'重启成功！');
                     }else{
-                        _this.$Message.error('重启失败,'+response.data.err_desc);
+                        _this.$Message.error(ip+'重启失败,'+response.data.err_desc);
                     }
                     _this.listCase();
-                    _this.$Spin.hide();
+                    
                 }
+            }).catch(function(response){
+                _this.$Spin.hide();
             })
         },  
-        // stop the machine 
+        // stop the machine begin
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
             _this.$Spin.show({
@@ -556,19 +531,22 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
+                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
                     if("ok" == response.data.result){
-                        _this.$Message.success('停止成功！');
+                        _this.$Message.success(ip+'停止成功！');
                     }else{
-                        _this.$Message.error('停止失败,'+response.data.err_desc);
+                        _this.$Message.error(ip+'停止失败,'+response.data.err_desc);
                     }
                     _this.listCase();
-                    _this.$Spin.hide();
                 }
+            }).catch(function(response){
+                _this.$Spin.hide();
             })
         },  
+        // stop the machine end
         /*删除按钮功能*/
         deleteMachine: function() {
             console.log("删除多条按钮");
