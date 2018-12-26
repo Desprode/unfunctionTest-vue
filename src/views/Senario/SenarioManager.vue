@@ -518,7 +518,7 @@ export default {
                                     click: () => {
                                         let _this = this;
                                         _this.id = item.row.senario_id;
-                                        this.$http.defaults.withCredentials = false;
+                                        //this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/senario/execStatus',{
                                             header:{},
                                             data:{
@@ -549,7 +549,7 @@ export default {
                                         console.log(item.row);
                                         this.showSetType =  item.row.senario_type;
                                         let _this = this;
-                                        this.$http.defaults.withCredentials = false;
+                                        //this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/senario/view',{
                                             header:{},
                                             data:{
@@ -842,7 +842,7 @@ export default {
             let _this = this;
             console.log("键盘按下")
             // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list', {
                 data: {
                     senario_type: _this.formValidate.senario_type, 
@@ -887,7 +887,7 @@ export default {
         },
         perftaskNameRemote:function(query){
             let _this = this;   
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list',{
                 header:{},
                 data:{
@@ -906,7 +906,7 @@ export default {
         },
         perfScriptRemote:function(query){
             let _this = this;  
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list',{
                 header:{},
                 data:{
@@ -944,7 +944,7 @@ export default {
         delMonitorOk:function(){
             console.log(this.deleteId);
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post("/myapi/senario/del",{
                 header:{},
                 data:{
@@ -985,7 +985,7 @@ export default {
             //             title:'确认',
             //             content: '是否删除该数据',
             //             onOk: () => {
-            //                 this.$http.defaults.withCredentials = false;
+            //                 //this.$http.defaults.withCredentials = false;
             //                 this.$http.post("/myapi/senario/del",{
             //                     header:{},
             //                     data:{
@@ -1025,7 +1025,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
-                    this.$http.defaults.withCredentials = false;
+                    //this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/senario/add',{
                         data:{
                             senario_type:_this.addValidate.senario_type,
@@ -1061,7 +1061,7 @@ export default {
             console.log(openStatus)
             if(openStatus){
                 let _this = this;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post("/myapi/perftask/list",{
                     data:{
                         perftask_name:'',    //第一次请求时关联任务为空
@@ -1087,7 +1087,7 @@ export default {
             setTimeout(() => {
                 this.perftaskLoading = false;
                 let _this = this;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post("/myapi/perftask/list",{
                     data:{
                         perftask_name:query,
@@ -1109,7 +1109,7 @@ export default {
         perftaskOptChange:function(){
             let _this = this;
             _this.id = _this.addValidate.ref_task_name;
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post("/myapi/perftask/taskRelatedScript",{
                 data:{
                     id:_this.id
@@ -1141,7 +1141,7 @@ export default {
             setTimeout(() => {
                 this.perftaskLoading = false;
                 let _this = this;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post("/myapi/perftask/taskRelatedScript",{
                     data:{
                         script_name:query,
@@ -1165,7 +1165,7 @@ export default {
             let _this = this;
             return new Promise(resolve => {
                 setTimeout(()=>{
-                    this.$http.defaults.withCredentials = false;
+                    //this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/perftask/list",{
                         header:{},
                         data:{
@@ -1198,7 +1198,7 @@ export default {
             let _this = this;
             if(this.eveValidate.exeType == '1'){
                 console.log(new Date());
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/senario/exec', {
                     header:{},
                     data:{
@@ -1214,7 +1214,7 @@ export default {
                 })
             }else{
                 console.log(this.eveValidate.exeDateTime);
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/senario/exec', {
                     header:{},
                     data:{
@@ -1246,7 +1246,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 let _this = this;
                 if (valid) {
-                    this.$http.defaults.withCredentials = false;
+                    //this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/senario/settings",{
                         header:{},
                         data:{
@@ -1295,7 +1295,7 @@ export default {
         /**=============================监控配置事件=============================== */
         moniterListCase:function(){
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/list',{
                 header:{},
                 data:{
@@ -1342,7 +1342,7 @@ export default {
             console.log(openStatus);
             let _this =this;
             if(openStatus){
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/component/search',{
                     header:{},
                     data:{
@@ -1362,7 +1362,7 @@ export default {
             setTimeout(() => {
                 let _this = this;
                 _this.scomponentLoading = false;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/component/search',{
                     header:{},
                     data:{
@@ -1383,7 +1383,7 @@ export default {
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/monitorSetting/search',{
                     header:{},
                     data:{
@@ -1434,7 +1434,7 @@ export default {
                             _this.monitorList = _this.moniterSelectedData.map(item=>{
                                 return item.servPartId;
                             })
-                            this.$http.defaults.withCredentials = false;
+                            //this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/monitorSetting/addMachine",{
                                 header:{},
                                 data:{
@@ -1455,7 +1455,7 @@ export default {
                     _this.monitorList = _this.moniterSelectedData.map(item=>{
                         return item.servPartId;
                     })
-                    this.$http.defaults.withCredentials = false;
+                    //this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/monitorSetting/addMachine",{
                         header:{},
                         data:{
@@ -1483,7 +1483,7 @@ export default {
             setTimeout(() => {
                 let _this = this;
                 _this.scomponentAddLoading = false;
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/component/search',{
                     header:{},
                     data:{
@@ -1501,7 +1501,7 @@ export default {
         openMonitorAddChange:function(openStatus){
             let _this =this;
             if(openStatus){
-                this.$http.defaults.withCredentials = false;
+                //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/component/search',{
                     header:{},
                     data:{
@@ -1521,7 +1521,7 @@ export default {
             this.$refs[name].validate((valid) => {
                 if(valid){
                     let _this = this;
-                    this.$http.defaults.withCredentials = false;
+                    //this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitorSetting/addMachineMonitor',{
                         header:{},
                         data:{
@@ -1568,7 +1568,7 @@ export default {
             this.$set(row, '$isEdit', false)
             console.log(row);
             let _this = this;
-            this.$http.defaults.withCredentials = false;
+            //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/machineMonitorUpdate',{
                 header:{},
                 data:{
