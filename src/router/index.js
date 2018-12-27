@@ -11,6 +11,7 @@ import Monitoring from '@/views/ExeQueue/Monitoring/Monitoring'
 
 import PerfTask from '@/views/PerfTask/PerfTask.vue'
 import Script from '@/views/Script/Script.vue'
+import ScriptDetail from '@/views/Script/ScriptDetail.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
 import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
@@ -45,6 +46,11 @@ export default new Router({
           path: '/script',
           name: 'Script',
           component: Script
+        },
+        {
+          path: '/script_detail',
+          name: 'ScriptDetail',
+          component: ScriptDetail
         },
         {
           path: '/senario',

@@ -42,7 +42,7 @@
                     </div>
                 </div>
             </div>
-            <!-- 参数化设置对话框 -->
+            <!-- 参数化设置对话框 begin  -->
             <Modal v-model="showParamStatus" width="800" >
                 <p slot="header" style="color:rgba(184, 124, 13, 0.637)" >
                     <span>参数化文件设置</span>
@@ -68,6 +68,7 @@
                         <Button type="primary" @click="handleParamSubmit('paramValidate')">确认</Button>
                 </div>
             </Modal>
+            <!-- 参数化设置对话框 end  -->
             <!--新建脚本时弹出的对话框begin-->
             <Modal v-model="showDialog" width="800" >
                 <p slot="header" style="text-align:center" >
@@ -132,7 +133,7 @@
                     <Button type="primary"   @click="submitScript('addValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--新建脚本时弹出的对话框end-->
+            <!--新建脚本时弹出的对话框 end-->
             <!--script edit editeditediteditediteditbegin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
@@ -184,38 +185,38 @@
                     <span>脚本详情</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                    <FormItem label="脚本ID:" prop="script_id" >                      
-                        <Input v-model="setValidate.script_id"></Input>
+                    <FormItem label="脚本ID:"  >                     
+                        <!-- <Input v-model="setValidate.script_id"></Input> -->
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div>
                     </FormItem>
                     <FormItem label="脚本名称:" prop="script_name">                      
-                        <Input v-model="setValidate.script_name"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_name}} </div>
                     </FormItem>
                     <FormItem label="脚本大小:" prop="filesize">                      
-                        <Input v-model="setValidate.filesize"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.filesize}} </div>
                     </FormItem>
                     <FormItem label="物理子系统:" prop="app_name">                      
-                        <Input v-model="setValidate.app_name"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.app_name}} </div>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
-                        <Input v-model="setValidate.memo"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.memo}} </div>
                     </FormItem>
                     <FormItem label="创建时间:" prop="create_time">                      
-                        <Input v-model="setValidate.create_time"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}} </div>
                     </FormItem>
                     <FormItem label="更新时间:" prop="update_time">                      
-                        <Input v-model="setValidate.update_time"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.update_time}} </div>
                     </FormItem>
                     <FormItem label="创建人:" prop="script_manager_id">                      
-                        <Input v-model="setValidate.script_manager_id"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_manager_id}} </div>
                     </FormItem>
                 </Form>
-                <div slot="footer">
+                <!-- <div slot="footer">
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
-                    <!-- <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button> -->
-                </div>
+                    <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
+                </div> -->
             </Modal>
             <!--script detail end-->
-
         </Card>
     </div>
 </template>
@@ -387,28 +388,29 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showDetail = true;
-                                        console.log(item.row);
                                         let _this = this;
-                                        // this.$http.defaults.withCredentials = false;
-                                        this.$http.post('/myapi/scripts/view',{
-                                            data:{
-                                                id:item.row.id,
-                                            }
-                                        }).then(function(response){
-                                            console.log("script编辑接口response.data",response.data);
-                                            _this.setValidate.script_name= response.data.resultList[0].script_name;
-                                            _this.setValidate.script_id= response.data.resultList[0].script_id;
-                                            _this.setValidate.app_name= response.data.resultList[0].app_name;
-                                            _this.setValidate.memo= response.data.resultList[0].memo;
-                                            _this.setValidate.create_time= response.data.resultList[0].created_time;
-                                            _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                            _this.setValidate.update_time= response.data.resultList[0].modified_time;
-                                            _this.setValidate.filesize= response.data.resultList[0].script_filesize;
-                                            _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
-                                            // _this.setValidate.update_time= response.data.resultList[0].updated_time;
+                                        _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
+                                        // this.showDetail = true;
+                                        // console.log(item.row);
+                                        // let _this = this;
+                                        // this.$http.post('/myapi/scripts/view',{
+                                        //     data:{
+                                        //         id:item.row.id,
+                                        //     }
+                                        // }).then(function(response){
+                                        //     console.log("script编辑接口response.data",response.data);
+                                        //     _this.setValidate.script_name= response.data.resultList[0].script_name;
+                                        //     _this.setValidate.script_id= response.data.resultList[0].script_id;
+                                        //     _this.setValidate.app_name= response.data.resultList[0].app_name;
+                                        //     _this.setValidate.memo= response.data.resultList[0].memo;
+                                        //     _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                        //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                                        //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
+                                        //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
+                                        //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
+                                        //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
                                             
-                                        })
+                                        // })
                                     }
                                 }
                             },'详情'),
@@ -779,7 +781,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            //this.$router.push({path:'/addScript',query:{id:row.id}});
+            this.$router.push({path:'/script_detail',query:{script_id:row.id}});
         },
 
         
@@ -997,6 +999,10 @@ export default {
     left:0;
     top:50%;
     transform: translate(50%, -65%);
+}
+.editStaticDiv {
+    font-size: 12px;
+    padding-top: 10px;
 }
 .formValidate {
 	margin:0 auto;
