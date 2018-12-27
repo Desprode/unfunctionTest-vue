@@ -5,36 +5,54 @@
         </div></br>
         
         <Form ref="setValidate" :model="setValidate" :label-width="80">
-            <FormItem label="脚本ID:" item-width="40">                     
-                 <!-- <Input v-model="setValidate.script_id"></Input>  -->
-                 <!-- <i-input v-model="setValidate.script_id"></i-input> -->
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div>
-            </FormItem>
-            <FormItem label="脚本名称:" prop="script_name">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_name}} </div>
-            </FormItem>
-            <FormItem label="脚本大小:" prop="filesize">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.filesize}} </div>
-            </FormItem>
-            <FormItem label="物理子系统:" prop="app_name">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.app_name}} </div>
-            </FormItem>
-            <FormItem label="脚本说明:" prop="memo">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.memo}} </div>
-            </FormItem>
-            <FormItem label="创建时间:" prop="create_time">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}} </div>
-            </FormItem>
-            <FormItem label="更新时间:" prop="update_time">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.update_time}} </div>
-            </FormItem>
-            <FormItem label="创建人:" prop="script_manager_id">                      
-                <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_manager_id}} </div>
-            </FormItem>
+            <Row>
+                <Col span="12">
+                    <FormItem label="脚本ID:" item-width="40">                     
+                        <!-- <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div> -->
+                        <i-input v-model="setValidate.script_id"></i-input>                          
+                    </FormItem>
+                </Col>
+                <Col span="12">
+                    <FormItem label="脚本名称:" prop="script_name"> 
+                            <i-input v-model="setValidate.script_name"></i-input>                     
+                    </FormItem>
+                </Col> 
+            </Row>
+            <Row>
+                <Col span="12">
+                    <FormItem label="脚本大小:" prop="filesize"> 
+                            <i-input v-model="setValidate.filesize"></i-input>                     
+                    </FormItem>
+                </Col>
+                <Col span="12">
+                    <FormItem label="创建人:" prop="script_manager_id"> 
+                            <i-input v-model="setValidate.script_manager_id"></i-input>                     
+                    </FormItem>
+                </Col> 
+            </Row>
+            <Row>
+                <Col span="12">
+                    <FormItem label="创建时间:" prop="create_time"> 
+                            <i-input v-model="setValidate.create_time"></i-input>                     
+                    </FormItem>
+                </Col>
+                <Col span="12">
+                    <FormItem label="更新时间:" prop="update_time">  
+                            <i-input v-model="setValidate.update_time" aria-disabled="true"></i-input>                    
+                    </FormItem>
+                </Col> 
+            </Row>
+            <Row>
+                <Col span="24">
+                    <FormItem label="脚本说明:" prop="memo"> 
+                            <i-input v-model="setValidate.memo"></i-input>                     
+                    </FormItem>
+                </Col>
+            </Row>
         </Form>
         <div align="center">
-                <Button @click="back" type="primary">返回</Button>
-            </div>
+            <Button @click="back" type="primary">返回</Button>
+        </div>
     </div>  
 </template>
 <script>
