@@ -9,43 +9,44 @@
                 <Col span="12">
                     <FormItem label="脚本ID:" item-width="40">                     
                         <!-- <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div> -->
-                        <i-input v-model="setValidate.script_id"></i-input>                          
+                        <Input v-model="setValidate.script_id" readonly></Input>                           
                     </FormItem>
                 </Col>
                 <Col span="12">
                     <FormItem label="脚本名称:" prop="script_name"> 
-                            <i-input v-model="setValidate.script_name"></i-input>                     
+                            <!-- <i-input v-model="setValidate.script_name" aria-readonly="true"></i-input>   -->
+                            <Input v-model="setValidate.script_name" readonly></Input>                   
                     </FormItem>
                 </Col> 
             </Row>
             <Row>
                 <Col span="12">
                     <FormItem label="脚本大小:" prop="filesize"> 
-                            <i-input v-model="setValidate.filesize"></i-input>                     
+                            <Input v-model="setValidate.filesize" readonly></Input>                   
                     </FormItem>
                 </Col>
                 <Col span="12">
                     <FormItem label="创建人:" prop="script_manager_id"> 
-                            <i-input v-model="setValidate.script_manager_id"></i-input>                     
+                            <Input v-model="setValidate.script_manager_id" readonly></Input>                   
                     </FormItem>
                 </Col> 
             </Row>
             <Row>
                 <Col span="12">
                     <FormItem label="创建时间:" prop="create_time"> 
-                            <i-input v-model="setValidate.create_time"></i-input>                     
+                            <Input v-model="setValidate.create_time" readonly></Input>                        
                     </FormItem>
                 </Col>
                 <Col span="12">
                     <FormItem label="更新时间:" prop="update_time">  
-                            <i-input v-model="setValidate.update_time" aria-disabled="true"></i-input>                    
+                            <Input v-model="setValidate.update_time" readonly></Input>                      
                     </FormItem>
                 </Col> 
             </Row>
             <Row>
                 <Col span="24">
                     <FormItem label="脚本说明:" prop="memo"> 
-                            <i-input v-model="setValidate.memo"></i-input>                     
+                            <Input v-model="setValidate.memo" readonly type="textarea" :autosize="{minRows:2,maxRows:3}"></Input>                      
                     </FormItem>
                 </Col>
             </Row>
