@@ -968,8 +968,7 @@ export default {
                     _this.$Message.info('删除成功');
                     _this.listCase()
                 }
-            })
-             ;
+            });
         },
         /**取消删除 */
         delMonitorCancel:function(){
@@ -1210,7 +1209,7 @@ export default {
                     console.log(response);
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='1';
-                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name}});
+                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.executor_id,senario_name:response.data.resultMap.senario_name}});
                 })
             }else{
                 console.log(this.eveValidate.exeDateTime);
