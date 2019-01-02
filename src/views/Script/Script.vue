@@ -536,7 +536,7 @@ export default {
         uploadSuccess:function(res,file) {
             console.log(res)
             if(res.result == "success"){
-                this.filesize = res.resultList[0].filesize;
+                this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
                 this.script_id = res.resultList[0].script_id;
@@ -856,17 +856,16 @@ export default {
                         }
                     }).then(function(response){
                         console.log("响应回来的数据",response);
-                        if(response.status == 500){
-                            _this.$Message.error('服务端错误!');
+                        if("success" == response.data.result){
+                            _this.$Message.success('添加成功！');
                         }else{
-                            if("success" == response.data.result){
-                                _this.$Message.success('添加成功！');
-                            }else{
-                                _this.$Message.error('添加失败'+response.data.err_desc);
-                            }
-                            _this.showDialog = false;
-                            _this.$refs[name].resetFields();
+                            _this.$Message.error('添加失败'+response.data.err_desc);
                         }
+                        _this.showDialog = false;
+                        _this.$refs[name].resetFields();
+                    }).catch(function(error){
+                        console.log("error:"+error);
+                        _this.$Message.error('服务端错误!');
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
