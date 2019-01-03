@@ -178,9 +178,27 @@
                 flushFlag: true,//全局定时刷新标志
                 timeSectionFlag: false,//日历时段选择，复用刷新函数，但是不能定时刷新
 
-                intervalFunc:'',
+                intervalFunc:null,
             }
         },
+         beforeDestroy(){
+            if(!this.chart){
+                return;
+            }
+            this.chart.dispose();
+            this.chart=null;
+            this.initCpu.dispose();
+            this.initCpu = null;
+            this.initMem.dispose();
+            this.initMem = null;
+            this.initIo.dispose();
+            this.initIo = null;
+            this.initNet.dispose();
+            this.initNet = null;
+            clearInterval(this.intervalFunc);
+            this.intervalFunc = null;
+        },
+
          mounted(){
             // this.updatedisk();
             this.initAll();
@@ -197,7 +215,7 @@
             this.initNet();
             this.updateChart_net(this.BeginTime,'1545121419');
 
-            setInterval(this.realTimeCl, 5000);
+            this.intervalFunc = setInterval(this.realTimeCl, 5000);
         },
         created () {
             
@@ -224,10 +242,10 @@
             prodIPChange:function(){
                 if(this.prodIPList.length > 2){
                     this.prodIPRow = true;
-                    console.log(this.prodIPRow);
+                    //console.log(this.prodIPRow);
                 }else{
                     this.prodIPRow = false;
-                    console.log(this.prodIPRow);
+                    //console.log(this.prodIPRow);
                 }
             },
             confirm:function(){
