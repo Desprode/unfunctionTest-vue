@@ -598,7 +598,6 @@ export default {
                     key: 'opration',
                     width:130,
                     render: (h, params) => {
-                        // if(params.row.$isEdit ){
                         return h('div', [
                             h('Button', {
                                 props: {
@@ -631,7 +630,6 @@ export default {
                                     'on-ok': () => {
                                         let _this = this;
 
-                                        // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/metrics/del',{
                                             header:{},
                                             data:{
@@ -674,42 +672,6 @@ export default {
                             //     }
                             // }, '删除'), 
                         ])
-                        // }else{
-                        //     return h('div', [
-                        //         h('Button', {
-                        //             props: {
-                        //                 type: 'success',
-                        //                 size: 'small'
-                        //             },
-                        //             style: {
-                        //                 marginRight: '5px'
-                        //             },
-                        //             on: {
-                        //                 click: () => {
-                        //                     this.handleDemandEdit(params.row);
-                        //                 }
-                        //             }
-                        //         },'编辑'),
-                        //         h('Button', {
-                        //             props: {
-                        //                 type: 'error',
-                        //                 size: 'small'
-                        //             },
-                        //             style: {
-                        //                 marginRight: '5px'
-                        //             },
-                        //             on: {
-                        //                 click: () => {
-                        //                     this.editPTaskModal = true;
-                        //                     this.editPTaskValidate.index = params.row._index;
-                        //                     this.editPTaskValidate.id = params.row.id;
-                        //                     this.editPTaskValidate.component_name = params.row.component_name;
-                        //                     this.editPTaskValidate.perftask_name = params.row.perftask_name;
-                        //                 }
-                        //             }
-                        //         }, '删除'), 
-                        //     ])
-                        // }
                     }
                 }
             ], 
