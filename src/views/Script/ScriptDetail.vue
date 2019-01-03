@@ -21,6 +21,20 @@
             </Row>
             <Row>
                 <Col span="12">
+                    <FormItem label="物理子系统:" item-width="40">                     
+                        <!-- <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div> -->
+                        <Input v-model="setValidate.app_name" readonly></Input>                           
+                    </FormItem>
+                </Col>
+                <Col span="12">
+                    <FormItem label="脚本文件:" prop="script_filename"> 
+                            <!-- <i-input v-model="setValidate.script_name" aria-readonly="true"></i-input>   -->
+                            <Input v-model="setValidate.script_filename" readonly></Input>                   
+                    </FormItem>
+                </Col> 
+            </Row>
+            <Row>
+                <Col span="12">
                     <FormItem label="脚本大小:" prop="filesize"> 
                             <Input v-model="setValidate.filesize" readonly></Input>                   
                     </FormItem>
