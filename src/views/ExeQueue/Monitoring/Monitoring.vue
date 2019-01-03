@@ -216,13 +216,15 @@
                 this.getPressureaAgentInfo();
             },
             methods:{ 
+                //服务器资源信息
                 getServerInfo: function() {
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
+                    console.log(_this.$route.query);
                     this.$http.get('/myapi/monitor/serverlistinfo?scenarioId='+this.$route.query.senario_id, {
                     }).then(function (response) {
                         console.log(response);
-                        let result = response.resultList;
+                        let result = response.data.resultList;
                         let funDescList = [];
                         let subsys = [];
 
@@ -258,17 +260,19 @@
                         //TODO  时间在选择列表中一并获取
                         _this.serverInfo.subsys = subsys;
                         console.log("getserverInfo");
+                        console.log("serverInfo",_this.serverInfo);
                         console.log(subsys);
                     });
                 },
-
+            //压力机信息
                 getPressureaAgentInfo: function() {
+                    console.log("压力机信息");
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
                     this.$http.get('/myapi/monitor/pressureagentlistinfo?executorId='+this.$route.query.executor_id, {
                     }).then(function (response) {
                         console.log(response);
-                        let result = response.resultList;
+                        let result = response.data.resultList;
                         let subsys = [];
                         let funDesc = result[0].funDesc;
 
@@ -283,6 +287,7 @@
 
                         //TODO  时间在选择列表中一并获取
                         _this.pressureAgentInfo.subsys = subsys;
+                        console.log("pressureAgentInfo",_this.pressureAgentInfo);
                          console.log("getpressInfo");
                         console.log(subsys);
                     });
@@ -440,8 +445,8 @@
                 onRowDblClick: function(row) {
                     console.log(row);
                   //  this.pressureAgentInfo.selected = ;
-                    this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc}});
-            }
+                    this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc,serverInfo:this.serverInfo}});
+                }
             }
         }
     
