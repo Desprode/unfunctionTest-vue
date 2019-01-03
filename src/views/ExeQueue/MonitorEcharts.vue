@@ -238,6 +238,7 @@
                 _this.prodIPListSend.push(_this.prodIPList);
                 _this.prodIPList = [];
                 console.log(_this.prodIPListSend);
+                console.log(this.$route.query.serverInfo);
             },
             prodIPChange:function(){
                 if(this.prodIPList.length > 2){
