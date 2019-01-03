@@ -202,6 +202,8 @@
                     pageNo:1,                            //当前页
                     pageSize:10,                           //每页显示多少条数据
                     totalPage:0,                           //共多少页
+                    serverInfo: {},
+                    pressureAgentInfo: {},
                 }
             },
             
@@ -210,9 +212,82 @@
                 this.listCase();
                 this.initWs();
     
-                
+                this.getServerInfo();
+                this.getPressureaAgentInfo();
             },
-            methods:{    
+            methods:{ 
+                getServerInfo: function() {
+                    let _this = this;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.get('/myapi/monitor/serverlistinfo?scenarioId='+this.$route.query.senario_id, {
+                    }).then(function (response) {
+                        console.log(response);
+                        let result = response.resultList;
+                        let funDescList = [];
+                        let subsys = [];
+
+                        for(let i = 0, len = result.length; i < len; i++){
+                            let tmp = result[i].funDesc;
+                            let flag = true;
+                            for(let j = 0; j < funDescList.length; j++){
+                                if(tmp == funDescList[j]){
+                                    flag = false;
+                                    break;
+                                }
+                            }
+
+                            if(flag === true){
+                                funDescList.push(tmp);
+                            }
+                        }
+
+                        for(let i = 0, len = funDescList.length; i < len; i++){
+                            let funDesc = funDescList[i];
+                            let ip = [];
+                            for(let j = 0, len1 = result.length; j < len1; j++){
+                                if(funDesc == result[j].funDesc){
+                                    ip.push(result[j].prodIp)
+                                }
+                            }
+                            let text = {};
+                            text.funDesc = funDesc;
+                            text.ip = ip;
+                            subsys.push(text);
+                        }
+
+                        //TODO  时间在选择列表中一并获取
+                        _this.serverInfo.subsys = subsys;
+                        console.log("getserverInfo");
+                        console.log(subsys);
+                    });
+                },
+
+                getPressureaAgentInfo: function() {
+                    let _this = this;
+                    this.$http.defaults.withCredentials = false;
+                    this.$http.get('/myapi/monitor/pressureagentlistinfo?executorId='+this.$route.query.executor_id, {
+                    }).then(function (response) {
+                        console.log(response);
+                        let result = response.resultList;
+                        let subsys = [];
+                        let funDesc = result[0].funDesc;
+
+                        let ip = [];
+                        for(let j = 0, len1 = result.length; j < len1; j++){
+                                 ip.push(result[j].prodIp)
+                        }
+                        let text = {};
+                        text.funDesc = funDesc;
+                        text.ip = ip;
+                        subsys.push(text);
+
+                        //TODO  时间在选择列表中一并获取
+                        _this.pressureAgentInfo.subsys = subsys;
+                         console.log("getpressInfo");
+                        console.log(subsys);
+                    });
+                },
+
               initWs() {
                this.ws =new WebSocket(this.wsurl)
                this.ws.onmessage = this.getmessage
@@ -364,6 +439,7 @@
                 },
                 onRowDblClick: function(row) {
                     console.log(row);
+                  //  this.pressureAgentInfo.selected = ;
                     this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc}});
             }
             }
