@@ -19,7 +19,7 @@
                                     remote
                                     :remote-method="srchComponent"
                                     :loading="srchCmploading">
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.id" :key="index">{{option.com_name}}</Option>
+                                    <Option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index">{{option.com_name}}</Option>
                                 </Select>
                             </Col>
                             <Col span="2" class="searchLable">任务名称</Col>
@@ -253,6 +253,10 @@
 </template>
 
 <script>
+import global_ from 'header/global'
+import cookie_ from 'header/cookie'
+import axios from 'axios'
+
 export default {
 	name: 'TestCase',
     data () {
@@ -630,7 +634,7 @@ export default {
                                     'on-ok': () => {
                                         let _this = this;
 
-                                        this.$http.defaults.withCredentials = false;
+                                        // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/metrics/del',{
                                             header:{},
                                             data:{
@@ -722,7 +726,69 @@ export default {
         }
     },
     created(){
-        this.listPTask();
+        /**判断目前cookie中是否有用户信息，
+         * 如果没有获取到用户信息就用checkLogin到ITM中获取一下用户信息，存储到cookie中，
+         * 供后端解析当前用户使用，header中也会调用这个函数来获取用户信息，之所以这里也再执行一次，
+         * 是因为header和这里调用的listPTask是异步加载的，哪一个先加载完不一定，
+         * 所以为了保证cookie中始终都有当前用户的信息，这里也做了一下用户信息获取和放cookie */
+        let nickName = cookie_.getCookie('nickname');
+        let userName = this.$Global.getCookie('username');
+
+        // console.log("*** nickname: ", nickName);
+        // console.log("*** username: ", userName);
+
+        if (userName == '' || userName == null || userName == undefined) {
+            //验证用户是否登陆，发送请求获取，有可能用户在其他页面做过登陆操作。
+            axios.get(global_.login2_url + '/api/checkLogin', { params: {} }).then((parm) => {
+                let parmdata = parm.data;
+                // console.log(parmdata.nickname+"!!!!!!!!!");
+                cookie_.setCookie('nickname', parmdata.nickname, 'd30');
+                cookie_.setCookie('username', parmdata.username, 'd30');
+
+                // console.log("after set --- nickname: ", cookie_.getCookie('nickname'));
+                // console.log("after set --- username: ", cookie_.getCookie('username'));
+
+                /**获取用户权限信息 */
+                this.$http.post('/myapi/user/getUserPermissions', {
+                    userId: parmdata.username,
+                    // header: {},
+                    // data: {
+                    //     userId: parmdata.username, 
+                    // }
+                }).then(function (response) {
+                    if (response.data.result == "fail") {
+                        let errDesc = _this.handleErrCode(response);
+
+                        _this.$Message.error(errDesc);
+                    } else if (response.data.result == "ok") {
+                        console.log("get user permissions: ", response);
+                    }
+                })
+
+                /**获取任务列表 */
+                this.listPTask();
+            }).catch((error) => {})
+        } else {
+            /**获取用户权限信息 */
+            this.$http.post('/myapi/user/getUserPermissions', {
+                userId: userName,
+                // header: {},
+                // data: {
+                //     userId: userName, 
+                // }
+            }).then(function (response) {
+                if (response.data.result == "fail") {
+                    let errDesc = _this.handleErrCode(response);
+
+                    _this.$Message.error(errDesc);
+                } else if (response.data.result == "ok") {
+                    console.log("get user permissions: ", response);
+                }
+            })
+
+            /**获取任务列表 */
+            this.listPTask();
+        }
     },
     methods: {
         show:function(ev){
@@ -738,7 +804,7 @@ export default {
                 setTimeout(()=>{
                     this.srchCmploading = false;
                     let _this = this;
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/component/searchFromITM',{
                         headers:{},
                         data:{
@@ -801,7 +867,7 @@ export default {
         listPTask: function() {
             let _this = this;
             // console.log("任务来源:", _this.sTaskSource);
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
                 header: {},
                 data: {
@@ -885,7 +951,7 @@ export default {
             
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/perftask/add', {
                         header: {},
                         data: {
@@ -935,7 +1001,7 @@ export default {
             
             this.$refs[editPTaskData].validate((valid) => {
                 if (valid) {
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/perftask/edit', {
                         header: {},
                         data: {
@@ -1001,7 +1067,7 @@ export default {
             }
             // console.log("** delIds: ", delIds);
             
-            this.$http.defaults.withCredentials = false;
+            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/del', {
                 header: {},
                 data: {
@@ -1055,7 +1121,7 @@ export default {
                 _this.demandMetricsModal = true;
                 // console.log("---selectedData[0].id: ", selectedData[0].id);
 
-                this.$http.defaults.withCredentials = false;
+                // this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/metrics/list', {
                     header: {},
                     data: {
@@ -1132,7 +1198,7 @@ export default {
                 if ( row['id'] ) {
                     console.log("^^^ row has id, it is an edit ^^^");
 
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/metrics/edit',{
                         header:{},
                         data:{
@@ -1156,7 +1222,7 @@ export default {
                     console.log("^^^ row has not id, it is an add ^^^");
                     // console.log("^^^ _this: ", _this);
 
-                    this.$http.defaults.withCredentials = false;
+                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/metrics/add',{
                         header:{},
                         data:{
