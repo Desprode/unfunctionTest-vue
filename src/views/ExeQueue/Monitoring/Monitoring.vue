@@ -453,19 +453,19 @@
             max-height: 50px;
         }
         .myTable {
-        margin-bottom: 15px;
-    }
-    .pageBox {
-        padding-bottom:20px;
-        padding-top:20px;
-        overflow: hidden;
-    }
-    .pageBox ul{
-        float: right;
-    }
-    .pageBox p{
-        float:left;
-        line-height: 32px;
-        font-size:12px;
-    }
+            margin-bottom: 15px;
+        }
+        .pageBox {
+            padding-bottom:20px;
+            padding-top:20px;
+            overflow: hidden;
+        }
+        .pageBox ul{
+            float: right;
+        }
+        .pageBox p{
+            float:left;
+            line-height: 32px;
+            font-size:12px;
+        }
     </style>    
