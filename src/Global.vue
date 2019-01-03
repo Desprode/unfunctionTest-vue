@@ -23,6 +23,16 @@ function formatDate(date, fmt) {
     return fmt
 }
 
+/** 获取cookie
+  * name:cookie中的key值*/
+function getCookie(name){
+    var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+    if(arr=document.cookie.match(reg))
+        return arr[2];
+    else
+        return null;
+}
+
 export default {
     // 任务状态
     taskStatusList: [
@@ -62,6 +72,9 @@ export default {
     senarioType:{'01':'单交易基准','02':'单交易负载','03':'混合场景'}, 
 
     // 日期格式化函数
-    formatDate
+    formatDate, 
+
+    // 获取cookie中的值
+    getCookie, 
 }
 </script>
