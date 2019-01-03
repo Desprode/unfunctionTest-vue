@@ -396,13 +396,11 @@ export default {
                                     type: 'primary',
                                     size: 'small'
                                     // type: 'text', 
-                                    // size: 'small', 
                                     // icon: 'ios-create-outline', 
                                     // icon: 'ios-paper-outline', 
                                 },
                                 style: {
                                     marginRight: '5px'
-                                    // content-size:
                                 },
                                 on: {
                                     click: () => {
@@ -613,7 +611,6 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        // this.demandEditSave(params.row);
                                         if (params.row.$isEdit) {
                                             this.demandEditSave(params.row);
                                         } else {
