@@ -599,7 +599,7 @@ export default {
                     this.srchCmploading = false;
                     let _this = this
                     // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/search', 
+                    this.$http.post('/myapi/user/userSearch', 
                     {
                         data: {
                             name: _this.creater,                            
