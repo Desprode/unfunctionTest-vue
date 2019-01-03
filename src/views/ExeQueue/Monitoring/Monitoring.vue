@@ -212,49 +212,6 @@
     
                 
             },
-<<<<<<< HEAD
-            //压力机资源
-           // listCase: function() {
-           //     let _this = this;
-           //     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
-            //    console.log("第二个页面接收的ID",executor_id);
-            //    this.$http.defaults.withCredentials = false;// ?executorId=1543568019509&start=1543567995&end=1543568195
-           //     this.$http.post('http://128.192.219.85:8080/monitor/pressureagentlist', {
-            //        data: {
-            //            executorId: executor_id,
-            //            start: 1543567995,
-             //           end: 1543568195,
-             //       }
-             //   }).then(function (response) {
-             //       console.log(response);
-             //       console.log('请求回来的表格数据222: ', response.data);
-             //       _this.tableData = response.data.resultList;   
-              //      _this.tableData = response.data.resultList;
-              //  })
-         //   },
-            pressCase: function() {
-                console.log("参数",this.$route.query);
-                let _this = this;
-                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值 '+this.$route.query.executor_id+'
-                console.log("第二个页面接收的ID",executor_id);
-                var senario_name = this.$route.query.senario_name; 
-                console.log("第二个页面接收的场景名称",senario_name);
-               // this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start=1543567995&end=1543568195', {
-                    data: {
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                    console.log('请求回来的表格数据555: ', response.data);
-                    _this.tableDatal = response.data.result;  
-                    _this.tableDatal = response.data.result;
-                })
-            },
-            onRowDblClick: function(row) {
-                console.log(row);
-                this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc}});
-        },
-=======
             methods:{    
               initWs() {
                this.ws =new WebSocket(this.wsurl)
@@ -418,7 +375,6 @@
             width: 300px;
             min-height: 50px;
             max-height: 50px;
->>>>>>> c216fbc90bd96790f4454f90ffd7cfca6c80e2d5
         }
         .myTable {
         margin-bottom: 15px;
