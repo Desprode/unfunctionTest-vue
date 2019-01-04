@@ -218,6 +218,7 @@
             methods:{ 
                 //服务器资源信息
                 getServerInfo: function() {
+                    console.log("服务器资源信息");
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
                     console.log(_this.$route.query);
@@ -228,17 +229,17 @@
                         let funDescList = [];
                         let subsys = [];
 
-                        for(let i = 0, len = result.length; i < len; i++){
-                            let tmp = result[i].funDesc;
-                            let flag = true;
-                            for(let j = 0; j < funDescList.length; j++){
-                                if(tmp == funDescList[j]){
-                                    flag = false;
+                        for(let i = 0, len = result.length; i < len; i++){       //遍历响应回的数据
+                            let tmp = result[i].funDesc;                         //讲每个funDesc赋值给tmp
+                            let flag = true;                                     //命名一个中间量
+                            for(let j = 0; j < funDescList.length; j++){         //遍历funDescList数组
+                                if(tmp == funDescList[j]){                       //如果tmp与funDescList中的一个值相等时
+                                    flag = false;                              //中间量命名为赋值为true
                                     break;
                                 }
                             }
 
-                            if(flag === true){
+                            if(flag === true){                             //只要中间量为true，tmp将一直被放入funDescList中
                                 funDescList.push(tmp);
                             }
                         }
@@ -251,10 +252,10 @@
                                     ip.push(result[j].prodIp)
                                 }
                             }
-                            let text = {};
-                            text.funDesc = funDesc;
-                            text.ip = ip;
-                            subsys.push(text);
+                            let text = {};                     //定义一个空的对象
+                            text.funDesc = funDesc;              //将funDesc放入
+                            text.ip = ip;                       //将ip放入
+                            subsys.push(text);                 //将组成的新对象放入subsys中
                         }
 
                         //TODO  时间在选择列表中一并获取
