@@ -52,7 +52,7 @@
                     timestamp:'',
                     timestampl:'',
                     statuszt:'',
-                    wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id+"",
+                    wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                      iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
@@ -296,7 +296,7 @@
                this.ws.onmessage = this.getmessage
               },
               getmessage(e){
-            var res =e.data
+            var res = e.data
              console.log(this.res)
              var _cutting = res.substr(0,1);
              console.log("截取==================="+ _cutting)
