@@ -35,7 +35,7 @@
                 </Tab-pane>
                 <!---------------------分割线-------------------------->
                 <Tab-pane label="压力机资源">
-                    <Table border  ref="selection" :columns="columns"  :data="tableDatal" class="myTable"></Table>
+                    <Table border  ref="selection" :columns="columns"  :data="tableDatal" class="myTable" @on-row-dblclick="pressonRowDblClick"></Table>
                 </Tab-pane>
             </Tabs>
         </div>
@@ -52,7 +52,7 @@
                     timestamp:'',
                     timestampl:'',
                     statuszt:'',
-                    wsurl:"ws://128.192.206.168:8080/message/"+this.$route.query.executor_id+"",
+                    wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id+"",
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                      iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
@@ -72,11 +72,6 @@
                         statuszt:'',
                         textarea: ''
                     },
-                    //压力机日志// $(function () {
-               //setInterval(function (){
-                  // $("#autore").load(location.href + "#autore");
-                                  // }, 8000);
-               // });
                     columns: [
                         {
                             title: '序号',
@@ -204,6 +199,9 @@
                     totalPage:0,                           //共多少页
                     serverInfo: {},
                     pressureAgentInfo: {},
+                    //jsonobj: {},
+                    starttime:'',
+
                 }
             },
             
@@ -316,51 +314,6 @@
             
               },
                 
-                //srchComponent: function(query) {
-                //this.cmpOpts = [];
-               // if (query !== '') {
-               //     this.srchCmploading = true;
-                //    setTimeout(() => {
-                //        this.srchCmploading = false;
-    
-                //        let _this = this
-                //        var executor_id = this.$route.query.executor_id;        //获取上个页面传的id值
-                 //   console.log("第三个页面接收的ID",executor_id);
-                 //       console.log('srchComponent');
-                 //       console.log('list-before: ', this.list);
-                 //       console.log('query: ', query)
-    
-                 //       this.$http.defaults.withCredentials = false;
-                 //       this.$http.post('/myapi/testresult/runtests/list', 
-                  //      {
-                  //          headers: {
-                  //          },
-                  //          data: {
-                  //              name: query,
-                  //              endTime: '',
-                   //         },
-                            
-                   //     }
-                   //     ).then(function (response) {
-                    //        console.log('response:', response);
-                    //        console.log('response.data: ', response.data);
-                    //        _this.list = response.data.resultList;
-                    //        console.log('list-after: ', _this.list);
-                    //        const list = _this.list.map(item => {
-                     //           return {
-                     //               value: item.executor_id,
-                      //              label: item.task_name
-                     //           };
-                     //       });
-                     //       _this.cmpOpts = list
-                     //       console.log('666this.cmpOpts:', _this.cmpOpts);
-                      //  })
-                 //   }, 200);
-               // } else {
-                 //   this.cmpOpts = [];
-                //    console.log('666this.cmpOpts:',this.cmpOpts);
-               // }
-           // },
                  //服务器资源
                  listCase: function() {
                     let _this = this;
@@ -374,7 +327,7 @@
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
                             scenarioId: 370,
-                            start: timestamp,
+                            start:timestamp,
                             end: timestampl,
                             pageNo:_this.pageNo,
                             pageSize:_this.pageSize,
@@ -402,25 +355,6 @@
                     this.pageSize = pageSize;
                     this.listCase();
                 },
-                //压力机资源
-               // listCase: function() {
-               //     let _this = this;
-               //     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
-                //    console.log("第二个页面接收的ID",executor_id);
-                //    this.$http.defaults.withCredentials = false;// ?executorId=1543568019509&start=1543567995&end=1543568195
-               //     this.$http.post('http://128.192.219.85:8080/monitor/pressureagentlist', {
-                //        data: {
-                //            executorId: executor_id,
-                //            start: 1543567995,
-                 //           end: 1543568195,
-                 //       }
-                 //   }).then(function (response) {
-                 //       console.log(response);
-                 //       console.log('请求回来的表格数据222: ', response.data);
-                 //       _this.tableData = response.data.resultList;   
-                  //      _this.tableData = response.data.resultList;
-                  //  })
-             //   },
                 pressCase: function() {
                     let _this = this;
                     var startl = Math.round(new Date().getTime()/1000).toString();//10位时间戳
@@ -442,15 +376,25 @@
                         _this.tableDatal = response.data.result;
                     })
                 },
-                onRowDblClick: function(row) {
+                pressonRowDblClick: function(row) {
                     console.log(row);
-                  //  this.pressureAgentInfo.selected = ;
-                    this.$router.push({path:'/MonitorEcharts',query:{funDesc:row.funDesc,serverInfo:this.serverInfo}});
+                    this.$router.push({path:'/MonitorEcharts',query:{prodIp:row.prodIp,funDesc:row.funDesc,serverInfo:this.serverInfo}});
+                },
+                onRowDblClick: function(row) {
+                var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    console.log(row);
+                    this.serverInfo.start= start;
+                    this.serverInfo.selected = row.prodIp;
+                    if(this.serverInfo === ''){
+                        this.getServerInfo();
+                    }
+                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
+                    console.log('这个是？',this.serverInfo);
                 }
             }
         }
     
-    </script>
+    </script>>
     <style lang="less" scoped>
         .test_box {
             width: 300px;
