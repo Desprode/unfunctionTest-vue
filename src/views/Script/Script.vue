@@ -130,7 +130,7 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="cancelAdd()">取消</Button>
-                    <Button type="primary"   @click="submitScript('addValidate')">确认</Button>
+                    <Button type="primary"   @click="submitScript('addValidate')" :disabled="isdisabledFn">确认</Button>
                 </div>
             </Modal>
             <!--新建脚本时弹出的对话框 end-->
@@ -235,6 +235,7 @@ export default {
             callback();
         };
         return {
+            isdisabledFn:false,
             /* 窗口设置开关 */
             showParamStatus:false,
             showDialog:false,
@@ -523,7 +524,7 @@ export default {
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
         handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\-\u4e00-\u9fa5]","i");
+            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
             if(reg.test(fname)==true){
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
@@ -599,15 +600,13 @@ export default {
                     this.srchCmploading = false;
                     let _this = this
                     // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/userSearch', 
+                    this.$http.post('/myapi/user/searchByUser', 
                     {
                         data: {
                             name: _this.creater,                            
                         },                        
                     }
                     ).then(function (response) {
-                        console.log('response:', response);
-                        console.log('response.data: ', response.data);
                         _this.list = response.data.resultList;
                         console.log('list-after: ', _this.list);
                         const list = _this.list.map(item => {
@@ -837,6 +836,7 @@ export default {
         submitScript (name) {
             let _this = this;
             console.log(this.addValidate);
+            _this.isdisabledFn = true;
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
@@ -859,15 +859,18 @@ export default {
                         if("success" == response.data.result){
                             _this.$Message.success('添加成功！');
                         }else{
-                            _this.$Message.error('添加失败'+response.data.err_desc);
+                            _this.$Message.error(response.data.err_desc);
                         }
+                        _this.isdisabledFn = false;
                         _this.showDialog = false;
                         _this.$refs[name].resetFields();
                     }).catch(function(error){
+                        _this.isdisabledFn = false;
                         console.log("error:"+error);
                         _this.$Message.error('服务端错误!');
                     })
                 } else {
+                    _this.isdisabledFn = false;
                     _this.$Message.error('表单验证失败!');
                 }
             });
