@@ -202,7 +202,6 @@
          mounted(){
             // this.updatedisk();
             this.initAll();
-
             this.initCpu();
             this.updateChart_cpu(this.BeginTime,'1545121419');
 
@@ -224,6 +223,13 @@
             returnBack:function(){
                 this.$router.back(-1);
             },
+            /** 获取服务器数据*/
+            getSubsys:function(){
+                let _this = this;
+                _this.subsys = this.$route.query.serverInfo;
+                console.log("subsys选项",_this.subsys);
+                console.log("serverInfo数据",this.$route.query.serverInfo[0].funDesc);
+            },
             /**服务器改变时，服务器地址随之改变 */
             funsChange:function(){
                 console.log("选项改变了");
@@ -237,7 +243,8 @@
                 })
                 _this.prodIPListSend.push(_this.prodIPList);
                 _this.prodIPList = [];
-                console.log(_this.prodIPListSend);
+                console.log(_this.prodIPListSend); 
+                _this.subsys = this.$route.query.serverInfo;
                 console.log(this.$route.query.serverInfo);
             },
             prodIPChange:function(){
