@@ -50,12 +50,13 @@
                     describe: '',
                     cuttingl: '',
                     timestamp:'',
+                   // timedate: '',
+                   // timedatee: '',
                     timestampl:'',
-                    timedate: '',
                     statuszt:'',
-                    wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+timedate+"&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
-                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
+                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=56568588&to=4252542424&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=5445645&to=45645345&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
                         list: [], 
@@ -71,7 +72,8 @@
                         timestamp:'',
                         timestampl:'',
                         statuszt:'',
-                        timedate: '',
+                      //  timedate: '',
+                      //  timedatee: '',
                         textarea: ''
                     },
                     columns: [
@@ -301,16 +303,12 @@
               getmessage(e){
             var res = e.data
              console.log(this.res)
-             var _cutting = res.substr(0,1);
-             console.log("截取==================="+ _cutting)
-             if(_cutting =='1'){
+             var _cutting = res.substr(0,1); //截取
+             if(_cutting =='1'){      // 判断是不是开头是1的数据
                 this.describe = e.data
-                console.log("formItem.describe==================="+ this.describe)
-             }else if(_cutting =='0'){
+             }else if(_cutting =='0'){   // 判断是不是开头是0的数据
                 var status = e.data
-                console.log("这个是==================="+ status)
-                var cuttingl = status.substr(1)
-                console.log("截取0的==================="+ cuttingl)
+                var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
                 console.log("点出来的状态==================="+ this.statuszt.exe_description)
                 
@@ -328,10 +326,10 @@
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
-                    _this.timedate = Date.parse(new Date());      //获取的13位时间戳
-                    console.log("13位毫秒", _this.timedate);
-                    var timedatee =  _this.timedate - 300;
-                    console.log("13位毫秒-300",timedatee);
+                   // _this.timedate = Date.parse(new Date());    //13位的时间戳
+                   // console.log("13位毫秒", _this.timedate);
+                  //  _this.timedatee =_this.timedate - 300 ;   //13位的时间戳 -300
+                   // console.log("13位毫秒-300",_this.timedatee);
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
@@ -405,6 +403,7 @@
                         this.getServerInfo();
                     }
                     this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
+                    console.log('这个是',this.serverInfo)
                 }
             }
         }
