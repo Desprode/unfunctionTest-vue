@@ -311,6 +311,7 @@
                 console.log("截取0的==================="+ cuttingl)
                 this.statuszt = eval('('+cuttingl+')')
                 console.log("点出来的状态==================="+ this.statuszt.exe_description)
+                
              }
             
               },
@@ -377,10 +378,17 @@
                         _this.tableDatal = response.data.result;
                     })
                 },
+                //压力机资源跳转
                 pressonRowDblClick: function(row) {
-                    console.log(row);
-                    this.$router.push({path:'/MonitorEcharts',query:{prodIp:row.prodIp,funDesc:row.funDesc,serverInfo:this.serverInfo}});
+                    var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    this.pressureAgentInfo.start= start;
+                    this.pressureAgentInfo.selected = row.prodIp;
+                    if(this.pressureAgentInfo === ''){
+                        this.getPressureaAgentInfo();
+                    }
+                    this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo}});
                 },
+                //服务器资源跳转
                 onRowDblClick: function(row) {
                 var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                     console.log(row);
@@ -390,7 +398,6 @@
                         this.getServerInfo();
                     }
                     this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
-                    console.log('这个是？',this.serverInfo);
                 }
             }
         }
