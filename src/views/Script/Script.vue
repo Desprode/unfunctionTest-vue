@@ -50,17 +50,20 @@
                 <div style="text-align:center">
                     <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" >
                         <h3>请勾选可以拆分的参数化文件：</h3><br>
-                        <!-- <Row v-for="(item,index) in csvList" :key="index"> -->
                             <Col span="8" v-for="(item,index) in csvList" :key="index" >
                                 <FormItem :label-width="20" prop="fileName" style="float:left">
                                     <Checkbox v-model="item.enable == 'true'?true:false" @on-change="isChecked(index)">{{item.fileName}}</Checkbox>  
                                 </FormItem>
                                 <br v-if="index/3 ==0">
                             </Col>
-                           <Row  v-for="(item,index) in csvList" :key="index">
+                           <Row  v-for="(item,index11) in csvList" :key="index11">
 
                             </Row> 
-                        <!-- </Row> -->
+                            <!-- <CheckboxGroup v-model = "csvList">
+                                <CheckBox v-for="(item,index) in csvList"  v-model="item.enable == 'true'?true:false">
+                                </CheckBox>
+                            </CheckboxGroup> -->
+
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -80,13 +83,14 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" ></i-input>
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" @on-blur="checkScriptName" ></i-input>
+                                    <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="物理子系统" >
+                                <Form-item label="物理子系统" prop="app_name">
                                     <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" 
                                         clearable
                                         filterable 
@@ -179,7 +183,7 @@
                 </div>
             </Modal>
             <!--script edit end-->
-            <!--script detail detail detail detail begin-->
+            <!--script detail detail detail detail begin  now not use-->
             <Modal v-model="showDetail" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>脚本详情</span>
@@ -226,15 +230,17 @@ export default {
 	name: 'TestCase',
     data () {
         const validateScriptName = function(rule, value, callback) {
-            // var flag = this.checkScriptName(value);
-            // if(flag){
-            //     callback(new Error('脚本名称重复!'));
-            // }else{
-            //     callback();
-            // }
-            callback();
+            var flag = this.checkScriptName();
+            if(flag){
+                callback(new Error('脚本名称重复!'));
+            }else{
+                callback();
+            }
+            // callback();
         };
         return {
+            // scriptFlag:ture,
+            scriptFlag:true,
             isdisabledFn:false,
             /* 窗口设置开关 */
             showParamStatus:false,
@@ -447,11 +453,11 @@ export default {
                 },
             ruleValidate: {
                 script_name: [
-                    {validator: validateScriptName, required: true,trigger: 'blur' }
+                    {required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                // app_name: [
-                //     { required: true, message: '此项为必填项', trigger: 'blur' }
-                // ],
+                app_name: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
                 // memo: [
                 //     { required: true, message: '此项为必填项', trigger: 'blur' }
                 // ],
@@ -471,12 +477,12 @@ export default {
                 filesize:''                                      
             },
             setRuleValidate:{
-                script_name:[
-                    {required:false,message:'',trigger:'blur'}
+                script_name: [
+                    {required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                // app_name:[
-                //     {required:true,message:'',trigger:'blur'}
-                // ],
+                app_name:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
                 // memo:[
                 //     {required:true,message:'这是必输字段',trigger:'blur'}
                 // ],
@@ -544,12 +550,14 @@ export default {
             }
         },
         //the param set checkbox when onclick change the value to oppsite  
-        isChecked:function(){
+        isChecked:function(index){
+            
             if(this.csvList[index].enable == true || this.csvList[index].enable == 'true'){
                 this.csvList[index].enable = false;
             }else{
                 this.csvList[index].enable=true;
             }
+            // console.log("this.csvList[index].enable:"+this.csvList[index].enable);
         },
         setMoreCmpParams: function(obj) {
             this.addValidate.app_id = obj.value;
@@ -746,30 +754,27 @@ export default {
                 }
             })           
         },
-        checkScriptName(value) {
+        checkScriptName() {
             let _this = this;
+            let val = _this.addValidate.script_name;
              //检查脚本名称是否重复
             console.log("开始验证脚本名称");
             // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/checkName',{
                 data:{
-                    script_name:value,
+                    script_name:val,
                 }
             }).then(function(response){
-                if(response.status == 500){
-                    _this.$Message.error('服务端错误!');
-                }else{
-                    console.log("检查脚本响应数据",response);
-                    var flag = response.data.result;
-                    console.log("检查脚本响应数据flag",flag);
-                    if("fail" == flag){
-                        console.log("检查脚本响应数据flag22",flag);
-                        //_this.$Message.error('脚本名称重复!');
-                        return true;
-                    }else{
-                        return false;
-                    }
-                }
+                    // console.log("检查脚本响应数据",response);
+                    // var flag = response.data.result;
+                    // console.log("检查脚本响应数据flag",flag);
+                    _this.scriptFlag = response.data.result=="fail";
+                    console.log(" _this.scriptFlag"+_this.scriptFlag);
+                    // if("fail" == flag){
+                    //     scriptFlag = false;
+                    //     console.log("检查脚本响应数据flag22",flag);
+                    // }
+                
                
             })
         },
