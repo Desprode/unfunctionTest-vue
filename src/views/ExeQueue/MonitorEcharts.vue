@@ -1,26 +1,26 @@
 <template>
     <div>
         <Card>
-            <Form :label-width="50" laabe-position="right">
+            <Form :label-width="50" label-position="right" v-model="serverInfo">
                 <Row>
                     <Col span="12">
-                        <FormItem label="服务器">
-                            <Select v-model="model" @on-change="funsChange">
-                                <Option v-for="(item,index) in subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
+                        <FormItem label="部署单元">
+                            <Select v-model="model" @on-change="funsChange" @on-open-change="funDescChange">
+                                <Option v-for="(item,index) in serverInfo.subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="24" v-if="prodIPRow">
                         <FormItem label="服务器地址"  :label-width="80">
                             <Select v-model="prodIPList" multiple @on-change="prodIPChange">
-                                <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
+                                <Option v-for="item in prodIPList" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="12" v-else>
                         <FormItem label="服务器地址"  :label-width="80">
                             <Select v-model="prodIPList" multiple @on-change="prodIPChange">
-                                <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
+                                <Option v-for="item in prodIPList" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
@@ -37,14 +37,14 @@
                 <Row>
                     <Col span="11">
                         <FormItem label="CPU">
-                            <Select multiple>
+                            <Select multiple v-model="CPUList">
                                 <Option placeholder="Select CPU Mode" v-for="item in CPU" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="11">
                         <FormItem label="内存">
-                            <Select multiple>
+                            <Select multiple v-model="MemoryList">
                                 <Option placeholder="Select Memory Mode" v-for="item in Memory" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
@@ -79,6 +79,8 @@
                 model:'',
                 prodIPList:[],
                 prodIPListSend:[],
+                CPUList:["users","sys","wait","used"],
+                MemoryList:["buffer","cache","free","used"],
                 CPU:[
                     {
                         value:'users',
@@ -92,6 +94,10 @@
                         value:'wait',
                         label:'wait'
                     },
+                    {
+                        value:'used',
+                        label:'used'
+                    }
                 ],
                 Memory:[
                     {
@@ -101,25 +107,22 @@
                     {
                         value:'cache',
                         label:'cache'
+                    },
+                    {
+                        value:'free',
+                        label:'free'
+                    },
+                    {
+                        value:'used',
+                        label:'used'
                     }
                 ],
-                "start":1545025050,
-				"selected":"128.196.52.135",
-                funDescID:0,
-                subsys:[
-						{
-						"funDesc":"分类一",
-						"ip":["128.196.52.134","128.196.52.135","128.196.52.136"]
-						},
-						{
-						"funDesc":"分类二",
-						"ip":["128.196.53.145","128.196.53.146","128.196.53.147"]
-						},
-						{
-						"funDesc":"分类三",
-						"ip":["128.196.53.148","128.196.52.124","128.196.52.132","128.196.52.133"]
-						}
-                    ],
+                serverInfo:{
+                    "start":"",
+                    "selected":"",
+                    "funDescID":"",
+                    "subsys":[]
+                },
                 prodIP:[],
                 prodIPRow:'',
                 funDesc:[],
@@ -157,14 +160,14 @@
                 legend_net: [],
 
                 //当前选用的IP和模式
-                cpumode: ["user", "system", "Used", "iowait"],
-                memmode: ["buffer", "cache", "free", "used"],
-                iomode: ["IOPS", "read", "write"],
-                ipmode: ["128.196.52.134","128.196.52.135"],//选择后的结果
+                cpumode: [],   //cpu
+                memmode: [],    
+                //iomode: ["IOPS", "read", "write"],
+                ipmode: [],//选择后的结果
 
 
                  //需前一界面传入
-                iplist: ["128.196.52.134","128.196.52.135"],
+                iplist: [],
                 //host: "128.195.0.12:8080",
                 funDesc: [],
                 startTime: 0,
@@ -217,35 +220,37 @@
             this.intervalFunc = setInterval(this.realTimeCl, 5000);
         },
         created () {
-            
+            this.getServerInfo();
         },
         methods: {
             returnBack:function(){
                 this.$router.back(-1);
             },
             /** 获取服务器数据*/
-            getSubsys:function(){
+            getServerInfo:function(){
                 let _this = this;
-                _this.subsys = this.$route.query.serverInfo;
-                console.log("subsys选项",_this.subsys);
-                console.log("serverInfo数据",this.$route.query.serverInfo[0].funDesc);
+                _this.serverInfo = this.$route.query.serverInfo;
+                _this.model = this.$route.query.row.funDesc;
+                _this.prodIPList.push(this.$route.query.row.prodIp);
+            },
+            funDescChange:function(openStatus){
+                // if(openStatus){
+                //     let _this = this;
+                //     _this.serverInfo = this.$route.query.serverInfo;
+                // }
             },
             /**服务器改变时，服务器地址随之改变 */
             funsChange:function(){
                 console.log("选项改变了");
                 console.log(this.model);
                 let _this = this;
-                _this.subsys.map(item=>{
+                _this.serverInfo.subsys.map(item=>{
                     console.log(item.funDesc);
                     if(item.funDesc == _this.model){
-                        _this.prodIP = item.ip;
+                        _this.prodIPList = item.ip;
                     }
                 })
-                _this.prodIPListSend.push(_this.prodIPList);
-                _this.prodIPList = [];
-                console.log(_this.prodIPListSend); 
                 _this.subsys = this.$route.query.serverInfo;
-                console.log(this.$route.query.serverInfo);
             },
             prodIPChange:function(){
                 if(this.prodIPList.length > 2){
@@ -257,16 +262,24 @@
                 }
             },
             confirm:function(){
-                for(var i=0;i<this.subsys.length;i++){
-                    console.log(this.subsys[i].funDesc);
-                    this.funDescID = i ;
-                    console.log(this.funDescID);
-                    for(var j=0;j<this.subsys[i].ip.length;j++){
-                        console.log(this.subsys[i].ip[j]);
-                    }
-                }
-                console.log(this.model);
-                console.log(this.prodIPList);
+                let _this = this;
+                _this.cpumode = _this.CPUList;
+                _this.memmode = _this.MemoryList;
+                console.log("部署单元",_this.model);
+                console.log("服务器地址",_this.prodIPList);
+                console.log("CPU",_this.CPUList);
+                console.log("内存",_this.MemoryList);
+                 console.log("行信息",this.$route.query.row);
+                // for(var i=0;i<this.subsys.length;i++){
+                //     console.log(this.subsys[i].funDesc);
+                //     this.funDescID = i ;
+                //     console.log(this.funDescID);
+                //     for(var j=0;j<this.subsys[i].ip.length;j++){
+                //         console.log(this.subsys[i].ip[j]);
+                //     }
+                // }
+                // console.log(this.model);
+                // console.log(this.prodIPList);
             },
             initAll(){
             this.BeginTime = "1545121119";

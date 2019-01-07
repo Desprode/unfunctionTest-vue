@@ -402,8 +402,8 @@
                     if(this.serverInfo === ''){
                         this.getServerInfo();
                     }
-                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
-                    console.log('这个是',this.serverInfo)
+                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo,row:row}});
+                    console.log('这个是',this.serverInfo,row)
                 }
             }
         }
