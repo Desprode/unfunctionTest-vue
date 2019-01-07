@@ -51,9 +51,10 @@
                     cuttingl: '',
                     timestamp:'',
                     timestampl:'',
+                    timedate: '',
                     statuszt:'',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1544519137048&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+timedate+"&to=1544519451289&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                      iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from={1544519137048}&to={1544519451289}&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
@@ -70,6 +71,7 @@
                         timestamp:'',
                         timestampl:'',
                         statuszt:'',
+                        timedate: '',
                         textarea: ''
                     },
                     columns: [
@@ -325,10 +327,15 @@
                     console.log("时间2：",timestampl);
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
+                    var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
+                    _this.timedate = Date.parse(new Date());      //获取的13位时间戳
+                    console.log("13位毫秒", _this.timedate);
+                    var timedatee =  _this.timedate - 300;
+                    console.log("13位毫秒-300",timedatee);
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
-                            scenarioId: 370,
+                            scenarioId: senario_id,
                             start:timestamp,
                             end: timestampl,
                             pageNo:_this.pageNo,
