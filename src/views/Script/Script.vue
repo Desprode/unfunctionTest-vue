@@ -143,7 +143,8 @@
                         <!-- <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>                         -->
                     </FormItem>
                     <FormItem label="物理子系统:" prop="app_name">                      
-                        <Input v-model="setValidate.app_name" readonly="readonly"></Input>
+                        <!-- <Input v-model="setValidate.app_name" readonly="readonly"></Input> -->
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.app_name}}</div>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
                         <Input v-model="setValidate.memo"></Input>
@@ -341,7 +342,7 @@ export default {
                                             _this.setValidate.memo= response.data.resultList[0].memo;
                                             _this.setValidate.create_time= response.data.resultList[0].created_time;
                                             _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                            _this.filesize=response.data.resultList[0].filesize,
+                                            _this.filesize=response.data.resultList[0].script_filesize,
                                             _this.script_filepath=response.data.resultList[0].script_filepath,
                                             _this.script_id=response.data.resultList[0].script_id,
                                             _this.rowid=response.data.resultList[0].id
@@ -888,7 +889,7 @@ export default {
                             app_name:_this.setValidate.app_name,
                             memo:_this.setValidate.memo,
                             script_filename:_this.setValidate.script_filename,
-                            filesize:_this.filesize,
+                            script_filesize:_this.filesize,
                             script_filepath:_this.script_filepath,
                             script_id:_this.script_id,
                         }
@@ -897,7 +898,8 @@ export default {
                             _this.$Message.error('服务端错误!');
                         }else{
                             if("fail" == response.data.result){
-                                _this.$Message.error('修改失败!');
+                                console.log('修改失败,'+response.data.err_desc);
+                                _this.$Message.error('修改失败,'+response.data.err_desc);
                                 return;
                             }else{
                                 _this.$Message.success('修改成功!');
@@ -1092,7 +1094,10 @@ export default {
     text-align: right;
     font-size: 12px;
 }
-
+.editStaticDiv {
+    font-size: 12px;
+    padding-top: 6px;
+}
 /* add by xin */
 /*三个操作按钮样式*/
 .btnOpera{
