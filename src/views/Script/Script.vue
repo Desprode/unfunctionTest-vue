@@ -57,13 +57,7 @@
                                 <br v-if="index/3 ==0">
                             </Col>
                            <Row  v-for="(item,index11) in csvList" :key="index11">
-
                             </Row> 
-                            <!-- <CheckboxGroup v-model = "csvList">
-                                <CheckBox v-for="(item,index) in csvList"  v-model="item.enable == 'true'?true:false">
-                                </CheckBox>
-                            </CheckboxGroup> -->
-
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -83,7 +77,7 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" @on-blur="checkScriptName" ></i-input>
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" @on-blur="checkScriptName()" ></i-input>
                                     <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>
                                 </Form-item>
                             </i-col>
@@ -144,11 +138,9 @@
                     <span>编辑脚本</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                    <!-- <FormItem label="脚本ID:" prop="script_id" >                      
-                        <Input v-model="setValidate.script_id"></Input>
-                    </FormItem> -->
                     <FormItem label="脚本名称:" prop="script_name">                      
-                        <Input v-model="setValidate.script_name"></Input>
+                        <Input v-model="setValidate.script_name" ></Input>
+                        <!-- <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>                         -->
                     </FormItem>
                     <FormItem label="物理子系统:" prop="app_name">                      
                         <Input v-model="setValidate.app_name" readonly="readonly"></Input>
@@ -239,7 +231,6 @@ export default {
             // callback();
         };
         return {
-            // scriptFlag:ture,
             scriptFlag:true,
             isdisabledFn:false,
             /* 窗口设置开关 */
@@ -855,7 +846,7 @@ export default {
                             app_id:_this.addValidate.app_id,
                             memo:_this.addValidate.memo,
                             script_filename:_this.addValidate.script_filename,
-                            filesize:_this.filesize,
+                            script_filesize:_this.filesize,
                             script_filepath:_this.script_filepath,
                             script_id:_this.script_id,
                         }
