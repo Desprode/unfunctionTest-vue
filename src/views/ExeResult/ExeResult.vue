@@ -7,15 +7,15 @@
             <Form class="formValidate">
                 <div class="rowbox">
                     <Row :gutter="16">
-                        <Col span="2" class="searchLable">任务名称</Col>
+                        <Col span="2" class="searchLable">任务名称:</Col>
                         <Col span="4">
                             <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
                         </Col>
-                        <Col span="2" class="searchLable">场景名称</Col>
+                        <Col span="2" class="searchLable">场景名称:</Col>
                         <Col span="4">
                             <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
                         </Col>
-                        <Col span="2" class="searchLable">场景类型</Col>
+                        <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
                             <Select v-model="type_name" >
                                 <Option value="混合交易" >混合交易</Option>
@@ -29,37 +29,37 @@
                         </Col>
                     </Row>
                     <Row :gutter="16" v-show="isShowMoreShow">
-                        <Col span="2" class="searchLable">执行状态</Col>
+                        <Col span="2" class="searchLable">执行状态:</Col>
                         <Col span="4">
                             <Select v-model="exe_status" >
                                 <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </Col>
-                        <Col span="2" class="searchLable">执行人</Col>
+                        <Col span="2" class="searchLable">执行人:</Col>
                         <Col span="4">
                             <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
                         </Col>
                     </Row>
                     <Row :gutter="17" v-show="isShowMoreShow">
-                        <Col span="2" class="searchLable">开始日期</Col>
-                        <Col span="4">
+                        <Col span="2" class="searchLable">开始日期:</Col>
+                        <Col span="7">
                             <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time"></DatePicker>
+                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time_s"></DatePicker>
                             </Col>
                             <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
                             <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time"></DatePicker>
+                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time_f"></DatePicker>
                             </Col>
                             <Col span="1"></Col>
                         </Col>
-                        <Col span="2" class="searchLable">结束日期</Col>
-                        <Col span="4">
+                        <Col span="2" class="searchLable">结束日期:</Col>
+                        <Col span="7">
                             <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time"></DatePicker>
+                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time_s"></DatePicker>
                             </Col>
                             <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
                             <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time"></DatePicker>
+                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time_f"></DatePicker>
                             </Col>
                         </Col>
                         <Col span="2"></Col>
@@ -212,8 +212,10 @@ export default {
             type_name:'',                       //场景类型
             execution_name:'',                  //执行人
             exe_status:'',                      //执行状态
-            start_time:'',                      //开始日期
-            end_time:'',                        //结束日期
+            start_time_s:'',                      //开始日期
+            start_time_f:'',                      //开始日期
+            end_time_f:'',                        //结束日期
+            end_time_s:'',                        //结束日期
             //执行结果信息展示
             columns: [
             	{
@@ -377,8 +379,10 @@ export default {
                     execution_name:_this.execution_name,
                     exe_status:_this.exe_status,
                     type_name:_this.type_name,
-                    start_time:_this.start_time,
-                    end_time:_this.end_time,
+                    start_time_f:_this.start_time_f,
+                    start_time_s:_this.start_time_s,
+                    end_time_f:_this.end_time_f,
+                    end_time_s:_this.end_time_s,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
                     
