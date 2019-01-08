@@ -253,7 +253,7 @@
                     <Row class="caseBoxRow">
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
-                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
+                                <Select v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
                             </FormItem>
@@ -1406,7 +1406,7 @@ export default {
                     if(response.data.resultList != undefined){
                         _this.subSysName_new = response.data.resultList[0].subSysName;
                     }
-                    _this.moniterReset();
+                    //_this.moniterReset();
                 })
             }
         },
