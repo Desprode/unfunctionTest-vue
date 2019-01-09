@@ -223,7 +223,6 @@ export default {
         //页面展示
         listCase: function() {
             let _this = this;
-            console.log('表单数据:', _this.component_name,_this.task_name,_this.senario_name,_this.execution_name);
             this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/runtests/list', {
                 data: {
@@ -264,7 +263,7 @@ export default {
         },
 
         onRowDblClick: function(row) {
-            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id,senario_name:row.senario_name}});
+            this.$router.push({path:'/Monitoring',query:{executor_id:row.executor_id,senario_name:row.senario_name,senario_id:row.senario_id}});
         },
 
         // addCase: function() {
