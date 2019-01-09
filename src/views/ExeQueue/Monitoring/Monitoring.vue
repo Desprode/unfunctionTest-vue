@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div align="left">
                 <font size="5" color="#01babc">实时监控</font>
@@ -9,7 +9,7 @@
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
             <div align="left">
-                        <font size="3" color="#01babc">已运行时间:{{statuszt.exe_time}}</font>
+                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{starttime}}</font>
             </div></br>
             <div align="left">  
                         <font size="3" color="#01babc"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
@@ -43,20 +43,34 @@
     </template>
     <script> 
     var websocket = null;
+        let start_time = null;
     export default {
+        beforeMount(){
+            setInterval(getflush,1000)
+            let timdate = this
+            function getflush(){
+                let curDate = new Date();
+                let cuDate = new Date();
+                console.log("",curDate)
+                if(timdate.starttime != 'null'){
+                    let cuDate = new Date(start_time);
+                    timdate.starttime = (curDate.getTime()-cuDate.getTime())/1000
+                }        
+            }
+        },
             data () {
                 return {   
                     senario_name:this.$route.query.senario_name,
                     describe: '',
-                    cuttingl: '',
                     timestamp:'',
                    // timedate: '',
                    // timedatee: '',
                     timestampl:'',
                     statuszt:'',
+                    starttime:'0',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=56568588&to=4252542424&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
-                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=5445645&to=45645345&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
                         list: [], 
@@ -65,10 +79,7 @@
                         taskStatusList: this.$Global.taskStatusList,
                         checkbox: [],
                         switch: true,
-                        date: '',
                         executor_id:'',
-                        describe:'',
-                        cuttingl: '',
                         timestamp:'',
                         timestampl:'',
                         statuszt:'',
@@ -203,8 +214,6 @@
                     totalPage:0,                           //共多少页
                     serverInfo: {},
                     pressureAgentInfo: {},
-                    //jsonobj: {},
-                    starttime:'',
 
                 }
             },
@@ -295,25 +304,26 @@
                         console.log(subsys);
                     });
                 },
-
               initWs() {
                this.ws =new WebSocket(this.wsurl)
                this.ws.onmessage = this.getmessage
               },
               getmessage(e){
-            var res = e.data
-             console.log(this.res)
+             var res = e.data
+             console.log("这个里面是什么",res)
              var _cutting = res.substr(0,1); //截取
              if(_cutting =='1'){      // 判断是不是开头是1的数据
-                this.describe = e.data
+             this.describe+=e.data.substr(1)
+             this.describe+='\r\n'    //换行
              }else if(_cutting =='0'){   // 判断是不是开头是0的数据
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
-                console.log("点出来的状态==================="+ this.statuszt.exe_description)
-                
+                 if(this.statuszt.exe_time != 'null'){  //不为null展示的
+                    start_time = this.statuszt.exe_time;
+                }
+
              }
-            
               },
                 
                  //服务器资源
@@ -326,10 +336,10 @@
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
-                   // _this.timedate = Date.parse(new Date());    //13位的时间戳
-                   // console.log("13位毫秒", _this.timedate);
-                  //  _this.timedatee =_this.timedate - 300 ;   //13位的时间戳 -300
-                   // console.log("13位毫秒-300",_this.timedatee);
+                    _this.timedate = Date.parse(new Date());    //13位的时间戳
+                    console.log("13位毫秒", _this.timedate);
+                    _this.timedatee =_this.timedate - 300 ;   //13位的时间戳 -300
+                    console.log("13位毫秒-300",_this.timedatee);
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
@@ -388,10 +398,11 @@
                     var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                     this.pressureAgentInfo.start= start;
                     this.pressureAgentInfo.selected = row.prodIp;
-                    if(this.pressureAgentInfo === ''){
-                        this.getPressureaAgentInfo();
-                    }
+                    //if(this.pressureAgentInfo === ''){
+                    //    this.getPressureaAgentInfo();
+                    //}
                     this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo}});
+                    console.log('这个是',this.pressureAgentInfo)
                 },
                 //服务器资源跳转
                 onRowDblClick: function(row) {
@@ -399,15 +410,15 @@
                     console.log(row);
                     this.serverInfo.start= start;
                     this.serverInfo.selected = row.prodIp;
-                    if(this.serverInfo === ''){
-                        this.getServerInfo();
-                    }
-                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo,row:row}});
-                    console.log('这个是',this.serverInfo,row)
+                    //if(this.serverInfo === ''){
+                    //    this.getServerInfo();
+                    //}
+                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
+                    console.log('这个是',this.serverInfo)
                 }
             }
         }
-    
+
     </script>>
     <style lang="less" scoped>
         .test_box {
@@ -431,4 +442,4 @@
             line-height: 32px;
             font-size:12px;
         }
-    </style>    
+    </style>

@@ -1,4 +1,4 @@
-import Vue from 'vue';
+﻿import Vue from 'vue';
 import Router from 'vue-router';
 Vue.use(Router);
 
@@ -15,6 +15,7 @@ import ScriptDetail from '@/views/Script/ScriptDetail.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
 import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
+import Merge from '@/views/ExeResult/Report/GetMerge.vue'
 import Details from   '@/views/ExeResult/Details.vue'
 import Load from   '@/views/ExeResult/Report/Load.vue'
 import Base from   '@/views/ExeResult/Report/Mix.vue'
@@ -81,6 +82,11 @@ export default new Router({
           path: '/base',
           name: 'Base',
           component: Base
+        },
+ 	{
+          path: '/getMerge',
+          name: 'Merge',
+          component: Merge
         },
         {
           path: '/syspluginmgr',

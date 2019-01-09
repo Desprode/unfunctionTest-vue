@@ -10,7 +10,7 @@
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">机器名称:</Col>
                             <Col span="4">
-                                <Input clearable v-model="machineName" placeholder="输入机器名称"></Input>                                
+                                <Input clearable v-model="machineName" placeholder="请输入机器名称"></Input>                                
                             </Col>
                             <Col span="2" class="searchLable">IP:</Col>
                             <Col span="4">
@@ -45,8 +45,8 @@
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加机器</span>
                 </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                <div style="text-align:left">
+                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100">
                         <Row>
                             <i-col span="24">
                                 <Form-item label="机器名称：" prop="machineName">
@@ -91,7 +91,7 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <FormItem label="类型:" prop="type">
+                                <FormItem label="类型：" prop="type">
                                     <Select v-model="addValidate.type" placeholder="请输入类型" clearable>
                                         <Option value="1">http</Option>
                                         <Option value="2">tuxedo</Option>
@@ -102,7 +102,7 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <FormItem label="操作系统:" prop="osVersion">
+                                <FormItem label="操作系统：" prop="osVersion">
                                     <Select v-model="addValidate.osVersion" placeholder="请输入类型" clearable>
                                         <Option value="Linux">Linux</Option>
                                         <Option value="Windows">Windows</Option>
@@ -126,54 +126,54 @@
                     <Icon type="ios-information-circle"></Icon>
                     <span>编辑机器</span>
                 </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                <div style="text-align:left">
+                    <i-form ref="editValidate" :model="editValidate" :rules="ruleValidate" :label-width="100" >
                         <Row>
                             <i-col span="24">
                                 <Form-item label="机器名称：" prop="machineName">
-                                    <i-input v-model="addValidate.machineName"  placeholder="请输入机器名称"></i-input>
+                                    <i-input v-model="editValidate.machineName"  placeholder="请输入机器名称"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="IP：" prop="ip">
-                                    <i-input v-model="addValidate.ip"  placeholder="请输入IP"></i-input>
+                                    <i-input v-model="editValidate.ip"  placeholder="请输入IP"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="CPU：" >
-                                    <i-input v-model="addValidate.cpu"  placeholder="请输入CPU"></i-input>
+                                    <i-input v-model="editValidate.cpu"  placeholder="请输入CPU"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="内存：" prop="mem">
-                                    <i-input v-model="addValidate.mem"  placeholder="请输入内存"></i-input>
+                                    <i-input v-model="editValidate.mem"  placeholder="请输入内存"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="用户名：" prop="userName">
-                                    <i-input v-model="addValidate.userName"  placeholder="请输入用户名"></i-input>
+                                    <i-input v-model="editValidate.userName"  placeholder="请输入用户名"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
                                 <Form-item label="密码：" prop="userPwd">
-                                    <i-input v-model="addValidate.userPwd"  placeholder="请输入密码" type="password"></i-input>
+                                    <i-input v-model="editValidate.userPwd"  placeholder="请输入密码" type="password"></i-input>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <FormItem label="类型:" prop="type">
-                                    <Select v-model="addValidate.type" placeholder="请输入类型" clearable>
+                                <FormItem label="类型：" prop="type">
+                                    <Select v-model="editValidate.type" placeholder="请输入类型" clearable>
                                         <Option value="1">http</Option>
                                         <Option value="2">tuxedo</Option>
                                         <Option value="3">java</Option>                      
@@ -183,8 +183,8 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <FormItem label="操作系统:" prop="osVersion">
-                                    <Select v-model="addValidate.osVersion" placeholder="请输入类型" clearable>
+                                <FormItem label="操作系统：" prop="osVersion">
+                                    <Select v-model="editValidate.osVersion" placeholder="请输入类型" clearable>
                                         <Option value="Linux">Linux</Option>
                                         <Option value="Windows">Windows</Option>
                                         <Option value="AIX">AIX</Option>                      
@@ -197,7 +197,7 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="cancel()">取消</Button>
-                    <Button type="primary"   @click="handleEdit('addValidate')">确认</Button>
+                    <Button type="primary"   @click="handleEdit('editValidate')">确认</Button>
                 </div>
             </Modal>
             <!--编辑机器时弹出的对话框end-->
@@ -229,12 +229,6 @@ export default {
             createUser:'',
             pageNo:'',
             columns: [
-                {
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 60
-                },
             	{
                     type: 'selection',
                     width: 50,
@@ -333,16 +327,16 @@ export default {
                                             id:item.row.id,
                                         }
                                     }).then(function(response){
-                                        console.log("machine编辑接口",response.data);
-                                        _this.addValidate.machineName= response.data.resultList[0].machineName;
-                                        _this.addValidate.ip= response.data.resultList[0].ip;
-                                        _this.addValidate.cpu= response.data.resultList[0].cpu;
-                                        _this.addValidate.mem= response.data.resultList[0].mem;
-                                        _this.addValidate.userName= response.data.resultList[0].userName;
-                                        _this.addValidate.userPwd= response.data.resultList[0].userPwd;
-                                        _this.addValidate.state= response.data.resultList[0].state;
-                                        _this.addValidate.type= response.data.resultList[0].type;
-                                        _this.addValidate.osVersion= response.data.resultList[0].osVersion;
+                                        console.log("machine编辑接口",response.data.resultList);
+                                        _this.editValidate.machineName= response.data.resultList[0].machineName;
+                                        _this.editValidate.ip= response.data.resultList[0].ip;
+                                        _this.editValidate.cpu= response.data.resultList[0].cpu;
+                                        _this.editValidate.mem= response.data.resultList[0].mem;
+                                        _this.editValidate.userName= response.data.resultList[0].userName;
+                                        _this.editValidate.userPwd= response.data.resultList[0].userPwd;
+                                        _this.editValidate.state= response.data.resultList[0].state;
+                                        _this.editValidate.type= response.data.resultList[0].type;
+                                        _this.editValidate.osVersion= response.data.resultList[0].osVersion;
                                         // _this.filesize=response.data.resultList[0].filesize,
                                         // _this.script_filepath=response.data.resultList[0].script_filepath,
                                         // _this.script_id=response.data.resultList[0].script_id,
@@ -385,12 +379,43 @@ export default {
             tableDataTotal:0,
             tableDataPageLine:0,
             selectedData:[],
+            /** ======================新增============================= */
             Deletips:false, 
+            addValidate: {
+                    machineName: '',
+                    ip: '',
+                    cpu:'',
+                    mem:'',
+                    userName:'',
+                    userPwd:'',
+                    type:'',
+                    osVersion:''
+                },
+            ruleValidate: {
+                machineName: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
+                ip: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ],
+                userName: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
+                userPwd: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
+                type: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ],
+                osVersion: [
+                    { required: true, message: '此项为必填项', trigger: 'change' }
+                ]
+            },
+            /** ======================编辑============================= */
             editMachineStatus:false,
             formValidate: {
-
             },
-            addValidate: {
+            editValidate: {
                     machineName: '',
                     ip: '',
                     cpu:'',
@@ -636,7 +661,7 @@ export default {
         /**添加新数据弹出模态框 */
         addMachine:function(){
             this.Deletips = true;
-            console.log("显示模态框");
+            console.log("新建显示模态框");
         },
         onSelectionChanged: function(data) {
             this.selectedData = data;
@@ -649,10 +674,6 @@ export default {
         /**点击保存之后的事件 */
         handleSave(row){
             console.log("这是保存",row)
-        },
-        /**点击编辑之后的事件 */
-        handleEdit(row){
-            console.log("这是编辑",row)
         },
         /**删除一条数据 */
         remove(index){
@@ -685,11 +706,13 @@ export default {
                         }else{
                             if("ok" == response.data.result){
                                 _this.$Message.success('添加成功！');
+                                
                             }else{
                                 _this.$Message.error('添加失败'+response.data.err_desc);
                             }
                             _this.Deletips = false;
                             _this.$refs[name].resetFields();
+                            // _this.listCase();
                         }
                     })
                 } else {
@@ -700,7 +723,7 @@ export default {
         /***edit the amchine details */
         handleEdit (name) {
             let _this = this;
-            console.log(this.addValidate);
+            console.log(this.editValidate);
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
@@ -709,14 +732,14 @@ export default {
                     this.$http.post('/myapi/machine/edit',{
                         data:{
                             id:_this.rowid,
-                            machineName: _this.addValidate.machineName,
-                            ip: _this.addValidate.ip,
-                            cpu:_this.addValidate.cpu,
-                            mem:_this.addValidate.mem,
-                            userName:_this.addValidate.userName,
-                            userPwd:_this.addValidate.userPwd,
-                            type:_this.addValidate.type,
-                            osVersion:_this.addValidate.osVersion
+                            machineName: _this.editValidate.machineName,
+                            ip: _this.editValidate.ip,
+                            cpu:_this.editValidate.cpu,
+                            mem:_this.editValidate.mem,
+                            userName:_this.editValidate.userName,
+                            userPwd:_this.editValidate.userPwd,
+                            type:_this.editValidate.type,
+                            osVersion:_this.editValidate.osVersion
                         }
                     }).then(function(response){
                         if(response.status == 500){
@@ -724,6 +747,7 @@ export default {
                         }else{
                             if("ok" == response.data.result){
                                 _this.$Message.success('编辑成功！');
+                                _this.listCase();
                             }else{
                                 _this.$Message.error('编辑失败'+response.data.err_desc);
                             }
@@ -747,7 +771,7 @@ export default {
             let _this = this;
             _this.ip='';
             _this.machineName='';
-            _this.creater='';
+            _this.state='';
         } 
     }
 }
