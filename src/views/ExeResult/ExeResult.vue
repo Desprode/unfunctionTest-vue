@@ -9,11 +9,11 @@
                     <Row :gutter="16">
                         <Col span="2" class="searchLable">任务名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
+                            <Input clearable v-model="task_name" placeholder="请输入任务名称"></Input>
                         </Col>
                         <Col span="2" class="searchLable">场景名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
+                            <Input clearable v-model="senario_name" placeholder="请输入场景名称"></Input>
                         </Col>
                         <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
@@ -23,7 +23,7 @@
                                 <Option value="单交易负载" >单交易负载</Option>
                             </Select>
                         </Col>
-                        <Col span="3">
+                        <Col span="6">
                             <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
                             <Button @click="handleReset">重置</Button>
                         </Col>
@@ -37,31 +37,20 @@
                         </Col>
                         <Col span="2" class="searchLable">执行人:</Col>
                         <Col span="4">
-                            <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
+                            <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input>
                         </Col>
                     </Row>
-                    <Row :gutter="17" v-show="isShowMoreShow">
+                    <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">开始日期:</Col>
-                        <Col span="7">
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time_s"></DatePicker>
+                        <Col span="4">
+                            <Col span="50">
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time"></DatePicker>
                             </Col>
-                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time_f"></DatePicker>
                             </Col>
-                            <Col span="1"></Col>
-                        </Col>
                         <Col span="2" class="searchLable">结束日期:</Col>
-                        <Col span="7">
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time_s"></DatePicker>
+                        <Col span="4">
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time" width="10px"></DatePicker>
                             </Col>
-                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time_f"></DatePicker>
-                            </Col>
-                        </Col>
                         <Col span="2"></Col>
                     </Row>
                 </div>
@@ -73,8 +62,6 @@
             <div align="left">
                 <Button @click="aggregCase" type="success"  >聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
-                <!-- <Button @click="loadCase" type="error">负载测试</Button>
-                <Button @click="baseCase" type="error">基准测试</Button> -->
             </div>
             <div class="tableBox">
                 <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -143,8 +130,8 @@
                         </div>
                     </Form>
                 </div>
-                <div style="display:inline-block;margin-left:10px">
-                    <Table border  ref="index" :columns="aggregColumns" :data="aggregTableData" class="myTable"></Table>
+                <div class="tableBox">
+                    <Table border  ref="selection" :columns="aggregColumns" :data="aggregTableData" class="myTable" ></Table>
                 </div>
             </div>
             <div slot="footer" >
@@ -175,12 +162,14 @@ export default {
             isShowMore:false,                   //聚合报告弹框
             /**-----------聚合报告信息展示-----------*/
             metrics_desc:'',                    //测试需求描述
+            create_time:'',
+            metrics_type:'',
             aggregColumns:[
                 {
-                    title: '序号',
-                    type: 'index2',
+                    title: '#',
+                    type: 'index',
                     align: 'center',
-                    width: 80
+                    width: 50,
                 },
                 {
                     title: '测试需求描述',
@@ -189,12 +178,12 @@ export default {
                 },
                 {
                     title: '是否满足需求',
-                    key: 'type',
+                    key: 'metrics_type',
                     align: 'center',
                 },
                 {
                     title: '备注描述',
-                    key: 'age',
+                    key: 'create_time',
                     align: 'center',
                     ellipsis: true
                 },
@@ -212,19 +201,11 @@ export default {
             type_name:'',                       //场景类型
             execution_name:'',                  //执行人
             exe_status:'',                      //执行状态
-            start_time_s:'',                      //开始日期
-            start_time_f:'',                      //开始日期
-            end_time_f:'',                        //结束日期
-            end_time_s:'',                        //结束日期
+            start_time:'',                      //开始日期
+            end_time:'',                        //结束日期
             //执行结果信息展示
             columns: [
             	{
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 50,
-                },
-                {
                     type: 'selection',
                     width: 50,
                     align: 'center',
@@ -239,32 +220,34 @@ export default {
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    ellipsis: true, 
+                    tooltip: true, 
+                    width: 200,
                 },
                 {
                     title: '关联任务',
                     key: 'task_name',
-                    ellipsis: true, 
+                    tooltip: true, 
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    ellipsis: true, 
+                    tooltip: true, 
+                    width: 200,
                 },
                 {
                     title:'场景类型',
                     key:'type_name',
-                    width:100,
+                    width: 100,
                 },
                 {
                     title: '执行人',
                     key: 'execution_name',
-                    width:90,
+                    width:75,
                 },
                 {
                     title: '执行状态',
                     key: 'exe_status',
-                    width:100,
+                    width:90,
                     render:(h,params) =>{
                         let _this = this;
                         return h('span',_this.$Global.exeStatusMap[params.row.exe_status])
@@ -379,10 +362,8 @@ export default {
                     execution_name:_this.execution_name,
                     exe_status:_this.exe_status,
                     type_name:_this.type_name,
-                    start_time_f:_this.start_time_f,
-                    start_time_s:_this.start_time_s,
-                    end_time_f:_this.end_time_f,
-                    end_time_s:_this.end_time_s,
+                    start_time:_this.start_time,
+                    end_time:_this.end_time,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
                     
@@ -438,7 +419,7 @@ export default {
                         perftask_id: selectedDataList[0].id, 
                     }
                     }).then(function (response) {
-                        let result =  response.data.result;
+                        _this.aggregTableData =  response.data.resultList;
                     })
                 }else{
                     this.$Message.error("请选择相同的任务进行聚合！")
@@ -450,28 +431,29 @@ export default {
         /**生成聚合报告*/
         saveResult:function () {
             let _this = this;
-            let setValidates = this.setValidates;
+            let setValidates = _this.setValidates;                  //获取页面数据
+            console.log("****************",setValidates);
             this.$http.post('/myapi/testresult/merge', {
                 data:_this.setValidates
             }).then(function (response) {
                 _this.result = response.data.result;
-                console.log("result: ", _this.result);
+                console.log("result: ",response.data.result);
                 if(_this.result == "ok"){
-                    console.log("******** result ok *********");
-                    console.log(_this.id);
-                    this.$http.post('/myapi/testresult/getMergeReport', {
-                        data:_this.id
-                    }).then(function (response) {
-                        _this.aggregTableData = response.data.resultList;
-                        this.$router.push({
-                            path:'/details',
-                            query:{html:tableDatas.html}
-                        });
-                    })
+                    _this.mergeCase();
+                    console.log("result: ",response.data.result);
                 }else{
                     _this.$Message.info('生成失败');
                 }
             })
+        },
+        /**聚合报告页面跳转 */
+        mergeCase:function(){
+            let _this = this;
+            let setValidates = _this.setValidates;   
+            this.$router.push({
+                path:'/merge',
+                query:{setValidates:setValidates}
+            });
         },
         /**切换页码 */
         pageChange:function(pageNo){
@@ -521,6 +503,7 @@ export default {
             _this.type_name = '',
             _this.start_time = '', 
             _this.end_time = '' 
+            _this.listCase();
         }
     }
 }

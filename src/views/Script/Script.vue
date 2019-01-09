@@ -5,12 +5,12 @@
                 <h3 class="Title">
                     <span>脚本管理</span>
                 </h3>
-                <Form ref="formValidate"   class="formValidate">
+                <Form ref="formValidate"   class="formValidate" >
                     <div class="rowbox">
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">脚本名称:</Col>
                             <Col span="4">
-                                <Input clearable v-model="script_name" placeholder="输入脚本名称"></Input>                                
+                                <Input clearable v-model="script_name" placeholder="请输入脚本名称"></Input>                                
                             </Col>
                             <Col span="2" class="searchLable">物理子系统:</Col>
                             <Col span="4">
@@ -19,13 +19,13 @@
                             <Col span="2" class="searchLable">创建人:</Col>
                             <Col span="4">
                                 <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading">
+                                        :remote-method="searchCreater" :loading="srchCmploading" ref="cre">
                                     <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
                                 </Select>
                             </Col>
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
-                                <Button @click="handleReset('formValidate')" type="default"  ghost>重置</Button>
+                                <Button @click="handleReset" type="default"  ghost>重置</Button>
                             </Col>
                         </Row>
                     </div>                    
@@ -72,8 +72,8 @@
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加脚本</span>
                 </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                <div style="text-align:left">
+                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" >
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
@@ -84,7 +84,7 @@
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="物理子系统" prop="app_name">
+                                <Form-item label="物理子系统：" prop="app_name">
                                     <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" 
                                         clearable
                                         filterable 
@@ -150,7 +150,7 @@
                         <Input v-model="setValidate.memo"></Input>
                     </FormItem>
                     <FormItem label="创建时间:" prop="create_time">                      
-                        <Input v-model="setValidate.create_time" readonly="readonly"></Input>
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
                     </FormItem>
                     <i-col span="20">
                         <Form-item label="更新脚本：" prop="script_filename">
@@ -269,12 +269,6 @@ export default {
             createUser:'',
             pageNo:'',
             columns: [
-                {
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 60
-                },
             	{
                     type: 'selection',
                     width: 50,
@@ -533,7 +527,7 @@ export default {
             _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
-            console.log(res)
+            //console.log(res)
             if(res.result == "success"){
                 this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
@@ -688,7 +682,7 @@ export default {
                 }
             }).then(function (response) {
                 console.log('response:');
-                console.log(response);
+                //console.log(response);
                 console.log('response.data: ', response.data);
                 _this.tableData = response.data.resultList;
                 _this.tableDataTotal = response.data.pagination.totalCount;
@@ -698,7 +692,7 @@ export default {
         handlePage:function(val){
             let _this = this;
             _this.pageNo = val;
-            console.log(val);
+            //console.log(val);
             _this.listCase();
         },
 
@@ -773,7 +767,7 @@ export default {
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            console.log(data)
+            //console.log(data)
         },
 
         onRowDblClick: function(row) {
@@ -855,6 +849,7 @@ export default {
                         console.log("响应回来的数据",response);
                         if("success" == response.data.result){
                             _this.$Message.success('添加成功！');
+                            _this.listCase();
                         }else{
                             _this.$Message.error(response.data.err_desc);
                         }
@@ -930,13 +925,16 @@ export default {
             this.showDetail = false;
         },
         /**清除搜索条件 */
-        handleReset (name) {
+        handleReset () {
             let _this = this;
+            _this.$refs.cre.clearSingleSelect();
             _this.app_name='';
             _this.script_name='';
             _this.creater='';
+            console.log("11111");
+            
             // console.log(this.$refs[name])
-            // this.$refs[name].resetFields()
+            //this.$refs[name].resetFields();
             //this.$emit('on-reset')
             //this.script_name='';
         } 
