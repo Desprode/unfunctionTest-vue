@@ -9,7 +9,7 @@
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
             <div align="left">
-                        <font size="3" color="#01babc">已运行时间:{{starttime}}</font>
+                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{starttime}}</font>
             </div></br>
             <div align="left">  
                         <font size="3" color="#01babc"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
@@ -43,7 +43,21 @@
     </template>
     <script> 
     var websocket = null;
+        let start_time = null;
     export default {
+        beforeMount(){
+            setInterval(getflush,1000)
+            let timdate = this
+            function getflush(){
+                let curDate = new Date();
+                let cuDate = new Date();
+                console.log("",curDate)
+                if(timdate.starttime != 'null'){
+                    let cuDate = new Date(start_time);
+                    timdate.starttime = (curDate.getTime()-cuDate.getTime())/1000
+                }        
+            }
+        },
             data () {
                 return {   
                     senario_name:this.$route.query.senario_name,
@@ -53,7 +67,7 @@
                    // timedatee: '',
                     timestampl:'',
                     statuszt:'',
-                    starttime:'',
+                    starttime:'0',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                      iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
@@ -66,11 +80,9 @@
                         checkbox: [],
                         switch: true,
                         executor_id:'',
-                        describe: '',
                         timestamp:'',
                         timestampl:'',
                         statuszt:'',
-                        starttime:'',
                       //  timedate: '',
                       //  timedatee: '',
                         textarea: ''
@@ -297,21 +309,20 @@
                this.ws.onmessage = this.getmessage
               },
               getmessage(e){
-                
              var res = e.data
              console.log("这个里面是什么",res)
              var _cutting = res.substr(0,1); //截取
              if(_cutting =='1'){      // 判断是不是开头是1的数据
-                this.describe=e.data
+             this.describe+=e.data.substr(1)
+             this.describe+='\r\n'    //换行
              }else if(_cutting =='0'){   // 判断是不是开头是0的数据
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
-                if(this.statuszt.exe_time === 'null'){//为null展示的
-                    this.starttime = 0;
-                }else if(this.statuszt.exe_time != 'null'){  //不为null展示的
-                    this.starttime = this.statuszt.exe_time;
+                 if(this.statuszt.exe_time != 'null'){  //不为null展示的
+                    start_time = this.statuszt.exe_time;
                 }
+
              }
               },
                 
