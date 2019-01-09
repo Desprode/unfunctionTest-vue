@@ -32,7 +32,11 @@
                         <Row class="caseBoxRow" v-show="isShowMore">
                             <Col span="8">
                                 <FormItem label="创建人:" prop="senario_creator">
-                                <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input>
+                                <!--输入查询==》支持远程搜索-->
+                                <!-- <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input> -->
+                                <Select v-model="formValidate.senario_creator" placeholder="输入场景创建人" clearable filterable remote :remote-method="senarioCreatorRemote" :loading="perftaskNameLoading" @on-open-change="senario_creator" @keyup.enter.native= listCase()>
+                                        <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}({{opts.username}})</Option>
+                                    </Select>
                                 </FormItem>
                             </Col>
                             <Col span="8">
@@ -132,7 +136,7 @@
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
-                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" @keyup.enter.native= "handleSubmit('addValidate')">
+                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" @on-open-change="script" @keyup.enter.native= "handleSubmit('addValidate')">
                                 <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                         </Select>
                     </FormItem>
@@ -356,7 +360,14 @@
                     <Button @click="moniterSave" type="primary">保存并修改</Button>
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
-                <div class="tableBox">
+                <div class="tableBox" v-if="showSearchTable">
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                        <div class="pageBox" v-if="moniterTableData != undefined">
+                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                            <p>总共{{moniterTotalPage}}页</p>
+                        </div>
+                </div>
+                <div class="tableBox" v-else>
                     <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
@@ -387,6 +398,7 @@ export default {
             },
             perftaskNameLoading:false,
             isShowMore:false,                                   //是否显示更多查询条件
+            searchCreatorOpts:[],
             searchOpts:[],
             searchList:[],
             /**============删除模态框数据========= */
@@ -658,6 +670,7 @@ export default {
             showMoniterModal:false,
             isShowMoniterMore:false,
             scomponentLoading:false,
+            showSearchTable:true,
             scomponentOpts:[],
             id:'',   
             monitor_senario_id:'', 
@@ -885,6 +898,44 @@ export default {
             this.pageSize = pageSize;
             this.listCase();
         },
+        /**下拉选自动查询 */
+        senario_creator:function(){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:''
+                }
+            }).then(function(response){
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
+        /**创建人远程查询 */
+        senarioCreatorRemote:function(query){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:query
+                }
+            }).then(function(response){
+                console.log("远程查询创建人",response);
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
+        /**关联任务远程查询 */
         perftaskNameRemote:function(query){
             let _this = this;   
             //this.$http.defaults.withCredentials = false;
@@ -904,6 +955,7 @@ export default {
                 })
             })
         },
+        /*关联脚本远程查询* */
         perfScriptRemote:function(query){
             let _this = this;  
             //this.$http.defaults.withCredentials = false;
@@ -1116,6 +1168,7 @@ export default {
             }).then(function(response){
                 console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
                 if(response.data.resultList.length == 0 || response.data.resultList.length == undefined){
+                    _this.addValidate.ref_script_name = '';
                     _this.isDisabled = true;
                 }else{
                     _this.isDisabled = false;
@@ -1127,6 +1180,40 @@ export default {
                     })
                 }
             })
+        },
+        script:function(openstatus){
+            let _this = this;
+            _this.id = _this.addValidate.ref_task_name;
+            //this.$http.defaults.withCredentials = false;
+            if(openstatus){
+                console.log(openstatus);
+                this.$http.post("/myapi/perftask/taskRelatedScript",{
+                    data:{
+                        id:_this.id
+                    }
+                }).then(function(response){
+                    console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
+                    // if(response.data.resultList.length == 0 || response.data.resultList.length == undefined){
+                    //     _this.addValidate.ref_script_name = '';
+                    //     console.log("没有关联脚本数据");
+                    //     _this.isDisabled = true;
+                    // }else{
+                    //     _this.isDisabled = false;
+                    //     _this.scriptOpts = response.data.resultList.map(item=>{
+                    //         return {
+                    //             value:item.id,
+                    //             label:item.script_name,
+                    //         }
+                    //     })
+                    // }
+                    _this.scriptOpts = response.data.resultList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.script_name,
+                        }
+                    })
+                })
+            }
         },
         perftaskClear:function(){
             console.log("关联任务中的内容被清空了");
@@ -1266,8 +1353,7 @@ export default {
                     }).then(function(response){
                         _this.$Message.success('提交成功!');
                         _this.showSetModal = false;
-                        console.log('response',);
-                        console.log(_this.threadList);
+                        _this.listCase();
                     })
                     
                 } else {
@@ -1322,8 +1408,10 @@ export default {
         /**取消事件 */
         moniterCancel:function(){
             this.showMoniterModal = false;
+            this.showSearchTable = true;
             this.editCount = 0;
             this.monitorAddShow = false;
+            this.moniterPageNo = 1;
             console.log('监控取消事件');
         },
         /**确认事件 */
@@ -1334,6 +1422,8 @@ export default {
             }else{
                 this.showMoniterModal = false;
                 this.monitorAddShow = false;
+                this.showSearchTable = true;
+                this.moniterPageNo = 1;
             }
             console.log(this.editCount);
         },
@@ -1341,6 +1431,7 @@ export default {
         moniterReset:function(name){
             this.$refs[name].resetFields();
         },
+        /**系统名称下拉选自动加载 */
         openMonitorChange:function(openStatus){
             console.log(openStatus);
             let _this =this;
@@ -1383,6 +1474,9 @@ export default {
         moniterCase:function(){
             let _this = this;
             console.log('系统名称',_this.moniterValidate.sComponent,'ip',_this.moniterValidate.ip);
+            if(_this.showSearchTable){
+                this.moniterPageNo = 1;
+            }
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
@@ -1399,7 +1493,8 @@ export default {
                     }
                 }).then(function(response){
                     console.log(response);
-                    console.log(_this.moniterValidate.sComponent)
+                    console.log(_this.moniterValidate.sComponent);
+                    _this.showSearchTable = false;
                     _this.moniterTableData = response.data.resultList;
                     _this.moniterTotalCount = response.headers.totalcount;
                     _this.moniterTotalPage = response.headers.totalpage;
@@ -1413,14 +1508,24 @@ export default {
          /**切换页码 */
         moniterPageChange:function(moniterPageNo){
             console.log(moniterPageNo);
-            this.moniterPageNo = moniterPageNo;
-            this.moniterListCase();
+            let _this = this;
+            _this.moniterPageNo = moniterPageNo;
+            if(_this.showSearchTable){
+                _this.moniterListCase();
+            }else{
+                _this.moniterCase();
+            }; 
         },
         /**切换页面大小 */
         moniterPageSizeChange:function(pageSize){
             console.log(pageSize);
-            this.moniterPageSize = pageSize;
-            this.moniterListCase();
+            let _this = this;
+            _this.moniterPageSize = pageSize;
+            if(_this.showSearchTable){
+                _this.moniterListCase();
+            }else{
+                _this.moniterCase();
+            }; 
         },
         /**保存并修改事件 */
         moniterSave:function(){

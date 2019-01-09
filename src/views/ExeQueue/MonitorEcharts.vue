@@ -1,9 +1,9 @@
 <template>
     <div>
         <Card>
-            <Form :label-width="50" label-position="right" v-model="serverInfo">
+            <Form :label-width="60" v-model="serverInfo" label-position="left">
                 <Row>
-                    <Col span="12">
+                    <Col span="6">
                         <FormItem label="部署单元">
                             <Select v-model="model" @on-change="funsChange">
                                 <Option v-for="(item,index) in serverInfo.subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
@@ -13,14 +13,14 @@
                     <Col span="24" v-if="prodIPRow">
                         <FormItem label="服务器地址"  :label-width="80">
                             <Select v-model="prodIPList" multiple @on-change="prodIPChange">
-                                <Option v-for="item in prodIPList" :value="item" :key="item">{{item}}</Option>
+                                <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="12" v-else>
+                    <Col span="18" v-else>
                         <FormItem label="服务器地址"  :label-width="80">
                             <Select v-model="prodIPList" multiple @on-change="prodIPChange">
-                                <Option v-for="item in prodIPList" :value="item" :key="item">{{item}}</Option>
+                                <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
@@ -35,21 +35,21 @@
                     </FormItem>
                 </Row> -->
                 <Row>
-                    <Col span="11">
+                    <Col span="10">
                         <FormItem label="CPU">
                             <Select multiple v-model="CPUList">
                                 <Option placeholder="Select CPU Mode" v-for="item in CPU" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="11">
+                    <Col span="10">
                         <FormItem label="内存">
                             <Select multiple v-model="MemoryList">
                                 <Option placeholder="Select Memory Mode" v-for="item in Memory" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="2">
+                    <Col span="4">
                          <Button @click="confirm" type="primary">确定</Button>
                     </Col>
                 </Row> 
@@ -232,37 +232,44 @@
                 _this.serverInfo = this.$route.query.serverInfo;
                 _this.model = this.$route.query.row.funDesc;
                 _this.prodIPList.push(this.$route.query.row.prodIp);
+                _this.prodIP.push(this.$route.query.row.prodIp);
             },
             /**服务器改变时，服务器地址随之改变 */
             funsChange:function(){
                 let _this = this;
                 _this.serverInfo.subsys.map(item=>{
                     if(item.funDesc == _this.model){
-                        _this.prodIPList = item.ip;
+                        _this.prodIP = item.ip;
                     }
                 })
                 _this.subsys = this.$route.query.serverInfo;
             },
             prodIPChange:function(){
                 let _this = this;
-                if(_this.prodIPList.length > 2){
+                if(_this.prodIPList.length > 5){
                     _this.prodIPRow = true;
                     ////console.log(this.prodIPRow);
                 }else{
                     _this.prodIPRow = false;
                     ////console.log(this.prodIPRow);
                 }
-                for(var i=0;i<_this.prodIPList.length;i++){
-                    console.log(_this.prodIPList[i]);
-                    //this.ipmode.push(_this.prodIPList[i]);
-                }
+                // for(var i=0;i<_this.prodIPList.length;i++){
+                //     console.log(_this.prodIPList[i]);
+                //     console.log(_this.ipmode);
+                //     if(_this.ipmode.includes(_this.prodIPList[i])){
+                //         console.log(true);
+                //     }else{
+                //         _this.ipmode.push(_this.prodIPList[i]);
+                //     }
+                // }
+                console.log(_this.prodIPList);
             },
             //点击确认之后重新赋值
             confirm:function(){
                 let _this = this;
                 _this.cpumode = _this.CPUList;
                 _this.memmode = _this.MemoryList;
-                _this.ipmode = _this.ipmode;
+                _this.ipmode = _this.prodIPList;
                 _this.selectUpdate();
             },
             initAll(){
@@ -275,7 +282,7 @@
                 this.BeginTime = this.serverInfo.start;
                 this.cpumode = this.CPUList;
                 this.memmode = this.MemoryList;
-                this.ipmode = this.$route.query.row.prodIp;
+                this.ipmode.push(this.$route.query.row.prodIp);
             },
 
             initCpu(){
