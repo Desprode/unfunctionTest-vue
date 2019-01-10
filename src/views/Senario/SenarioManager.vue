@@ -66,7 +66,7 @@
                     <Button @click="deleteCase" type="error" class="actionBtn">删除</Button>
                 </div>
                 <div class="tableBox">
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged" show-header></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -255,17 +255,17 @@
                 </p>
                 <Form ref="moniterValidate" :model="moniterValidate" :label-width="80" >
                     <Row class="caseBoxRow">
+                        <Col span="9">
+                            <FormItem label="IP" prop="ip">
+                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase()>
+                                </Input>
+                            </FormItem>
+                        </Col>
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
                                 <Select v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
-                            </FormItem>
-                        </Col>
-                        <Col span="9">
-                            <FormItem label="IP" prop="ip">
-                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase()>
-                                </Input>
                             </FormItem>
                         </Col>
                         <Col span="5">
@@ -450,33 +450,77 @@ export default {
                 {
                     title: 'ID',
                     key: 'senario_id',
-                    width: 60,
+                    sortable:'true',
                 },
                 {
                     title: '关联任务',
                     key: 'perftask_name',
-                    ellipsis: true, 
-                    width:100,
+                    //ellipsis: true, 
                     align:'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.perftask_name
+                                }
+                            }, params.row.perftask_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    width:140,
-                    ellipsis: true, 
+                    //ellipsis: true, 
                     align:'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.senario_name
+                                }
+                            }, params.row.senario_name)
+                        ]);
+                    }
                 },
                 {
                     title: '关联脚本',
                     key: 'script_name',
-                    width:100,
                     align: 'center',
                     ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_name
+                                }
+                            }, params.row.script_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景类型',
                     key: 'senario_type',
-                    width:100,
                     align: 'center',
                     render:(h,params) =>{
                         let _this = this;
@@ -487,7 +531,6 @@ export default {
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
-                    width:100,
                     align: 'center',
                     render:(h,params)=>{
                         let _this = this;
@@ -502,14 +545,13 @@ export default {
                 {
                     title: '线程组并发数',
                     key: 'threads_total',
-                    width:90,
                     align: 'center',
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:155,
                     align: 'center',
+                    sortable:'true'
                 },
                 {
                     title:'操作',
@@ -1058,10 +1100,24 @@ export default {
             // });
         //,
             /**选中的数据发生改变 */
-        onSelectionChanged: function(data) {
-            this.selectedData = data;
-            console.log("选中要删除的数据",this.selectedData)
+        onSelect: function(row,selection) {
+            this.selectedData.push(selection);
+            console.log("选中要删除的数据",row,selection)
             //console.log(data)
+        },
+        onSelectCancel:function(row,selection){
+            let _this = this;
+            for(var i=0;i<_this.selectedData.length;i++){
+                if(_this.selectedData[i].senario_id == selection.senario_id){
+                    _this.selectedData.splice(i,1);
+                }
+            }
+            // _this.selectedData.forEach((item,index) => {
+            //     if(_this.selectedData.includes(item)){
+            //         _this.selectedData.splice(index, 1);        //即删除该数据上
+            //     }
+            // });
+            console.log("取消选中要删除的数据",row,selection)
         },
        
         /**添加新数据弹出模态框 */
