@@ -4,7 +4,7 @@
                 <font size="5" color="#01babc">实时监控</font>
         </div></br>
                 <!--<div align="right" >右对齐，<div align="left" >左对齐  deleteCase-->
-                <Button style="float:right" @click="" type="error" class="actionBtn">停止</Button>
+                <Button style="float:right" @click="deleteData" type="error" class="actionBtn">停止</Button>
             <div align="left">
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
@@ -44,6 +44,7 @@
     <script> 
     var websocket = null;
         let start_time = null;
+        //let timedate= null;
     export default {
         beforeMount(){
             setInterval(getflush,1000)
@@ -51,26 +52,23 @@
             function getflush(){
                 let curDate = new Date();
                 let cuDate = new Date();
-                console.log("",curDate)
                 if(timdate.starttime != 'null'){
                     let cuDate = new Date(start_time);
                     timdate.starttime = (curDate.getTime()-cuDate.getTime())/1000
-                }        
+                }
             }
         },
             data () {
-                return {   
+                return {
                     senario_name:this.$route.query.senario_name,
                     describe: '',
                     timestamp:'',
-                   // timedate: '',
-                   // timedatee: '',
                     timestampl:'',
                     statuszt:'',
                     starttime:'0',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
-                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=1546910541700&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
                         list: [], 
@@ -80,11 +78,7 @@
                         checkbox: [],
                         switch: true,
                         executor_id:'',
-                        timestamp:'',
-                        timestampl:'',
                         statuszt:'',
-                      //  timedate: '',
-                      //  timedatee: '',
                         textarea: ''
                     },
                     columns: [
@@ -321,10 +315,42 @@
                 this.statuszt = eval('('+cuttingl+')')
                  if(this.statuszt.exe_time != 'null'){  //不为null展示的
                     start_time = this.statuszt.exe_time;
+                    var d = start_time.getTime(start_time)
+                    console.log('这个是什么',d)
                 }
-
+                if(this.statuszt.exe_description === '测试开始执行'){
+                    this.timedate = Date.parse(new Date());    //13位的时间戳
+                    console.log("13位毫秒", this.timedate);
+                    this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                    this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                }
              }
               },
+             //停止
+            deleteData: function() {                //调用方法将原有数据中对应的id停止
+            let _this = this;
+                if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否停止该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/testresult/runtests/cancel",{
+                                header:{},
+                                data:{
+                                    ids:this.$route.query.executor_id,
+                                }
+                            }).then(function(){
+                                _this.$Message.info('停止成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('停止失败');
+                        }
+                    }); 
+                   
+                }
+        },
                 
                  //服务器资源
                  listCase: function() {
@@ -336,10 +362,6 @@
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
-                    _this.timedate = Date.parse(new Date());    //13位的时间戳
-                    console.log("13位毫秒", _this.timedate);
-                    _this.timedatee =_this.timedate - 300 ;   //13位的时间戳 -300
-                    console.log("13位毫秒-300",_this.timedatee);
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
@@ -398,9 +420,6 @@
                     var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                     this.pressureAgentInfo.start= start;
                     this.pressureAgentInfo.selected = row.prodIp;
-                    //if(this.pressureAgentInfo === ''){
-                    //    this.getPressureaAgentInfo();
-                    //}
                     this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo}});
                     console.log('这个是',this.pressureAgentInfo)
                 },
@@ -410,9 +429,6 @@
                     console.log(row);
                     this.serverInfo.start= start;
                     this.serverInfo.selected = row.prodIp;
-                    //if(this.serverInfo === ''){
-                    //    this.getServerInfo();
-                    //}
                     this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
                     console.log('这个是',this.serverInfo)
                 }
