@@ -440,7 +440,6 @@ export default {
                 console.log("result: ",response.data.result);
                 if(_this.result == "ok"){
                     _this.mergeCase();
-                    console.log("result: ",response.data.result);
                 }else{
                     _this.$Message.info('生成失败');
                 }
@@ -450,6 +449,7 @@ export default {
         mergeCase:function(){
             let _this = this;
             let setValidates = _this.setValidates;   
+            console.log("setValidates",setValidates);
             this.$router.push({
                 path:'/merge',
                 query:{setValidates:setValidates}

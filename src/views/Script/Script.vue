@@ -131,7 +131,7 @@
                     <Button type="primary"   @click="submitScript('addValidate')" :disabled="isdisabledFn">确认</Button>
                 </div>
             </Modal>
-            <!--新建脚本时弹出的对话框 end-->
+            <!--编辑脚本时弹出的对话框 end-->
             <!--script edit editeditediteditediteditbegin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
@@ -900,6 +900,7 @@ export default {
                                 _this.$Message.success('修改成功!');
                                 _this.showSetScript = false;
                                 console.log("修改成功");
+                                _this.listCase();
                                 _this.$refs[name].resetFields();   
                             }
                         }
@@ -913,6 +914,7 @@ export default {
         /**模态框弹出取消事件 */
         cancelAdd () {
             this.$Message.info('您取消了添加脚本!');
+            this.addValidate={};
             this.showDialog = false;
         },
         cancelParamWin () {

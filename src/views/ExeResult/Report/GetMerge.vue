@@ -52,10 +52,9 @@
                     }
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;
-                    console.log("测试报告", _this.tableData);
+                    console.log("聚合报告", _this.tableData);
                     // _this.content   =  response.data.resultList[0].content;
                 })
-                console.log("测试报告");
             },
             /**下载*/
             downloadCase:function(){

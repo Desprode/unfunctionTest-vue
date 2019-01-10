@@ -84,7 +84,7 @@ export default new Router({
           component: Base
         },
  	{
-          path: '/getMerge',
+          path: '/merge',
           name: 'Merge',
           component: Merge
         },
