@@ -361,14 +361,14 @@
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox" v-if="showSearchTable">
-                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
                         </div>
                 </div>
                 <div class="tableBox" v-else>
-                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
@@ -445,7 +445,7 @@ export default {
             	{
                     type: 'selection',
                     width: 40,
-                    align: 'center'
+                    align: 'center',
                 },
                 {
                     title: 'ID',
@@ -639,7 +639,9 @@ export default {
                                         this.showMoniterModal = true;
                                         this.id = item.row.senario_id;
                                         this.monitor_senario_id = item.row.senario_id;
+                                        this.showSetType =  item.row.senario_type;
                                         this.moniterListCase();
+                                        this.moniterSelectedData = [];
                                     }
                                 }
                             },'监控配置'),
@@ -649,6 +651,7 @@ export default {
                     }
                 }
             ],
+            checkedId:[],
             tableData: [],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
@@ -930,9 +933,18 @@ export default {
         },
         /**切换页码 */
         pageChange:function(pageNo){
-            console.log(pageNo);
-            this.pageNo = pageNo;
-            this.listCase();
+            let _this = this;
+            _this.pageNo = pageNo;
+            _this.listCase();
+            _this.selectedData.map(item=>{
+                _this.checkedId.push(item.senario_id);
+            });
+            for(var i=0;i<_this.tableData.length;i++){
+                //if(_this.checkedId.includes(_this.tableData[i].senario_id)){
+                    _this.tableData[i]['_checked'] = true;
+                //}
+            }
+            console.log(_this.tableData);
         },
         /**切换页面大小 */
         pageSizeChange:function(pageSize){
@@ -1102,6 +1114,12 @@ export default {
             /**选中的数据发生改变 */
         onSelect: function(row,selection) {
             this.selectedData.push(selection);
+            // for(var i=0;i<this.tableData.length;i++){
+            //     if(this.tableData[i].senario_id == selection.senario_id){
+            //         this.tableData[i]['_checked'] = true;
+            //         console.log(this.tableData[i]);
+            //     }
+            // }
             console.log("选中要删除的数据",row,selection)
             //console.log(data)
         },
@@ -1585,53 +1603,73 @@ export default {
         },
         /**保存并修改事件 */
         moniterSave:function(){
-            console.log('旧的系统名称',this.subSysName_old,'新的系统名称',this.subSysName_new);
-            if(this.moniterSelectedData.length > 0){
-                let _this = this;
-                if(_this.subSysName_old !== _this.subSysName_new ){
-                    console.log("不相同");
-                    _this.$Modal.confirm({
-                        title:'确认',
-                        content: '系统名称将发生改变',
-                        onOk: () => {
-                            console.log("不相同确认");
-                            _this.monitorList = _this.moniterSelectedData.map(item=>{
-                                return item.servPartId;
-                            })
-                            //this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/monitorSetting/addMachine",{
-                                header:{},
-                                data:{
-                                    monitorList:_this.monitorList,
-                                    senarioid:_this.monitor_senario_id,
-                                },
-                            }).then(function(response){
-                                _this.moniterListCase();
-                            });
-                        },
-                        onCancel: () => {
-                            console.log("不相同取消");
-                            _this.$Message.info('修改失败，系统未发生改变');
-                        }
-                    }); 
-                }else{
-                    console.log("相同");
+            let _this = this;
+             if(_this.showSearchTable){
+                if(_this.moniterSelectedData.length > 0){
                     _this.monitorList = _this.moniterSelectedData.map(item=>{
                         return item.servPartId;
                     })
                     //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/monitorSetting/addMachine",{
+                    this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
                         header:{},
                         data:{
-                            monitorList:_this.monitorList,
+                            selected_monitor_list:_this.monitorList,
                             senarioid:_this.monitor_senario_id,
                         },
                     }).then(function(response){
-                         _this.moniterListCase();
+                        _this.moniterListCase();
                     });
+                }else{
+                    cosole.log("未选中");
                 }
-            }else{
-                this.$Message.error("至少选择一条数据");
+             }else{
+                console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
+                if(_this.moniterSelectedData.length > 0){
+                    if(_this.subSysName_old !== _this.subSysName_new ){
+                        console.log("不相同");
+                        _this.$Modal.confirm({
+                            title:'确认',
+                            content: '系统名称将发生改变',
+                            onOk: () => {
+                                console.log("不相同确认");
+                                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                                    return item.servPartId;
+                                })
+                                //this.$http.defaults.withCredentials = false;
+                                this.$http.post("/myapi/monitorSetting/addMachine",{
+                                    header:{},
+                                    data:{
+                                        monitorList:_this.monitorList,
+                                        senarioid:_this.monitor_senario_id,
+                                    },
+                                }).then(function(response){
+                                    _this.moniterListCase();
+                                });
+                            },
+                            onCancel: () => {
+                                console.log("不相同取消");
+                                _this.$Message.info('修改失败，系统未发生改变');
+                            }
+                        }); 
+                    }else{
+                        console.log("相同");
+                        _this.monitorList = _this.moniterSelectedData.map(item=>{
+                            return item.servPartId;
+                        })
+                        //this.$http.defaults.withCredentials = false;
+                        this.$http.post("/myapi/monitorSetting/addMachine",{
+                            header:{},
+                            data:{
+                                monitorList:_this.monitorList,
+                                senarioid:_this.monitor_senario_id,
+                            },
+                        }).then(function(response){
+                            _this.moniterListCase();
+                        });
+                    }
+                }else{
+                    _this.$Message.error("至少选择一条数据");
+                }
             }
         },
         /**自定义监控添加 */
@@ -1718,9 +1756,17 @@ export default {
             this.$refs[name].resetFields();
         },
         /**选中的数据 */
-        moniterSelectionChanged:function(data){
-            this.moniterSelectedData = data;
+        moniterOnSelection:function(row,selection){
+            this.moniterSelectedData.push(selection);
             console.log("选中的数据",this.moniterSelectedData);
+        },
+        onMonitorSelectCancel:function(row,selection){
+            let _this = this;
+            for(var i=0;i<_this.moniterSelectedData.length;i++){
+                if(_this.moniterSelectedData[i].servPartId == selection.servPartId){
+                    _this.moniterSelectedData.splice(i,1);
+                }
+            }
         },
         /**数据编辑 */
         handleEdit:function(row) {
