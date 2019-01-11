@@ -951,5 +951,8 @@ display: flex;
 }
 .demo-spin-icon-load{
         animation: ani-demo-spin 1s linear infinite;
+        min-height: 200px;
+        max-height: 400px;
+        
     }
 </style>

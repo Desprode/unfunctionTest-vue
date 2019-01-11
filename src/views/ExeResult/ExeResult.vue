@@ -44,12 +44,12 @@
                         <Col span="2" class="searchLable">开始日期:</Col>
                         <Col span="4">
                             <Col span="50">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time" style="width:267px"></DatePicker>
                             </Col>
                             </Col>
                         <Col span="2" class="searchLable">结束日期:</Col>
                         <Col span="4">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time" width="10px"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time" style="width:267px" ></DatePicker>
                             </Col>
                         <Col span="2"></Col>
                     </Row>
@@ -62,6 +62,7 @@
             <div align="left">
                 <Button @click="aggregCase" type="success"  >聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
+                <Button @click="aggregCasess" type="success"  >测试报告</Button>
             </div>
             <div class="tableBox">
                 <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -156,7 +157,8 @@ export default {
                 data_sgeet:'1',                      //显示性能数据表
                 diagram:'1',                         //显示性能曲线图
                 control_chart:'1',                   //显示资源监控图
-                analysis_things:'1'                  //显示失败事务分析
+                analysis_things:'1',                  //显示失败事务分析
+                id:'',
             },
             setValidates:[],
             isShowMore:false,                   //聚合报告弹框
@@ -386,7 +388,7 @@ export default {
             let selectedDataList = this.selectedData;       //选中要聚合的数据
             //定义数组和集合
             let resArr = [];
-            let deleteId = [];                              
+            let id = [];                              
             let senario_name = [];
             let task_name = [];
             let result_is_pass = [];
@@ -395,7 +397,7 @@ export default {
             if (this.selectedData.length > 0) {                  //如果有选中的数据
                 for (let i in selectedDataList) {               //进行遍历
                     //放入数组
-                    deleteId.push(_this.selectedData[i].id);    
+                    id.push(_this.selectedData[i].id);    
                     executor_id.push(_this.selectedData[i].executor_id);
                     senario_name.push(_this.selectedData[i].senario_name);
                     task_name.push(_this.selectedData[i].task_name);
@@ -408,10 +410,11 @@ export default {
                     aggregData.senario_name  = _this.selectedData[i].senario_name;
                     aggregData.executor_id = _this.selectedData[i].executor_id;
                     _this.setValidate.task_name = _this.selectedData[i].task_name;
+                    _this.setValidate.id = _this.selectedData[i].id;
                     _this.setValidates.push(aggregData);
                 }
                 //判断集合中的最大值和最小值，是否有不同的任务id
-                if(Math.max.apply(null,deleteId) === Math.min.apply(null,deleteId) ){   
+                if(Math.max.apply(null,id) === Math.min.apply(null,id) ){   
                     this.showAddModal=true;
                     this.$http.post('/myapi/metrics/list', {
                     header: {},
@@ -448,11 +451,11 @@ export default {
         /**聚合报告页面跳转 */
         mergeCase:function(){
             let _this = this;
-            let setValidates = _this.setValidates;   
-            console.log("setValidates",setValidates);
+            let selectedDataList = this.selectedData;       //选中要聚合的数据
+            console.log("setValidates123456",selectedDataList[0].id);
             this.$router.push({
                 path:'/merge',
-                query:{setValidates:setValidates}
+                query:{perftask_id:selectedDataList[0].id}
             });
         },
         /**切换页码 */
@@ -487,6 +490,12 @@ export default {
             this.$router.push({
                 path:'/details',
                 query:{executor_id:tableData[index].executor_id}
+            });
+        },
+        aggregCasess:function(){
+            this.$router.push({
+                path:'/load',
+                query:{}
             });
         },
         /**模态框弹出取消事件 */

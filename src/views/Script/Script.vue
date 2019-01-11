@@ -108,7 +108,7 @@
                         <Row>
                             <i-col span="20">
                                 <Form-item label="上传文件：" prop="script_filename">
-                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
+                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)" @click="" aria-readonly="true"></i-input>
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
@@ -444,9 +444,9 @@ export default {
                 app_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                // memo: [
-                //     { required: true, message: '此项为必填项', trigger: 'blur' }
-                // ],
+                memo: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
                 script_filename: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ]
@@ -469,9 +469,9 @@ export default {
                 app_name:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
-                // memo:[
-                //     {required:true,message:'这是必输字段',trigger:'blur'}
-                // ],
+                memo:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
                 script_filename:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
@@ -777,6 +777,8 @@ export default {
         
         /**添加新数据弹出模态框 */
         addScript:function(){
+            //初始化表单
+            this.addValidate={};
             this.showDialog = true;
             console.log("显示模态框");
         },
@@ -914,7 +916,6 @@ export default {
         /**模态框弹出取消事件 */
         cancelAdd () {
             this.$Message.info('您取消了添加脚本!');
-            this.addValidate={};
             this.showDialog = false;
         },
         cancelParamWin () {

@@ -1,7 +1,7 @@
 <template>
         <div class="pageContent">
           <div class="caseBox">
-            <h1 id="title">###title###负载测试报告</h1>
+            <h1 id="title">###title###混合测试报告</h1>
             <Form ref="formValidate" class="formValidate">
                 <div class="rowbox">
                     <Row :gutter="16">
