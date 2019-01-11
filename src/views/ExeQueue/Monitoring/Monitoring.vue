@@ -65,6 +65,7 @@
                     timestamp:'',
                     timestampl:'',
                     statuszt:'',
+                    timedate: '',
                     starttime:'0',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
@@ -208,13 +209,20 @@
                     totalPage:0,                           //共多少页
                     serverInfo: {},
                     pressureAgentInfo: {},
-
+                    intervalFunc:null,
                 }
+            },
+            beforeDestroy(){
+            clearInterval(this.intervalFunc);
+            this.intervalFunc = null;
+        },
+            mounted(){
+                this.intervalFunc = setInterval(this.listCase, 10000);
             },
             
             created(){
                 this.pressCase();
-                this.listCase();
+                //this.listCase();
                 this.initWs();
     
                 this.getServerInfo();
@@ -365,7 +373,7 @@
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
                             scenarioId: senario_id,
-                            start:timestamp,
+                            start:timestamp, //timestamp
                             end: timestampl,
                             pageNo:_this.pageNo,
                             pageSize:_this.pageSize,
@@ -380,44 +388,36 @@
                         console.log(_this.totalCount);
                         _this.tableData = response.data.resultList;
                         var arr = response.data.resultList;
-                        console.log('这个+++++:', arr);
                         for(var i=0;i<arr.length;i++){
-                            console.log('这个里面+++++: ', arr[i].cpuNum); 
                             if(arr[i].cpuUserPercent == null){
                                 _this.tableData[i].cpuUserPercent = '--'
                                 console.log('123456789')
-
                             }else {
                                 _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100
                                 console.log('987654321')
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
-
                             }else {
                                 _this.tableData[i].cpuSysPercent=arr[i].cpuSysPercent*100
                             }
                             if(arr[i].cpuIOWaitPercent == null){
                                 _this.tableData[i].cpuIOWaitPercent = '--';
-
                             }else {
                                 _this.tableData[i].cpuIOWaitPercent=arr[i].cpuIOWaitPercent*100
                             }
                             if(arr[i].memoryBufferPercent == null){
                                 _this.tableData[i].memoryBufferPercent = '--';
-
                             }else {
                                 _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100
                             }
                             if(arr[i].memoryCachePercent == null){
                                 _this.tableData[i].memoryCachePercent = '--';
-
                             }else {
                                 _this.tableData[i].memoryCachePercent=arr[i].memoryCachePercent*100
                             }
                             if(arr[i].ioRead == null){
                                 _this.tableData[i].ioRead = '--';
-
                             }else {
                                 _this.tableData[i].ioRead=arr[i].ioRead*100
                             }
@@ -428,7 +428,6 @@
                             }
                             if(arr[i].netRead == null){
                                 _this.tableData[i].netRead = '--';
-
                             }else {
                                 _this.tableData[i].netRead=arr[i].netRead*100
                             }
@@ -474,12 +473,18 @@
                         var ccc = response.data.result;
                         for(var i=0;i<ccc.length;i++){
                             if(arr[i].cpuNum === null){
-                                _this.tableData[i].cpuUserPercent = '--'
-                                console.log('123456789')
-
+                                _this.tableData[i].cpuNum = '--'
+                                console.log('123')
                             }else {
-                                _this.tableData[i].cpuNum=ccc[i].cpuNum+'c'+memSize/1024+'G'
-                                console.log('987654321')
+                                _this.tableData[i].cpuNum=ccc[i].cpuNum+'c'+ccc[i].memSize/1024+'G'
+                                console.log('321')
+                            }if(arr[i].cpuUsedPercent === null){
+                                _this.tableData[i].cpuUsedPercent = '--'
+                                console.log('123')
+                            }else if(arr[i].memoryUsedPercent === null){
+                                _this.tableData[i].memoryUsedPercent = '--'
+                            }else if(arr[i].iops === null){
+                                _this.tableData[i].iops = '--'
                             }
                         }
                         console.log('+++++++++++++++++',_this.tableDatal)
