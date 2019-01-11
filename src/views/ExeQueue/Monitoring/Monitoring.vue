@@ -98,7 +98,7 @@
                         },
                         {
                             title: '硬件配置',
-                            key: 'osVersion'
+                            key: 'cpuNum'
                         },
                         {
                             title: '操作系统',
@@ -110,11 +110,11 @@
                         },
                         {
                             title: 'Men%',
-                            key: 'jmeter_log_url'
+                            key: 'memoryUsedPercent'
                         },
                         {
                             title: 'IOPS',
-                            key: 'jtl_log_url'
+                            key: 'iops'
                         }
                     ],
                     tableDatal: [],
@@ -313,10 +313,8 @@
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
-                 if(this.statuszt.exe_time != 'null'){  //不为null展示的
+                 if(this.statuszt.exe_time != 'null'){  Z//不为null展示的
                     start_time = this.statuszt.exe_time;
-                    var d = start_time.getTime(start_time)
-                    console.log('这个是什么',d)
                 }
                 if(this.statuszt.exe_description === '测试开始执行'){
                     this.timedate = Date.parse(new Date());    //13位的时间戳
@@ -328,8 +326,9 @@
               },
              //停止
             deleteData: function() {                //调用方法将原有数据中对应的id停止
+            console.log("停止多台哦数据内容",deleArr)
             let _this = this;
-                if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
+                if (deleArr.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
                         content: '是否停止该数据',
@@ -338,7 +337,7 @@
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
                                 data:{
-                                    ids:this.$route.query.executor_id,
+                                    ids:deleArr,
                                 }
                             }).then(function(){
                                 _this.$Message.info('停止成功');
@@ -374,12 +373,71 @@
                     }).then(function (response) {
                         console.log(response);
                         console.log('请求回来的表格数据: ', response.data);
-                        _this.tableData = response.data.resultList;  
+                        _this.tableData = response.data.resultList;
                         _this.totalCount = response.headers.totalcount;
                         _this.totalPage = response.headers.totalpage;
                         console.log(response.headers.totalcount);
-                        console.log(_this.totalCount);  
+                        console.log(_this.totalCount);
                         _this.tableData = response.data.resultList;
+                        var arr = response.data.resultList;
+                        console.log('这个+++++:', arr);
+                        for(var i=0;i<arr.length;i++){
+                            console.log('这个里面+++++: ', arr[i].cpuNum); 
+                            if(arr[i].cpuUserPercent == null){
+                                _this.tableData[i].cpuUserPercent = '--'
+                                console.log('123456789')
+
+                            }else {
+                                _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100
+                                console.log('987654321')
+                            }
+                            if(arr[i].cpuSysPercent == null){
+                                _this.tableData[i].cpuSysPercent = '--';
+
+                            }else {
+                                _this.tableData[i].cpuSysPercent=arr[i].cpuSysPercent*100
+                            }
+                            if(arr[i].cpuIOWaitPercent == null){
+                                _this.tableData[i].cpuIOWaitPercent = '--';
+
+                            }else {
+                                _this.tableData[i].cpuIOWaitPercent=arr[i].cpuIOWaitPercent*100
+                            }
+                            if(arr[i].memoryBufferPercent == null){
+                                _this.tableData[i].memoryBufferPercent = '--';
+
+                            }else {
+                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100
+                            }
+                            if(arr[i].memoryCachePercent == null){
+                                _this.tableData[i].memoryCachePercent = '--';
+
+                            }else {
+                                _this.tableData[i].memoryCachePercent=arr[i].memoryCachePercent*100
+                            }
+                            if(arr[i].ioRead == null){
+                                _this.tableData[i].ioRead = '--';
+
+                            }else {
+                                _this.tableData[i].ioRead=arr[i].ioRead*100
+                            }
+                            if(arr[i].ioWrite == null){
+                                _this.tableData[i].ioWrite = '--';
+                            }else {
+                                _this.tableData[i].ioWrite=arr[i].ioWrite*100
+                            }
+                            if(arr[i].netRead == null){
+                                _this.tableData[i].netRead = '--';
+
+                            }else {
+                                _this.tableData[i].netRead=arr[i].netRead*100
+                            }
+                            if(arr[i].netWrite == null){
+                                _this.tableData[i].netWrite = '--';
+                            }else {
+                                _this.tableData[i].netWrite=arr[i].netWrite*100
+                            }
+                        }
                     })
                 },
                 /**切换页码 */
@@ -413,6 +471,19 @@
                         console.log('请求回来的表格数据555: ', response.data);
                         _this.tableDatal = response.data.result;  
                         _this.tableDatal = response.data.result;
+                        var ccc = response.data.result;
+                        for(var i=0;i<ccc.length;i++){
+                            if(arr[i].cpuNum === null){
+                                _this.tableData[i].cpuUserPercent = '--'
+                                console.log('123456789')
+
+                            }else {
+                                _this.tableData[i].cpuNum=ccc[i].cpuNum+'c'+memSize/1024+'G'
+                                console.log('987654321')
+                            }
+                        }
+                        console.log('+++++++++++++++++',_this.tableDatal)
+
                     })
                 },
                 //压力机资源跳转
