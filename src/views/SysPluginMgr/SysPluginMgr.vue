@@ -2,7 +2,7 @@
 	<div class="pageContent">
             <div class="caseBox">
                 <h3 class="Title">
-                    <span>系统插件管理</span>
+                    <span>系统插件列表</span>
                 </h3>
                 <div class="tableBox">
                     <div class="tableBtnBox">
@@ -36,7 +36,7 @@
                             <i-col span=4 >
                                 <Upload ref="upload"
                                         name="file"
-                                        action="/myapi/userPluginMgr/add" 
+                                        action="/myapi/userPluginMgr/sysadd" 
                                         :before-upload="handleUpload"
                                         :format="['jar']" 
                                         :on-success="uploadSuccess"
@@ -128,9 +128,12 @@ export default {
                 }
             ],
             tableData: [],
-            totalcount:0,                         //共多少条数据
-            pageno:1,                            //当前页
-            pagesize:10,                           //每页显示多少条数据
+            tableDAtaTatol:0,
+            tableDAtaPageLine:3,
+            totalCount:0,                         //共多少条数据
+            pageNo:1,                            //当前页
+            pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
 
             /* add by xin */
             /**===================================模态框表单验证数据 =========================*/
@@ -241,24 +244,24 @@ export default {
             }).then(function (response) {
                 console.log("列表请求回来的分页数据",response.headers);
                 console.log("请求回来的模糊查询数据",response.data);
-                _this.totalcount = response.headers.totalcount               //将总的数据条数赋值后渲染
                 _this.tableData = response.data.resultList;
-                _this.tableData = response.data.resultMap;
-                console.log(_this.tableDatall)
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
+                _this.tableData = response.data.resultList;
             })
         },
-        /**分页查询功能----切换每页大小 */
-        pageSizeChange:function(pagesize){
-            //console.log("页码大小切换",pagesize);
-            this.pagesize = pagesize;                     //改变当前页大小后
-            this.listCase();                                 //重新请求数据
-        },
-        /**分页查询功能----切换当前页 */
-        pageChange:function(pageno){
-            //console.log("页码切换",pageno);
-            this.pageno = pageno; 
-            this.listCase();
-        },
+       /**切换页码 */
+       pageChange:function(pageNo){
+        console.log(pageNo);
+        this.pageNo = pageNo;
+        this.listCase();
+    },
+    /**切换页面大小 */
+    pageSizeChange:function(pageSize){
+        console.log(pageSize);
+        this.pageSize = pageSize;
+        this.listCase();
+    },
         /**添加新数据弹出模态框 */   
         handleDownload:function(rowid,fileName){
             console.log("这个是什么",fileName);
