@@ -165,6 +165,7 @@
                                 :before-upload="handleUpload" 
                                 :format="['zip']" 
                                 :on-success="uploadSuccess"
+                                :on-progress="uploadProgress"
                                 :on-format-error="handleFormatError"
                                 v-model="setValidate.script_filename">
                             <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -544,15 +545,21 @@ export default {
             }
             let _this = this;
             _this.addValidate.script_filename=file.name;
+            _this.addValidate.id=file.id;
             _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
+            console.log("返回信息",file);
             if(res.result == "success"){
                 this.$Spin.hide();
+                this.$Message.info('解析成功');
                 this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
                 this.script_id = res.resultList[0].script_id;
+            }else if(res.result =="fail"){
+                this.$Spin.hide();
+                this.$Message.error("上传文件内部jmx不唯一！上传文件删除失败，请手动删除!"); 
             }
         },
         //the param set checkbox when onclick change the value to oppsite  
