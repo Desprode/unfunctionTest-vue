@@ -114,10 +114,11 @@
                             <i-col span=4 >
                                 <Upload ref="upload"
                                         name="file"
-                                        action="/myapi/scripts/upload" 
-                                        :before-upload="handleUpload" 
+                                        action="/myapi/scripts/upload"
+                                        :before-upload="handleUpload"
                                         :format="['zip']" 
                                         :on-success="uploadSuccess"
+                                        :on-progress="uploadProgress"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -160,7 +161,7 @@
                     <i-col span=4 >
                         <Upload ref="upload"
                                 name="file"
-                                action="/myapi/scripts/upload" 
+                                action="/myapi/scripts/upload"
                                 :before-upload="handleUpload" 
                                 :format="['zip']" 
                                 :on-success="uploadSuccess"
@@ -512,11 +513,30 @@ export default {
                 }
             })
         },
+        uploadPro:function(file){
+            console.log("file",file.name);
+        },
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
+        uploadProgress:function(res,file){
+            this.$Spin.show({
+                render: (h) => {
+                    return h('div', [
+                        h('Icon', {
+                            'class': 'demo-spin-icon-load',
+                            props: {
+                                type: 'ios-loading',
+                                size: 26
+                            }
+                        }),
+                        h('div', '脚本正在上传解析中，请稍后...')
+                    ])
+                }
+            });
+        },
         handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
+            var reg=new RegExp("[^a-zA-Z0-9\_\-\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
             if(reg.test(fname)==true){
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
@@ -527,8 +547,8 @@ export default {
             _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
-            //console.log(res)
             if(res.result == "success"){
+                this.$Spin.hide();
                 this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
@@ -537,7 +557,6 @@ export default {
         },
         //the param set checkbox when onclick change the value to oppsite  
         isChecked:function(index){
-            
             if(this.csvList[index].enable == true || this.csvList[index].enable == 'true'){
                 this.csvList[index].enable = false;
             }else{
@@ -848,7 +867,7 @@ export default {
                             script_id:_this.script_id,
                         }
                     }).then(function(response){
-                        console.log("响应回来的数据",response);
+                        console.log("响应回来的数据1111111",response);
                         if("success" == response.data.result){
                             _this.$Message.success('添加成功！');
                             _this.listCase();
@@ -978,6 +997,9 @@ export default {
 .pageContent{
     margin:-16px;
 }
+.demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
 .rowbox{
     width:100%;
     margin: 0px auto;
