@@ -88,8 +88,8 @@
                 <div v-for="(Item,index) in setValidates" :key="index" style="display:inline-block">
                     <Form ref="setValidate" :model="setValidate" >
                         <div style="float:left;width:150px">
-                            <Button color="#1c2438"  @click="">上移</Button>
-                            <Button color="#1c2438"  @click="">下移</Button>
+                            <Button color="#1c2438"  @click="up">上移</Button>
+                            <Button color="#1c2438"  @click="down">下移</Button>
                         </div>
                         <div style="float:left;width:900px" >
                             <FormItem label="场景名称：" align="left" >
@@ -352,6 +352,10 @@ export default {
                    
                 }
             });
+        },
+        //上移
+        up:function(){
+            
         },
         //页面展示
         listCase: function() {
