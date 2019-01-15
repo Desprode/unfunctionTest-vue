@@ -537,7 +537,7 @@ export default {
             });
         },
         handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\-\u4e00-\u9fa5]","i");
+            var reg=new RegExp("[^a-zA-Z0-9-\_\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
             if(reg.test(fname)==true){
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
