@@ -1471,7 +1471,7 @@ export default {
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
-                if(response.data.resultList != undefined){
+                if(response.data.resultList != undefined || response.data.resultList != [] ){
                     _this.subSysName_old = response.data.resultList[0].subSysName;
                 }
                 console.log(response);
@@ -1572,7 +1572,7 @@ export default {
                     _this.moniterTableData = response.data.resultList;
                     _this.moniterTotalCount = response.headers.totalcount;
                     _this.moniterTotalPage = response.headers.totalpage;
-                    if(response.data.resultList != undefined){
+                    if(response.data.resultList != undefined || response.data.resultList != [] ){
                         _this.subSysName_new = response.data.resultList[0].subSysName;
                     }
                     //_this.moniterReset();
@@ -1585,9 +1585,49 @@ export default {
             let _this = this;
             _this.moniterPageNo = moniterPageNo;
             if(_this.showSearchTable){
-                _this.moniterListCase();
+                console.log("原始表格");
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    }
+                }
+                if(_this.moniterSelectedData.length > 0){
+                    _this.monitorList = _this.moniterSelectedData.map(item=>{
+                        return item.servPartId;
+                    })
+                    //this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
+                        header:{},
+                        data:{
+                            selected_monitor_list:_this.monitorList,
+                            senarioid:_this.monitor_senario_id,
+                        },
+                    }).then(function(response){
+                        _this.moniterListCase();
+                    });
+                }
             }else{
-                _this.moniterCase();
+                console.log("搜索后表格");
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    }
+                }
+                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                        return item.servPartId;
+                    })
+                    //this.$http.defaults.withCredentials = false;
+                    this.$http.post("/myapi/monitorSetting/addMachine",{
+                        header:{},
+                        data:{
+                            monitorList:_this.monitorList,
+                            senarioid:_this.monitor_senario_id,
+                            preSubSysName:_this.subSysName_old,
+                        },
+                    }).then(function(response){
+                        console.log("选中的数据",_this.moniterTableData);
+                        _this.moniterCase();
+                    });
             }; 
         },
         /**切换页面大小 */
@@ -1604,7 +1644,15 @@ export default {
         /**保存并修改事件 */
         moniterSave:function(){
             let _this = this;
+            //本身数据表格
              if(_this.showSearchTable){
+                 console.log("原始表格");
+                 _this.moniterSelectedData= [];
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    }
+                }
                 if(_this.moniterSelectedData.length > 0){
                     _this.monitorList = _this.moniterSelectedData.map(item=>{
                         return item.servPartId;
@@ -1623,7 +1671,13 @@ export default {
                     cosole.log("未选中");
                 }
              }else{
+                 console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    }
+                }
                 if(_this.moniterSelectedData.length > 0){
                     if(_this.subSysName_old !== _this.subSysName_new ){
                         console.log("不相同");
@@ -1641,6 +1695,7 @@ export default {
                                     data:{
                                         monitorList:_this.monitorList,
                                         senarioid:_this.monitor_senario_id,
+                                        preSubSysName:_this.subSysName_old,
                                     },
                                 }).then(function(response){
                                     _this.moniterListCase();
@@ -1662,6 +1717,7 @@ export default {
                             data:{
                                 monitorList:_this.monitorList,
                                 senarioid:_this.monitor_senario_id,
+                                preSubSysName:_this.subSysName_old,
                             },
                         }).then(function(response){
                             _this.moniterListCase();
@@ -1757,17 +1813,29 @@ export default {
         },
         /**选中的数据 */
         moniterOnSelection:function(row,selection){
-            this.moniterSelectedData.push(selection);
-            console.log("选中的数据",this.moniterSelectedData);
+            for(var i=0;i<this.moniterTableData.length;i++){
+                if(this.moniterTableData[i].servPartId == selection.servPartId){
+                    this.moniterTableData[i]._checked = true;
+                }
+            }
+            console.log("选中的数据",this.moniterTableData);
         },
         onMonitorSelectCancel:function(row,selection){
             let _this = this;
-            for(var i=0;i<_this.moniterSelectedData.length;i++){
-                if(_this.moniterSelectedData[i].servPartId == selection.servPartId){
-                    _this.moniterSelectedData.splice(i,1);
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i].servPartId == selection.servPartId){
+                    _this.moniterTableData[i]._checked = false;
                 }
             }
         },
+        // onMonitorSelectCancel:function(row,selection){
+        //     let _this = this;
+        //     for(var i=0;i<_this.moniterSelectedData.length;i++){
+        //         if(_this.moniterSelectedData[i].servPartId == selection.servPartId){
+        //             _this.moniterSelectedData.splice(i,1);
+        //         }
+        //     }
+        // },
         /**数据编辑 */
         handleEdit:function(row) {
             this.$set(row, '$isEdit', true);
