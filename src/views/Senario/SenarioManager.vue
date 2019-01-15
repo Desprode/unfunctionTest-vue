@@ -361,7 +361,7 @@
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox" v-if="showSearchTable">
-                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
+                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
@@ -387,7 +387,8 @@ export default {
     name: 'TestCase',
     data () { 
         return {
-            
+            isLoading:true,
+            timer:null,
             isbouterAlive: true,
             formValidate:{
                 senario_name:'',                                      //场景名称             
@@ -1465,15 +1466,20 @@ export default {
                     id:_this.id,
                     pageNo:_this.moniterPageNo,
                     pageSize:_this.moniterPageSize,
+                    pageChecked:_this.monitorList,
                 }
             }).then(function(response){
                 console.log(response.data.resultList);
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
-                if(response.data.resultList != undefined || response.data.resultList != [] ){
+                if(response.data.resultList != undefined && response.data.resultList != [] ){
                     _this.subSysName_old = response.data.resultList[0].subSysName;
                 }
+                _this.showSearchTable = true;
+                _this.timer = setTimeout(() => {
+                    _this.isLoading = false;
+                }, 2000);
                 console.log(response);
                 console.log(_this.moniterTableData);
 
@@ -1487,6 +1493,9 @@ export default {
             this.monitorAddShow = false;
             this.moniterPageNo = 1;
             console.log('监控取消事件');
+            this.monitorList = [];    //清空翻页保存的数据
+            this.isLoading = true;
+            clearInterval(this.timer)
         },
         /**确认事件 */
         moniterOk:function(){
@@ -1498,6 +1507,9 @@ export default {
                 this.monitorAddShow = false;
                 this.showSearchTable = true;
                 this.moniterPageNo = 1;
+                this.monitorList = [];
+                this.isLoading = true;
+                clearInterval(this.timer);
             }
             console.log(this.editCount);
         },
@@ -1547,6 +1559,7 @@ export default {
         /**列表查询 */
         moniterCase:function(){
             let _this = this;
+            _this.isLoading = true;
             console.log('系统名称',_this.moniterValidate.sComponent,'ip',_this.moniterValidate.ip);
             if(_this.showSearchTable){
                 this.moniterPageNo = 1;
@@ -1564,6 +1577,7 @@ export default {
                         prodIp:_this.moniterValidate.ip,
                         pageNo:_this.moniterPageNo,
                         pageSize:_this.moniterPageSize,
+                        pageChecked:_this.monitorList,
                     }
                 }).then(function(response){
                     console.log(response);
@@ -1575,6 +1589,9 @@ export default {
                     if(response.data.resultList != undefined || response.data.resultList != [] ){
                         _this.subSysName_new = response.data.resultList[0].subSysName;
                     }
+                    _this.timer = setInterval(() => {
+                        _this.isLoading = false;
+                    }, 2000);
                     //_this.moniterReset();
                 })
             }
@@ -1595,39 +1612,21 @@ export default {
                     _this.monitorList = _this.moniterSelectedData.map(item=>{
                         return item.servPartId;
                     })
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
-                        header:{},
-                        data:{
-                            selected_monitor_list:_this.monitorList,
-                            senarioid:_this.monitor_senario_id,
-                        },
-                    }).then(function(response){
-                        _this.moniterListCase();
-                    });
                 }
+                _this.moniterListCase();
             }else{
-                console.log("搜索后表格");
+                console.log("搜索后表格",_this.moniterTableData);
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
                         _this.moniterSelectedData.push(_this.moniterTableData[i]);
                     }
                 }
-                _this.monitorList = _this.moniterSelectedData.map(item=>{
-                        return item.servPartId;
+                if(_this.moniterSelectedData.length > 0){
+                    _this.monitorList = _this.moniterSelectedData.map(item=>{
+                        return item.id;
                     })
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/monitorSetting/addMachine",{
-                        header:{},
-                        data:{
-                            monitorList:_this.monitorList,
-                            senarioid:_this.monitor_senario_id,
-                            preSubSysName:_this.subSysName_old,
-                        },
-                    }).then(function(response){
-                        console.log("选中的数据",_this.moniterTableData);
-                        _this.moniterCase();
-                    });
+                }
+                _this.moniterCase();
             }; 
         },
         /**切换页面大小 */
@@ -1653,6 +1652,7 @@ export default {
                         _this.moniterSelectedData.push(_this.moniterTableData[i]);
                     }
                 }
+                console.log("选中的数据",_this.moniterSelectedData);
                 if(_this.moniterSelectedData.length > 0){
                     _this.monitorList = _this.moniterSelectedData.map(item=>{
                         return item.servPartId;
@@ -1668,7 +1668,7 @@ export default {
                         _this.moniterListCase();
                     });
                 }else{
-                    cosole.log("未选中");
+                    console.log("未选中");
                 }
              }else{
                  console.log("搜索后表格");
