@@ -446,9 +446,9 @@ export default {
                 app_name: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                memo: [
-                    { required: true, message: '此项为必填项', trigger: 'blur' }
-                ],
+                // memo: [
+                //     { required: true, message: '此项为必填项', trigger: 'blur' }
+                // ],
                 script_filename: [
                     { required: true, message: '此项为必填项', trigger: 'blur' }
                 ]
@@ -471,9 +471,9 @@ export default {
                 app_name:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
-                memo:[
-                    {required:true,message:'这是必输字段',trigger:'blur'}
-                ],
+                // memo:[
+                //     {required:true,message:'这是必输字段',trigger:'blur'}
+                // ],
                 script_filename:[
                     {required:true,message:'这是必输字段',trigger:'blur'}
                 ],
