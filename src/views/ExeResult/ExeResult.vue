@@ -88,8 +88,10 @@
                 <div v-for="(Item,index) in setValidates" :key="index" style="display:inline-block">
                     <Form ref="setValidate" :model="setValidate" >
                         <div style="float:left;width:150px">
-                            <Button color="#1c2438"  @click="up">上移</Button>
-                            <Button color="#1c2438"  @click="down">下移</Button>
+                            <Button color="#1c2438"  @click="moveUp(index)">上移</Button>
+                            <Button color="#1c2438"  @click="moveDown(index)">下移</Button>
+                            <!-- <input type="button" value="上移" onclick="mm(this, -1)">
+                            <input type="button" value="下移" onclick="mm(this,  1)"> -->
                         </div>
                         <div style="float:left;width:900px" >
                             <FormItem label="场景名称：" align="left" >
@@ -354,8 +356,20 @@ export default {
             });
         },
         //上移
-        up:function(){
-            
+        moveUp:function(index){
+            if(index ===0){
+                this.$Message.info('到顶了！');
+            }else{
+                this.setValidates.push(this.setValidates.shift())
+            }
+        },
+        //下移
+        moveDown:function(index){
+            if(index === (this.setValidates.length -1)){
+                this.$Message.info('到底了！');
+            }else{
+                this.setValidates.unshift(this.setValidates.pop())
+            }
         },
         //页面展示
         listCase: function() {
