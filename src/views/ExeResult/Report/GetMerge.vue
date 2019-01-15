@@ -3,15 +3,11 @@
         <div align="left" >
             <font size="5" color="#01babc">报告详细信息</font>
         </div></br>
-    <Tabs type="line">
-        <Tab-pane label="测试报告" >
-            <div align="left">
-                <Button @click="downloadCase()" type="primary">下载报告</Button>
-            </div>
-            <!-- 页面渲染   -->
-            <div v-html='content'>{{content}}</div>
-        </Tab-pane>
-    </Tabs>
+        <div align="left">
+            <Button @click="downloadCase()" type="primary">下载报告</Button>
+        </div>
+        <!-- 页面渲染   -->
+        <div v-html='content'>{{content}}</div>
     </div>  
 </template>
 <script>
@@ -35,31 +31,29 @@
                 content:'',
             }
         },
-        
         created(){
             this.listCase();
         },
-        
         methods:{
             //加载测试报告
             listCase: function() {
                 let _this = this;
-                var setValidates = this.$route.query.setValidates;  
-                //this.$http.defaults.withCredentials = false;
+                var perftask_id = this.$route.query.perftask_id; 
+                console.log("perftask_id",perftask_id); 
                 this.$http.post('/myapi/testresult/getMergeReport', {
                     data: {
-                        setValidates:setValidates
+                        perftask_id:perftask_id
                     }
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;
-                    console.log("聚合报告", _this.tableData);
-                    // _this.content   =  response.data.resultList[0].content;
+                    console.log("_this.tableData",_this.tableData);
+                    _this.content   =  response.data.resultList[0].content;
                 })
             },
             /**下载*/
             downloadCase:function(){
                 let _this = this;
-                var executor_id = this.$route.query.executor_id;
+                var executor_id = this.$route.query.setValidates[0].executor_id;
                 //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/download',{
                     data:{

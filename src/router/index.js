@@ -17,8 +17,7 @@ import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
 import Merge from '@/views/ExeResult/Report/GetMerge.vue'
 import Details from   '@/views/ExeResult/Details.vue'
-import Load from   '@/views/ExeResult/Report/Load.vue'
-import Base from   '@/views/ExeResult/Report/Mix.vue'
+import Load from   '@/views/ExeResult/Report/Mix.vue'
 import Machine from '@/views/Machine/Machine.vue'
 import SysPluginMgr from '@/views/SysPluginMgr/SysPluginMgr.vue'
 import UserPluginMgr from '@/views/UserPluginMgr/UserPluginMgr.vue'
@@ -78,12 +77,7 @@ export default new Router({
           name: 'Load',
           component: Load
         },
-        {
-          path: '/base',
-          name: 'Base',
-          component: Base
-        },
- 	{
+ 	      {
           path: '/merge',
           name: 'Merge',
           component: Merge
