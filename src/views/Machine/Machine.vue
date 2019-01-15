@@ -18,14 +18,17 @@
                             </Col>
                             <Col span="2" class="searchLable">机器状态:</Col>
                             <Col span="4">
-                                <Input clearable v-model="state" placeholder="请输入机器状态"></Input>
+                                <Select v-model="state" >
+                                    <Option  value="stop">stop</Option>
+                                    <Option  value="busy">busy</Option>
+                                </Select>
                             </Col>
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
                                 <Button @click="handleReset('formValidate')" type="default"  ghost>重置</Button>
                             </Col>
                         </Row>
-                    </div>                    
+                    </div>             
                 </Form>
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
