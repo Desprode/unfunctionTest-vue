@@ -4,7 +4,7 @@
                 <font size="5" color="#01babc">实时监控</font>
         </div></br>
                 <!--<div align="right" >右对齐，<div align="left" >左对齐  deleteCase-->
-                <Button style="float:right" @click="deleteData" type="error" class="actionBtn">停止</Button>
+                <Button style="float:right" @click="deleteData">停止</Button>
             <div align="left">
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
@@ -44,17 +44,24 @@
     <script> 
     var websocket = null;
         let start_time = null;
-        //let timedate= null;
+        let timestamp = null;
+        let timestampl = null;
     export default {
         beforeMount(){
             setInterval(getflush,1000)
             let timdate = this
             function getflush(){
                 let curDate = new Date();
-                let cuDate = new Date();
+                //let cuDate = new Date();
+                if(start_time != null){
                 if(timdate.starttime != 'null'){
+                    console.log('时间',curDate);
                     let cuDate = new Date(start_time);
-                    timdate.starttime = (curDate.getTime()-cuDate.getTime())/1000
+                    console.log('时间222',cuDate);
+                    timdate.starttime = (curDate.getTime() - cuDate.getTime())
+                }
+            }else if(start_time == null) {
+                    timdate.starttime = '0.0000'
                 }
             }
         },
@@ -62,11 +69,9 @@
                 return {
                     senario_name:this.$route.query.senario_name,
                     describe: '',
-                    timestamp:'',
-                    timestampl:'',
                     statuszt:'',
                     timedate: '',
-                    starttime:'0',
+                    starttime:'',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
@@ -79,7 +84,6 @@
                         checkbox: [],
                         switch: true,
                         executor_id:'',
-                        statuszt:'',
                         textarea: ''
                     },
                     columns: [
@@ -210,18 +214,23 @@
                     serverInfo: {},
                     pressureAgentInfo: {},
                     intervalFunc:null,
+                    intervalFuncc:null,
                 }
             },
             beforeDestroy(){
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
+
+            clearInterval(this.intervalFuncc);
+            this.intervalFuncc = null;
         },
             mounted(){
                 this.intervalFunc = setInterval(this.listCase, 10000);
+                this.intervalFuncc = setInterval(this.pressCase, 10000);
             },
             
             created(){
-                this.pressCase();
+                //this.pressCase();
                 //this.listCase();
                 this.initWs();
     
@@ -312,7 +321,6 @@
               },
               getmessage(e){
              var res = e.data
-             console.log("这个里面是什么",res)
              var _cutting = res.substr(0,1); //截取
              if(_cutting =='1'){      // 判断是不是开头是1的数据
              this.describe+=e.data.substr(1)
@@ -321,22 +329,24 @@
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
-                 if(this.statuszt.exe_time != 'null'){  Z//不为null展示的
+                 if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
                     start_time = this.statuszt.exe_time;
                 }
-                if(this.statuszt.exe_description === '测试开始执行'){
+                if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
                     this.timedate = Date.parse(new Date());    //13位的时间戳
                     console.log("13位毫秒", this.timedate);
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                    timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    timestampl = timestamp- 300;
                 }
              }
               },
              //停止
-            deleteData: function() {                //调用方法将原有数据中对应的id停止
-            console.log("停止多台哦数据内容",deleArr)
+        deleteData: function() {                //调用方法将原有数据中对应的id停止
             let _this = this;
-                if (deleArr.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
+            var dell = this.$route.query.executor_id
+                if (dell.includes(dell)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
                         content: '是否停止该数据',
@@ -345,7 +355,7 @@
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
                                 data:{
-                                    ids:deleArr,
+                                    ids:this.$route.query.executor_id,
                                 }
                             }).then(function(){
                                 _this.$Message.info('停止成功');
@@ -362,10 +372,6 @@
                  //服务器资源
                  listCase: function() {
                     let _this = this;
-                    var timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
-                    console.log("时间：",timestamp);
-                    var timestampl =  timestamp - 300;
-                    console.log("时间2：",timestampl);
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
@@ -373,7 +379,7 @@
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
                             scenarioId: senario_id,
-                            start:timestamp, //timestamp
+                            start:timestamp, 
                             end: timestampl,
                             pageNo:_this.pageNo,
                             pageSize:_this.pageSize,
@@ -391,10 +397,8 @@
                         for(var i=0;i<arr.length;i++){
                             if(arr[i].cpuUserPercent == null){
                                 _this.tableData[i].cpuUserPercent = '--'
-                                console.log('123456789')
                             }else {
                                 _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100
-                                console.log('987654321')
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
@@ -453,16 +457,12 @@
                 },
                 pressCase: function() {
                     let _this = this;
-                    var startl = Math.round(new Date().getTime()/1000).toString();//10位时间戳
-                    console.log("时间：",startl);
-                    var endl =  startl - 300;
-                    console.log("时间2：",endl);
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值 '+this.$route.query.executor_id+'
-                    console.log("第二个页面接收的ID",executor_id);
+                    console.log("第二个页面接收的ID+++",executor_id);
                     var senario_name = this.$route.query.senario_name; 
                     console.log("第二个页面接收的场景名称",senario_name);
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+startl+'&end='+endl+'', {
+                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+timestamp+'&end='+timestampl+'', {//
                         data: {
                         }
                     }).then(function (response) {
@@ -472,18 +472,21 @@
                         _this.tableDatal = response.data.result;
                         var ccc = response.data.result;
                         for(var i=0;i<ccc.length;i++){
-                            if(arr[i].cpuNum === null){
+                            if(ccc[i].cpuNum == null){
                                 _this.tableData[i].cpuNum = '--'
                                 console.log('123')
                             }else {
-                                _this.tableData[i].cpuNum=ccc[i].cpuNum+'c'+ccc[i].memSize/1024+'G'
+                                var aaa = ccc[i].memSize/1024+'G'
+                                var cccc = Math.round(aaa)    //四舍五入  Math.ceil() 向上取整
+                                console.log(cccc)
+                                _this.tableData[i].cpuNum = ccc[i].cpuNum+'c'+cccc
                                 console.log('321')
-                            }if(arr[i].cpuUsedPercent === null){
+                            }if(ccc[i].cpuUsedPercent == 'null'){
                                 _this.tableData[i].cpuUsedPercent = '--'
                                 console.log('123')
-                            }else if(arr[i].memoryUsedPercent === null){
+                            }else if(ccc[i].memoryUsedPercent == null){
                                 _this.tableData[i].memoryUsedPercent = '--'
-                            }else if(arr[i].iops === null){
+                            }else if(ccc[i].iops == null){
                                 _this.tableData[i].iops = '--'
                             }
                         }
