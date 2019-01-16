@@ -333,15 +333,15 @@
                     start_time = this.statuszt.exe_time;
                 }
                 if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
-                    this.timedate = Date.parse(new Date());    //13位的时间戳
+                    this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
                     console.log("13位毫秒", this.timedate);
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                    // timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                    // console.log("时间++++++：",timestamp);
                    // timestampl = timestamp - 300;
-                    this.intervalFunc = setInterval(this.listCase, 60000);
-                    this.intervalFuncc = setInterval(this.pressCase, 60000);
+                    this.intervalFunc = setInterval(this.listCase, 30000);
+                    this.intervalFuncc = setInterval(this.pressCase, 30000);
                 }
              }
               },
@@ -353,11 +353,14 @@
                         title:'确认',
                         content: '是否停止该数据',
                         onOk: () => {
+                            var deaa=  this.$route.query.executor_id;
+                            var deaa = []
+                            console.log('是否数组',deaa)
                             this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
                                 data:{
-                                    ids:this.$route.query.executor_id,
+                                    ids:deaa,
                                 }
                             }).then(function(){
                                 _this.$Message.info('停止成功');
@@ -383,8 +386,8 @@
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
                             scenarioId: senario_id,
-                            start:timestampl, 
-                            end: timestamp,
+                            start:timestamp, 
+                            end: timestampl,
                             pageNo:_this.pageNo,
                             pageSize:_this.pageSize,
                         }
@@ -403,48 +406,66 @@
                                 _this.tableData[i].cpuUserPercent = '--'
                                 console.log('123456789')
                             }else {
-                                _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100
+                                _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100;
+                                 if (String(_this.tableData[i].cpuUserPercent).indexOf('.') > -1)
+                                 _this.tableData[i].cpuUserPercent = _this.tableData[i].cpuUserPercent.toFixed(2);
                                 console.log('987654321')
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
                             }else {
-                                _this.tableData[i].cpuSysPercent=arr[i].cpuSysPercent*100
+                                _this.tableData[i].cpuSysPercent=arr[i].cpuSysPercent*100;
+                                if (String(_this.tableData[i].cpuSysPercent).indexOf('.') > -1)
+                                 _this.tableData[i].cpuSysPercent = _this.tableData[i].cpuSysPercent.toFixed(2);
                             }
                             if(arr[i].cpuIOWaitPercent == null){
                                 _this.tableData[i].cpuIOWaitPercent = '--';
                             }else {
-                                _this.tableData[i].cpuIOWaitPercent=arr[i].cpuIOWaitPercent*100
+                                _this.tableData[i].cpuIOWaitPercent=arr[i].cpuIOWaitPercent*100;
+                                if (String(_this.tableData[i].cpuIOWaitPercent).indexOf('.') > -1)
+                                 _this.tableData[i].cpuIOWaitPercent = _this.tableData[i].cpuIOWaitPercent.toFixed(2);
                             }
                             if(arr[i].memoryBufferPercent == null){
                                 _this.tableData[i].memoryBufferPercent = '--';
                             }else {
-                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100
+                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100;
+                                if (String(_this.tableData[i].memoryBufferPercent).indexOf('.') > -1)
+                                 _this.tableData[i].memoryBufferPercent = _this.tableData[i].memoryBufferPercent.toFixed(2);
                             }
                             if(arr[i].memoryCachePercent == null){
                                 _this.tableData[i].memoryCachePercent = '--';
                             }else {
-                                _this.tableData[i].memoryCachePercent=arr[i].memoryCachePercent*100
+                                _this.tableData[i].memoryCachePercent=arr[i].memoryCachePercent*100;
+                                if (String(_this.tableData[i].memoryCachePercent).indexOf('.') > -1)
+                                 _this.tableData[i].memoryCachePercent = _this.tableData[i].memoryCachePercent.toFixed(2);
                             }
                             if(arr[i].ioRead == null){
                                 _this.tableData[i].ioRead = '--';
                             }else {
-                                _this.tableData[i].ioRead=arr[i].ioRead*100
+                                _this.tableData[i].ioRead=arr[i].ioRead*100;
+                                if (String(_this.tableData[i].ioRead).indexOf('.') > -1)
+                                 _this.tableData[i].ioRead = _this.tableData[i].ioRead.toFixed(2);
                             }
                             if(arr[i].ioWrite == null){
                                 _this.tableData[i].ioWrite = '--';
                             }else {
-                                _this.tableData[i].ioWrite=arr[i].ioWrite*100
+                                _this.tableData[i].ioWrite=arr[i].ioWrite*100;
+                                if (String(_this.tableData[i].ioWrite).indexOf('.') > -1)
+                                 _this.tableData[i].ioWrite = _this.tableData[i].ioWrite.toFixed(2);
                             }
                             if(arr[i].netRead == null){
                                 _this.tableData[i].netRead = '--';
                             }else {
-                                _this.tableData[i].netRead=arr[i].netRead*100
+                                _this.tableData[i].netRead=arr[i].netRead*100;
+                                if (String(_this.tableData[i].netRead).indexOf('.') > -1)
+                                 _this.tableData[i].netRead = _this.tableData[i].netRead.toFixed(2);
                             }
                             if(arr[i].netWrite == null){
                                 _this.tableData[i].netWrite = '--';
                             }else {
-                                _this.tableData[i].netWrite=arr[i].netWrite*100
+                                _this.tableData[i].netWrite=arr[i].netWrite*100;
+                                if (String(_this.tableData[i].netWrite).indexOf('.') > -1)
+                                 _this.tableData[i].netWrite = _this.tableData[i].netWrite.toFixed(2);
                             }
                         }
                     })
@@ -467,10 +488,10 @@
                     console.log("第二个页面接收的ID+++",executor_id);
                     var senario_name = this.$route.query.senario_name; 
                     console.log("第二个页面接收的场景名称",senario_name);
-                    var timestampl = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
                     var timestamp = timestampl - 300;
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+timestampl+'&end='+timestamp+'', {//
+                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+timestamp+'&end='+timestampl+'', {//
                         data: {
                         }
                     }).then(function (response) {
@@ -481,21 +502,35 @@
                         var ccc = response.data.result;
                         for(var i=0;i<ccc.length;i++){
                             if(ccc[i].cpuNum == null){
-                                _this.tableData[i].cpuNum = '--'
+                                _this.tableDatal[i].cpuNum = '--'
                                 console.log('123')
                             }else {
-                                var aaa = ccc[i].memSize/1024+'G'
+                                var aaa = ccc[i].memSize/1024
                                 var cccc = Math.round(aaa)    //四舍五入  Math.ceil() 向上取整
                                 console.log(cccc)
-                                _this.tableData[i].cpuNum = ccc[i].cpuNum+'c'+cccc
+                                _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'c'+cccc+'G'
                                 console.log('321')
-                            }if(ccc[i].cpuUsedPercent == 'null'){
-                                _this.tableData[i].cpuUsedPercent = '--'
+                            }if(ccc[i].cpuUsedPercent == null){
+                                _this.tableDatal[i].cpuUsedPercent = '--'
                                 console.log('123')
-                            }else if(ccc[i].memoryUsedPercent == null){
-                                _this.tableData[i].memoryUsedPercent = '--'
-                            }else if(ccc[i].iops == null){
-                                _this.tableData[i].iops = '--'
+                            }else {
+                                _this.tableDatal[i].cpuUsedPercent=ccc[i].cpuUsedPercent*100;
+                                if (String(_this.tableDatal[i].cpuUsedPercent).indexOf('.') > -1)
+                                 _this.tableDatal[i].cpuUsedPercent = _this.tableDatal[i].cpuUsedPercent.toFixed(2);
+                            } 
+                            if(ccc[i].memoryUsedPercent == null){
+                                _this.tableDatal[i].memoryUsedPercent = '--'
+                            }else {
+                                _this.tableDatal[i].memoryUsedPercent=ccc[i].memoryUsedPercent*100;
+                                if (String(_this.tableDatal[i].memoryUsedPercent).indexOf('.') > -1)
+                                 _this.tableDatal[i].memoryUsedPercent = _this.tableDatal[i].memoryUsedPercent.toFixed(2);
+                            }
+                            if(ccc[i].iops == null){
+                                _this.tableDatal[i].iops = '--'
+                            }else {
+                                _this.tableDatal[i].iops=ccc[i].iops*100;
+                                if (String(_this.tableDatal[i].iops).indexOf('.') > -1)
+                                 _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
                             }
                         }
                         console.log('+++++++++++++++++',_this.tableDatal)
