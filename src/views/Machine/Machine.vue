@@ -21,6 +21,7 @@
                                 <Select v-model="state" >
                                     <Option  value="stop">stop</Option>
                                     <Option  value="busy">busy</Option>
+                                    <Option  value="java">java</Option>
                                 </Select>
                             </Col>
                             <Col span="6">

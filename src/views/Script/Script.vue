@@ -226,6 +226,7 @@ export default {
     data () {
         const validateScriptName = function(rule, value, callback) {
             var flag = this.checkScriptName();
+            console.log("flag",flag);
             if(flag){
                 callback(new Error('脚本名称重复!'));
             }else{
@@ -777,11 +778,11 @@ export default {
                     script_name:val,
                 }
             }).then(function(response){
-                    // console.log("检查脚本响应数据",response);
+                    //console.log("检查脚本响应数据",response);
                     // var flag = response.data.result;
                     // console.log("检查脚本响应数据flag",flag);
                     _this.scriptFlag = response.data.result=="fail";
-                    console.log(" _this.scriptFlag"+_this.scriptFlag);
+                    console.log(" _this.scriptFlag",_this.scriptFlag);
                     // if("fail" == flag){
                     //     scriptFlag = false;
                     //     console.log("检查脚本响应数据flag22",flag);
@@ -852,15 +853,18 @@ export default {
             });
         },
         /***模态框弹出时确定事件: 验证表单提交 */
-        submitScript (name) {
+        submitScript (name,scriptFlag) {
             let _this = this;
-            console.log(this.addValidate);
+            _this.scriptFlag =this.scriptFlag;
+            //scriptFlag
+            // console.log(this.addValidate);
+            // console.log("name11111111111111111111111111111",scriptFlag);
             _this.isdisabledFn = true;
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    console.log("开始添加");
-                    console.log("app_name0000000"+_this.addValidate.app_name);
+                    console.log("开始添加",valid);
+                    console.log("app_name0000000",_this.addValidate.app_name);
                     // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/scripts/add',{
                         data:{

@@ -25,7 +25,6 @@
                 <Select v-model="result_is_pass" style="width:200px" align="center">
                         <Option value="1" >是</Option>
                         <Option value="0" >否</Option>
-                        <Option value="as" >待确定</Option>
                 </Select>
             </FormItem>   
             <FormItem label="测试结论分析描述：">
@@ -99,20 +98,28 @@
                 //平台日志
                 columnss: [
                     {
-                        title: '步骤名称',
-                        key: 'step_name'
-                    },
-                    {
                         title: '开始时间',
                         key: 'start_time'
+                    },
+                    {
+                        title: '步骤名称',
+                        key: 'step_name',
+                        render:(h,params) =>{
+                        let _this = this;
+                        return h('span',_this.$Global.detailsStepMap[params.row.step_name])
+                        }
                     },
                     {
                         title: '结束时间',
                         key: 'end_time'
                     },
                     {
-                        title: '错误码',
-                        key: 'exit_code'
+                        title: '状态',
+                        key: 'exit_code',
+                        render:(h,params) =>{
+                        let _this = this;
+                        return h('span',_this.$Global.detailsMap[params.row.exit_code])
+                        }
                     }
                 ],
                 tableDatas: [],
@@ -208,13 +215,12 @@
                     }
                 }).then(function (response) {
                     _this.tableDatas =  response.data.resultList;
+                    console.log("1112121",_this.tableDatas)
                     if(_this.tableDatas=="ok"){
                         _this.$Message.info('保存成功');
                     }else{
                         _this.$Message.info('保存失败');
                     }
-                    console.log(_this.tableDatas)
-                    
                 })
                 console.log("保存功能");
             },

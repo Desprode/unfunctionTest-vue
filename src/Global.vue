@@ -68,6 +68,11 @@ export default {
     ],
     exeStatusMap: {'00':'执行完成', '10':'执行异常', '11':'执行停止'}, 
     
+    //平台日志
+    detailsStepMap:{'machine':'机器申请','jmeter':'开始启动jmeter','split':'开始文件拆分','machinecalc':'开始资源计算','plugin':'开始plugin','monitor':'开始monitor'},
+    
+    detailsMap: {'COMPLETED':'完成', 'FAILED':'失败'}, 
+
     //场景管理，场景类型
     senarioType:{'01':'单交易基准','02':'单交易负载','03':'混合场景'}, 
 
