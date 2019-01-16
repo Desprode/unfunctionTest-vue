@@ -62,11 +62,11 @@ export default {
     
     //执行状态
     exeStatusList: [
-        {value: '00', label: '执行完成'},
-        {value: '10', label: '执行异常'},
+        {value: '00', label: '执行异常'},
+        {value: '10', label: '执行成功'},
         {value: '11', label: '执行停止'},
     ],
-    exeStatusMap: {'00':'执行完成', '10':'执行异常', '11':'执行停止'}, 
+    exeStatusMap: {'00':'执行异常', '10':'执行成功', '11':'执行停止'}, 
     
     //平台日志
     detailsStepMap:{'machine':'机器申请','jmeter':'开始启动jmeter','split':'开始文件拆分','machinecalc':'开始资源计算','plugin':'开始plugin','monitor':'开始monitor'},

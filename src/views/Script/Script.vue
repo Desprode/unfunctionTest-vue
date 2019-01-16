@@ -33,7 +33,7 @@
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
                         <Button @click="addScript"  type="primary">新增</Button>
-                        <Button @click="deleteScript" type="error">删除</Button>
+                        <!-- <Button @click="deleteScript" type="error">删除</Button> -->
                     </div>
                     <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
@@ -310,7 +310,7 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:250,
+                    width:290,
                     render: (h, item) => {
                         return h('div', [
                             h('Button', {
@@ -410,6 +410,32 @@ export default {
                                     }
                                 }
                             },'详情'),
+                            h('Button', {
+                                props: {
+                                    type: 'error',
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        let _this = this;
+                                        this.$http.post("/myapi/scripts/delete",{
+                                            data:{
+                                                id:item.row.id,
+                                            }
+                                        }).then(function(response){
+                                            if(response.status == 500){
+                                                _this.$Message.error('服务端错误!');
+                                            }else{
+                                                _this.$Message.info('删除成功');
+                                                _this.listCase();
+                                            }
+                                        })
+                                    }
+                                }
+                            }, '删除'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -644,56 +670,56 @@ export default {
                 this.cmpOpts = [];
             }
         },
-        /*删除按钮功能*/
-        deleteScript: function() {
-            console.log("删除多条按钮");
-            let selectedData=this.selectedData;      //选中要删除的数据
-            let resArr = [];                         
-            let deleteId = [];                     //选中数据的id
-            if(selectedData.length>0){               //如果有选中的数据
-                for(let i in selectedData){         //进行遍历
-                    //idstr = selectedData[i].id +",";
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                    console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-                } 
-            }else{
-                    this.$Message.error("请选择要删除的数据")
-            }
-        }, 
-        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            console.log("删除后台数据内容",deleArr)
-            let _this = this;
-            let tableData = _this.tableData;          //原有的数据
-            tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-                    _this.$Modal.confirm({
-                        title:'确认',
-                        content: '是否删除该数据',
-                        onOk: () => {
-                            // this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/scripts/delete",{
-                                data:{
-                                   // ids:deleArr,
-                                    id:deleArr[0],
-                                }
-                            }).then(function(response){
-                                if(response.status == 500){
-                                    _this.$Message.error('服务端错误!');
-                                }else{
-                                    tableData.splice(index, 1);        //即删除该数据上
-                                    _this.$Message.info('删除成功');
-                                }
-                            })
-                        },
-                        onCancel: () => {
-                            _this.$Message.info('删除失败');
-                        }
-                    }); 
+        // /*删除按钮功能*/
+        // deleteScript: function() {
+        //     console.log("删除多条按钮");
+        //     let selectedData=this.selectedData;      //选中要删除的数据
+        //     let resArr = [];                         
+        //     let deleteId = [];                     //选中数据的id
+        //     if(selectedData.length>0){               //如果有选中的数据
+        //         for(let i in selectedData){         //进行遍历
+        //             //idstr = selectedData[i].id +",";
+        //             deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
+        //             console.log(deleteId);
+        //             this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
+        //         } 
+        //     }else{
+        //             this.$Message.error("请选择要删除的数据")
+        //     }
+        // }, 
+        // deleteData(deleArr){                //调用方法将原有数据中对应的id删除
+        //     console.log("删除后台数据内容",deleArr)
+        //     let _this = this;
+        //     let tableData = _this.tableData;          //原有的数据
+        //     tableData.forEach((item, index) => {      //对原有的数据进行遍历
+        //         if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+        //             _this.$Modal.confirm({
+        //                 title:'确认',
+        //                 content: '是否删除该数据',
+        //                 onOk: () => {
+        //                     // this.$http.defaults.withCredentials = false;
+        //                     this.$http.post("/myapi/scripts/delete",{
+        //                         data:{
+        //                            // ids:deleArr,
+        //                             id:deleArr[0],
+        //                         }
+        //                     }).then(function(response){
+        //                         if(response.status == 500){
+        //                             _this.$Message.error('服务端错误!');
+        //                         }else{
+        //                             tableData.splice(index, 1);        //即删除该数据上
+        //                             _this.$Message.info('删除成功');
+        //                         }
+        //                     })
+        //                 },
+        //                 onCancel: () => {
+        //                     _this.$Message.info('删除失败');
+        //                 }
+        //             }); 
                    
-                }
-            });
-        },
+        //         }
+        //     });
+        // },
         listCase: function() {
             let _this = this;
             // this.$http.defaults.withCredentials = false;

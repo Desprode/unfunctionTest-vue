@@ -17,26 +17,22 @@
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="平台日志">
-            <Table border  ref="selection" :columns="columnss" :data="tableDatas" class="myTable"></Table>
+            <Table border  ref="selection" :columns="platfCaseColumns" :data="platfCaseDatas" class="myTable"></Table>
         </Tab-pane>
         <!---------------------分割线-------------------------->
         <Tab-pane label="执行结果">
             <FormItem label="执行结果是否通过：" align="left" >
                 <Select v-model="result_is_pass" style="width:200px" align="center">
-                        <Option value="1" >是</Option>
-                        <Option value="0" >否</Option>
+                        <Option value="true" >是</Option>
+                        <Option value="false" >否</Option>
                 </Select>
             </FormItem>   
-            <FormItem label="测试结论分析描述：">
-                <Row>
-                    <i-col span="13">
-                         <i-input type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..." v-model="result_desc" ></i-input>
-                    </i-col>
-                </Row>
+            <FormItem label="测试结论分析描述：" :label-width="120">
+                    <Input type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..."  v-model="result_desc" ></Input>
             </FormItem>
             <Form-item align="center">
                 <i-button type="error" style="margin-left: 8px">取消</i-button>
-                <i-button type="primary" @click="saveResult">保存</i-button>
+                <Button type="primary" @click="saveResult">保存</Button>
                 <i-button type="primary">提交缺陷</i-button>
             </Form-item>
         </Tab-pane>
@@ -47,18 +43,6 @@
     export default {
         data () {
             return {
-                formItem: {
-                    html:'',
-                    input: '',
-                    select: '',
-                    radio: 'male',
-                    checkbox: [],
-                    switch: true,
-                    date: '',
-                    time: '',
-                    slider: [20, 50],
-                    textarea: ''
-                },
                 //压力机日志
                 columns: [
                     {
@@ -96,7 +80,7 @@
                 ],
                 tableData: [],
                 //平台日志
-                columnss: [
+                platfCaseColumns: [
                     {
                         title: '开始时间',
                         key: 'start_time'
@@ -122,7 +106,7 @@
                         }
                     }
                 ],
-                tableDatas: [],
+                platfCaseDatas: [],
                 /** ============================执行结果============================ */
                 showSetType:'',
                 content:'',
@@ -182,7 +166,7 @@
                         executor_id:executor_id,
                     }
                 }).then(function (response) {
-                    _this.tableDatas =  response.data.resultList;
+                    _this.platfCaseDatas =  response.data.resultList;
                 })
                 console.log("平台日志");
             },
@@ -196,9 +180,12 @@
                         executor_id:executor_id,
                     }
                 }).then(function (response) {
-                    _this.tableDatas =  response.data.resultList;
+                    _this.tableDatasw =  response.data.resultList;
+                    console.log("111212", _this.tableDatasw);
                     _this.result_is_pass = response.data.resultList[0].result_is_pass.toString();
+                    _this.result_desc = response.data.resultList[0].result_desc;
                     console.log("是否通过", _this.result_is_pass);
+                    console.log("描述", _this.result_desc);
                 })
                 console.log("执行结果");
             },
@@ -214,13 +201,22 @@
                         result_desc:_this.result_desc
                     }
                 }).then(function (response) {
-                    _this.tableDatas =  response.data.resultList;
-                    console.log("1112121",_this.tableDatas)
-                    if(_this.tableDatas=="ok"){
-                        _this.$Message.info('保存成功');
-                    }else{
-                        _this.$Message.info('保存失败');
-                    }
+                    console.log("12121212response",response);
+                    _this.tableDatas =  response.data.result;
+                    // _this.result_is_pass = response.data.resultList.result_is_pass.toString();
+                    // _this.result_desc = response.data.resultList.result_desc;
+                    // if(response.status == 500){
+                    //     _this.$Message.error('服务端错误!');
+                    // }else{
+                    //     if("ok" == response.data.result){
+                    //         _this.$Message.success('修改成功!');
+                    //         console.log("修改成功");
+                    //         _this.resulCase();
+                    //     }else{
+                    //         _this.$Message.error('修改失败,'+response.data.err_desc);
+                    //         return;
+                    //     }
+                    // }
                 })
                 console.log("保存功能");
             },
