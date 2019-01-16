@@ -62,7 +62,7 @@
             <div align="left">
                 <Button @click="aggregCase" type="success"  >聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
-                <Button @click="aggregCasess" type="success"  >测试报告</Button>
+                <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
                 <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
@@ -224,34 +224,77 @@ export default {
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    tooltip: true, 
-                    width: 200,
+                    // ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.component_name
+                                }
+                            }, params.row.component_name)
+                        ]);
+                    }
                 },
                 {
                     title: '关联任务',
                     key: 'task_name',
-                    tooltip: true, 
+                    // ellipsis: true,  
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.task_name
+                                }
+                            }, params.row.task_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    tooltip: true, 
-                    width: 200,
+                    // ellipsis: true,  
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.senario_name
+                                }
+                            }, params.row.senario_name)
+                        ]);
+                    }
                 },
                 {
                     title:'场景类型',
                     key:'type_name',
-                    width: 100,
                 },
                 {
                     title: '执行人',
                     key: 'execution_name',
-                    width:75,
                 },
                 {
                     title: '执行状态',
                     key: 'exe_status',
-                    width:90,
                     render:(h,params) =>{
                         let _this = this;
                         return h('span',_this.$Global.exeStatusMap[params.row.exe_status])
@@ -260,12 +303,10 @@ export default {
                 {
                     title: '开始日期',
                     key: 'start_time',
-                    width:150,
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
-                    width:150,
                 },
                 {
                     title: '操作',
