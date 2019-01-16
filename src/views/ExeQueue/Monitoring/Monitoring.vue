@@ -57,11 +57,11 @@
                 if(timdate.starttime != 'null'){
                     console.log('时间',curDate);
                     let cuDate = new Date(start_time);
-                    console.log('时间222',cuDate);
-                    timdate.starttime = (curDate.getTime() - cuDate.getTime())
+                    console.log('时间222',curDate.getTime() - curDate.getTime() - cuDate.getTime()/1000 );
+                    timdate.starttime = (curDate.getTime() - cuDate.getTime())/1000
                 }
-            }else if(start_time == null) {
-                    timdate.starttime = '0.0000'
+            }else if(timdate.start_time == null) {
+                    timdate.starttime = '0.000'
                 }
             }
         },
@@ -71,7 +71,7 @@
                     describe: '',
                     statuszt:'',
                     timedate: '',
-                    starttime:'',
+                    starttime:'0.000',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
                     iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
                     iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
@@ -225,10 +225,8 @@
             this.intervalFuncc = null;
         },
             mounted(){
-                this.intervalFunc = setInterval(this.listCase, 10000);
-                this.intervalFuncc = setInterval(this.pressCase, 10000);
+                
             },
-            
             created(){
                 //this.pressCase();
                 //this.listCase();
@@ -321,6 +319,7 @@
               },
               getmessage(e){
              var res = e.data
+             console.log("这个里面是什么",res)
              var _cutting = res.substr(0,1); //截取
              if(_cutting =='1'){      // 判断是不是开头是1的数据
              this.describe+=e.data.substr(1)
@@ -329,6 +328,7 @@
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
+                console.log('状态++++++++',this.statuszt.exe_description)
                  if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
                     start_time = this.statuszt.exe_time;
                 }
@@ -337,16 +337,18 @@
                     console.log("13位毫秒", this.timedate);
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                    timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
-                    timestampl = timestamp- 300;
+                   // timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                   // console.log("时间++++++：",timestamp);
+                   // timestampl = timestamp - 300;
+                    this.intervalFunc = setInterval(this.listCase, 60000);
+                    this.intervalFuncc = setInterval(this.pressCase, 60000);
                 }
              }
               },
              //停止
         deleteData: function() {                //调用方法将原有数据中对应的id停止
             let _this = this;
-            var dell = this.$route.query.executor_id
-                if (dell.includes(dell)) {       //当原有的数据与要停止的数据中有相同的数据时，
+                if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
                         content: '是否停止该数据',
@@ -374,13 +376,15 @@
                     let _this = this;
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     console.log("第二个页面接收的ID",executor_id);
-                    var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值
+                    var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值  this.$route.query.senario_type为1的话 不显示后两个列表
+                    var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
+                    var timestamp = timestampl - 300;
                     this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/monitor/serverlist', {
                         data: {
                             scenarioId: senario_id,
-                            start:timestamp, 
-                            end: timestampl,
+                            start:timestampl, 
+                            end: timestamp,
                             pageNo:_this.pageNo,
                             pageSize:_this.pageSize,
                         }
@@ -397,8 +401,10 @@
                         for(var i=0;i<arr.length;i++){
                             if(arr[i].cpuUserPercent == null){
                                 _this.tableData[i].cpuUserPercent = '--'
+                                console.log('123456789')
                             }else {
                                 _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100
+                                console.log('987654321')
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
@@ -461,8 +467,10 @@
                     console.log("第二个页面接收的ID+++",executor_id);
                     var senario_name = this.$route.query.senario_name; 
                     console.log("第二个页面接收的场景名称",senario_name);
+                    var timestampl = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    var timestamp = timestampl - 300;
                     this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+timestamp+'&end='+timestampl+'', {//
+                    this.$http.post('/myapi/monitor/pressureagentlist?executorId='+this.$route.query.executor_id+'&start='+timestampl+'&end='+timestamp+'', {//
                         data: {
                         }
                     }).then(function (response) {
