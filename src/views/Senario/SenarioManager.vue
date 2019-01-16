@@ -66,7 +66,7 @@
                     <Button @click="deleteCase" type="error" class="actionBtn">删除</Button>
                 </div>
                 <div class="tableBox">
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
+                    <Table border :loading="isLoadingList" ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -75,7 +75,7 @@
             </div>
 
         <!--============================================删除任务模态框==================================-->
-            <Modal v-model="delSenarioModal" width="800">
+            <Modal v-model="delSenarioModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>请确认是否删除以下任务</span>
                 </p>
@@ -95,7 +95,7 @@
                 </div>
             </Modal>
             <!--=========================未删除成功模态框======================================-->
-             <Modal v-model="noDeleteModal" width="800">
+             <Modal v-model="noDeleteModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="text-align:center" >
                     <span>以下任务在进行中，未删除成功</span>
                 </p>
@@ -109,7 +109,7 @@
                     </Row>
             </Modal>
         <!--========================================创建场景模态框：=================================-->
-            <Modal v-model="showAddModal" width="800">
+            <Modal v-model="showAddModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>新增</span>
                 </p>
@@ -130,9 +130,9 @@
                     </FormItem>
                     <FormItem label="关联任务:" prop="ref_task_name">
                         <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear" @on-open-change="perftask" @keyup.enter.native= "handleSubmit('addValidate')">
-                            <Scroll :on-reach-bottom="perftaskReachBottom">
+                            <!-- <Scroll :on-reach-bottom="perftaskReachBottom"> -->
                                 <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
-                            </Scroll>                
+                            <!-- </Scroll>                 -->
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
@@ -149,7 +149,7 @@
             </Modal>
 
         <!--=======================================执行操作模态框：===================================-->
-            <Modal v-model="showExeModal" width="800">
+            <Modal v-model="showExeModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>执行时间设置</span>
                 </p>
@@ -171,7 +171,7 @@
             </Modal>
 
         <!--======================================场景设置模态框======================================-->
-            <Modal v-model="showSetModal" width="800">
+            <Modal v-model="showSetModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>编辑场景</span>
                 </p>
@@ -249,7 +249,7 @@
                 </div>
             </Modal>
         <!--=================================监控配置模态框============================================-->
-            <Modal v-model="showMoniterModal" width="830">
+            <Modal v-model="showMoniterModal" width="830" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>监控配置</span>
                 </p>
@@ -257,13 +257,13 @@
                     <Row class="caseBoxRow">
                         <Col span="9">
                             <FormItem label="IP" prop="ip">
-                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase()>
+                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase() clearable>
                                 </Input>
                             </FormItem>
                         </Col>
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
-                                <Select v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
+                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
                             </FormItem>
@@ -361,14 +361,14 @@
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox" v-if="showSearchTable">
-                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
+                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
                         </div>
                 </div>
                 <div class="tableBox" v-else>
-                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel"></Table>
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
@@ -387,6 +387,7 @@ export default {
     name: 'TestCase',
     data () { 
         return {
+            isLoadingList:true,
             isLoading:true,
             timer:null,
             isbouterAlive: true,
@@ -899,6 +900,7 @@ export default {
         /**========================================加载列表中的数据======================================= */
         listCase: function() {
             let _this = this;
+            _this.isLoadingList = true;
             console.log("键盘按下")
             // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             //this.$http.defaults.withCredentials = false;
@@ -926,6 +928,17 @@ export default {
                         scriptName:item.script_name,
                     }
                 })
+                _this.selectedData.map(item=>{
+                    _this.checkedId.push(item.senario_id);
+                });
+                for(var i=0;i<_this.tableData.length;i++){
+                    if(_this.checkedId.includes(_this.tableData[i].senario_id)){
+                        _this.tableData[i]['_checked'] = true;
+                    }
+                }
+                _this.timer = setTimeout(() => {
+                    _this.isLoadingList = false;
+                }, 1000);
                 console.log("搜索提示选项",_this.searchOpts)
             })
         },
@@ -937,14 +950,6 @@ export default {
             let _this = this;
             _this.pageNo = pageNo;
             _this.listCase();
-            _this.selectedData.map(item=>{
-                _this.checkedId.push(item.senario_id);
-            });
-            for(var i=0;i<_this.tableData.length;i++){
-                //if(_this.checkedId.includes(_this.tableData[i].senario_id)){
-                    _this.tableData[i]['_checked'] = true;
-                //}
-            }
             console.log(_this.tableData);
         },
         /**切换页面大小 */
@@ -1183,52 +1188,44 @@ export default {
             this.showAddModal = false;
         },
         /**通过任务管理加载出来的关联任务 */
-        perftask:function(openStatus){
-            console.log(openStatus)
-            if(openStatus){
-                let _this = this;
-                //this.$http.defaults.withCredentials = false;
-                this.$http.post("/myapi/perftask/list",{
-                    data:{
-                        perftask_name:'',    //第一次请求时关联任务为空
+        perftask:function(){
+            let _this = this;
+            //this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:'',    //第一次请求时关联任务为空
+                }
+            }).then(function(response){
+                // console.log("任务管理请求回的数据",response.data.resultList);
+                // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                _this.perftaskOpts = response.data.resultList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
                     }
-                }).then(function(response){
-                    // console.log("任务管理请求回的数据",response.data.resultList);
-                    // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                    _this.perftaskOpts = response.data.resultList.map(item=>{
-                        return {
-                            value:item.id,
-                            label:item.perftask_name,
-                        }
-                    })
-                    console.log("关联任务选项",_this.perftaskOpts);
-                    console.log('response',response);
                 })
-            }
+            })
         },
         /**远程加载关联任务方法 */
         perftaskRemote:function(query){
             console.log("输入的参数",query);
-            this.perftaskLoading = true;
-            setTimeout(() => {
-                this.perftaskLoading = false;
-                let _this = this;
-                //this.$http.defaults.withCredentials = false;
-                this.$http.post("/myapi/perftask/list",{
-                    data:{
-                        perftask_name:query,
+            let _this = this;
+            //this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:query,
+                }
+            }).then(function(response){
+                console.log("任务管理请求回的数据",response.data.resultList);
+                console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                _this.perftaskOpts =response.data.resultList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
                     }
-                }).then(function(response){
-                    console.log("任务管理请求回的数据",response.data.resultList);
-                    console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                    _this.perftaskOpts =response.data.resultList.map(item=>{
-                        return {
-                            value:item.id,
-                            label:item.perftask_name,
-                        }
-                    })
                 })
-            }, 200);
+                console.log("_this.perftaskOpts",_this.perftaskOpts);
+            })
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
@@ -1321,37 +1318,37 @@ export default {
                 })
             }, 200);
         },
-        perftaskReachBottom:function(){
-            console.log("到达底部了");
-            let _this = this;
-            return new Promise(resolve => {
-                setTimeout(()=>{
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/perftask/list",{
-                        header:{},
-                        data:{
-                            pageno:_this.pNo+1,
-                        },
-                    }).then(function(response){
-                        console.log("触底响应",response.headers.pageno);
-                        console.log(response);
-                        _this.perftaskOpts = response.data.resultList.map(item=>{
-                            return {
-                                value:item.id,
-                                label:item.perftask_name,
-                            }
-                        });
-                        _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskOpts);
-                        console.log(_this.perftaskOpts);
-                        if(_this.pNo < response.headers.totalpage){
-                            _this.pNo++;
-                        }else{
-                            console.log("没有更多了")
-                        }
-                    })
-                },200)
-            })
-        },
+        // perftaskReachBottom:function(){
+        //     console.log("到达底部了");
+        //     let _this = this;
+        //     return new Promise(resolve => {
+        //         setTimeout(()=>{
+        //             //this.$http.defaults.withCredentials = false;
+        //             this.$http.post("/myapi/perftask/list",{
+        //                 header:{},
+        //                 data:{
+        //                     pageno:_this.pNo+1,
+        //                 },
+        //             }).then(function(response){
+        //                 console.log("触底响应",response.headers.pageno);
+        //                 console.log(response);
+        //                 _this.perftaskOpts = response.data.resultList.map(item=>{
+        //                     return {
+        //                         value:item.id,
+        //                         label:item.perftask_name,
+        //                     }
+        //                 });
+        //                 _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskOpts);
+        //                 console.log(_this.perftaskOpts);
+        //                 if(_this.pNo < response.headers.totalpage){
+        //                     _this.pNo++;
+        //                 }else{
+        //                     console.log("没有更多了")
+        //                 }
+        //             })
+        //         },200)
+        //     })
+        // },
         /**=========================================执行模态框事件==================================== */
         
         /**确认事件 */
@@ -1459,6 +1456,7 @@ export default {
         /**=============================监控配置事件=============================== */
         moniterListCase:function(){
             let _this = this;
+            _this.isLoading = true;
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/list',{
                 header:{},
@@ -1479,7 +1477,7 @@ export default {
                 _this.showSearchTable = true;
                 _this.timer = setTimeout(() => {
                     _this.isLoading = false;
-                }, 2000);
+                }, 1000);
                 console.log(response);
                 console.log(_this.moniterTableData);
 
@@ -1494,7 +1492,6 @@ export default {
             this.moniterPageNo = 1;
             console.log('监控取消事件');
             this.monitorList = [];    //清空翻页保存的数据
-            this.isLoading = true;
             clearInterval(this.timer)
         },
         /**确认事件 */
@@ -1508,7 +1505,6 @@ export default {
                 this.showSearchTable = true;
                 this.moniterPageNo = 1;
                 this.monitorList = [];
-                this.isLoading = true;
                 clearInterval(this.timer);
             }
             console.log(this.editCount);
@@ -1581,6 +1577,9 @@ export default {
                     }
                 }).then(function(response){
                     console.log(response);
+                     _this.timer = setInterval(() => {
+                        _this.isLoading = false;
+                    }, 2000);
                     console.log(_this.moniterValidate.sComponent);
                     _this.showSearchTable = false;
                     _this.moniterTableData = response.data.resultList;
@@ -1589,9 +1588,6 @@ export default {
                     if(response.data.resultList != undefined || response.data.resultList != [] ){
                         _this.subSysName_new = response.data.resultList[0].subSysName;
                     }
-                    _this.timer = setInterval(() => {
-                        _this.isLoading = false;
-                    }, 2000);
                     //_this.moniterReset();
                 })
             }
@@ -1600,6 +1596,7 @@ export default {
         moniterPageChange:function(moniterPageNo){
             console.log(moniterPageNo);
             let _this = this;
+            _this.isLoading = true;
             _this.moniterPageNo = moniterPageNo;
             if(_this.showSearchTable){
                 console.log("原始表格");
@@ -1644,33 +1641,33 @@ export default {
         moniterSave:function(){
             let _this = this;
             //本身数据表格
-             if(_this.showSearchTable){
-                 console.log("原始表格");
-                 _this.moniterSelectedData= [];
-                for(var i=0;i<_this.moniterTableData.length;i++){
-                    if(_this.moniterTableData[i]._checked == true){
-                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
-                    }
-                }
-                console.log("选中的数据",_this.moniterSelectedData);
-                if(_this.moniterSelectedData.length > 0){
-                    _this.monitorList = _this.moniterSelectedData.map(item=>{
-                        return item.servPartId;
-                    })
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
-                        header:{},
-                        data:{
-                            selected_monitor_list:_this.monitorList,
-                            senarioid:_this.monitor_senario_id,
-                        },
-                    }).then(function(response){
-                        _this.moniterListCase();
-                    });
-                }else{
-                    console.log("未选中");
-                }
-             }else{
+            //  if(_this.showSearchTable){
+            //      console.log("原始表格");
+            //      _this.moniterSelectedData= [];
+            //     for(var i=0;i<_this.moniterTableData.length;i++){
+            //         if(_this.moniterTableData[i]._checked == true){
+            //             _this.moniterSelectedData.push(_this.moniterTableData[i]);
+            //         }
+            //     }
+            //     console.log("选中的数据",_this.moniterSelectedData);
+            //     if(_this.moniterSelectedData.length > 0){
+            //         _this.monitorList = _this.moniterSelectedData.map(item=>{
+            //             return item.servPartId;
+            //         })
+            //         //this.$http.defaults.withCredentials = false;
+            //         this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
+            //             header:{},
+            //             data:{
+            //                 selected_monitor_list:_this.monitorList,
+            //                 senarioid:_this.monitor_senario_id,
+            //             },
+            //         }).then(function(response){
+            //             _this.moniterListCase();
+            //         });
+            //     }else{
+            //         console.log("未选中");
+            //     }
+            //  }else{
                  console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
                 for(var i=0;i<_this.moniterTableData.length;i++){
@@ -1695,7 +1692,6 @@ export default {
                                     data:{
                                         monitorList:_this.monitorList,
                                         senarioid:_this.monitor_senario_id,
-                                        preSubSysName:_this.subSysName_old,
                                     },
                                 }).then(function(response){
                                     _this.moniterListCase();
@@ -1717,7 +1713,6 @@ export default {
                             data:{
                                 monitorList:_this.monitorList,
                                 senarioid:_this.monitor_senario_id,
-                                preSubSysName:_this.subSysName_old,
                             },
                         }).then(function(response){
                             _this.moniterListCase();
@@ -1726,7 +1721,7 @@ export default {
                 }else{
                     _this.$Message.error("至少选择一条数据");
                 }
-            }
+           // }
         },
         /**自定义监控添加 */
         moniterAdd:function(){
@@ -1756,6 +1751,7 @@ export default {
             }, 200);
         },
         /**下拉框下拉加载 */
+
         openMonitorAddChange:function(openStatus){
             let _this =this;
             if(openStatus){
@@ -1826,6 +1822,17 @@ export default {
                 if(_this.moniterTableData[i].servPartId == selection.servPartId){
                     _this.moniterTableData[i]._checked = false;
                 }
+            }
+        },
+        /**全选 */
+        moniterOnSelectionAll:function(){
+            for(var i=0;i<this.moniterTableData.length;i++){
+                this.moniterTableData[i]._checked = true;
+            }
+        },
+        onMonitorSelectCancelAll:function(){
+            for(var i=0;i<this.moniterTableData.length;i++){
+                this.moniterTableData[i]._checked = false;
             }
         },
         // onMonitorSelectCancel:function(row,selection){
