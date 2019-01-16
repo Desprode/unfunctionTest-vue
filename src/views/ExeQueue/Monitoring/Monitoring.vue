@@ -355,7 +355,7 @@
                         onOk: () => {
                             var deaa=  this.$route.query.executor_id;
                             var deaa = []
-                            console.log('是否数组',deaa)
+                            console.log('数组',deaa)
                             this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
