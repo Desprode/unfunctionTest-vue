@@ -36,7 +36,7 @@
                         <Button @click="addMachine"  type="primary">新增</Button>
                         <Button @click="deleteMachine" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" :loading="isLoading"></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -216,6 +216,7 @@ export default {
         return {
             rowid:'',
             srchCmploading: false,
+            isLoading:false,
             cmpOpts: [],
             list: [], 
             sTaskStatus:'',
@@ -458,20 +459,7 @@ export default {
         //deploy  the machine  begin
         deployMachine (ip,userName,userPwd) {
             let _this = this;
-            _this.$Spin.show({
-                    render: (h) => {
-                        return h('div', [
-                            h('Icon', {
-                                'class': 'demo-spin-icon-load',
-                                props: {
-                                    type: 'load-c',
-                                    size: 18
-                                }
-                            }),
-                            h('div', '机器'+ip+'部署中...')
-                        ])
-                    }
-                });
+            _this.isLoading = true;
             this.$http.post('/myapi/machine/exe',{
                 data:{
                     ip:ip,
@@ -479,7 +467,7 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
-                _this.$Spin.hide();
+                
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
@@ -488,30 +476,18 @@ export default {
                     }else{
                         _this.$Message.error(ip+'部署失败,'+response.data.err_desc);
                     }
+                    _this.isLoading = false;
                     _this.listCase();
                 }
             }).catch(function(error){
                 console.log('deploy :'+error);
-                _this.$Spin.hide();
+                _this.isLoading = false;
             })
         },  
         //restart the machine 
         restartMachine (id,ip,userName,userPwd) {
             let _this = this;
-            _this.$Spin.show({
-                    render: (h) => {
-                        return h('div', [
-                            h('Icon', {
-                                'class': 'demo-spin-icon-load',
-                                props: {
-                                    type: 'load-c',
-                                    size: 18
-                                }
-                            }),
-                            h('div', '机器'+ip+'重启中...')
-                        ])
-                    }
-                });
+            _this.isLoading = true;
             this.$http.post('/myapi/machine/resetAgent',{
                 data:{
                     id:id,
@@ -520,7 +496,6 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
-                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
@@ -529,31 +504,33 @@ export default {
                     }else{
                         _this.$Message.error(ip+'重启失败,'+response.data.err_desc);
                     }
+                    _this.isLoading = false;
                     _this.listCase();
                     
                 }
             }).catch(function(error){
                 console.log('restart :'+error);
-                _this.$Spin.hide();
+                _this.isLoading = false;
             })
         },  
         // stop the machine begin
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
-            _this.$Spin.show({
-                    render: (h) => {
-                        return h('div', [
-                            h('Icon', {
-                                'class': 'demo-spin-icon-load',
-                                props: {
-                                    type: 'load-c',
-                                    size: 18
-                                }
-                            }),
-                            h('div', '机器'+ip+'停止中...')
-                        ])
-                    }
-                });
+            _this.isLoading = true;
+            // _this.isLoading.show({
+            //         render: (h) => {
+            //             return h('div', [
+            //                 h('Icon', {
+            //                     'class': 'demo-spin-icon-load',
+            //                     props: {
+            //                         type: 'load-c',
+            //                         size: 18
+            //                     }
+            //                 }),
+            //                 h('div', '机器'+ip+'停止中...')
+            //             ])
+            //         }
+            //     });
             this.$http.post('/myapi/machine/stopAgent',{
                 data:{
                     id:id,
@@ -562,7 +539,6 @@ export default {
                     userPwd:userPwd
                 }
             }).then(function(response){
-                _this.$Spin.hide();
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
@@ -571,11 +547,12 @@ export default {
                     }else{
                         _this.$Message.error(ip+'停止失败,'+response.data.err_desc);
                     }
+                    _this.isLoading = false;
                     _this.listCase();
                 }
             }).catch(function(error){
                 console.log('stop :'+error);
-                _this.$Spin.hide();
+                _this.isLoading = false;
             })
         },  
         // stop the machine end
