@@ -9,7 +9,7 @@
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
             <div align="left">
-                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{starttime}}</font>
+                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{starttime}}秒</font>
             </div></br>
             <div align="left">  
                         <font size="3" color="#01babc"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
@@ -55,12 +55,12 @@
                 //let cuDate = new Date();
                 if(start_time != null){
                 if(timdate.starttime != 'null'){
-                    console.log('时间',curDate);
                     let cuDate = new Date(start_time);
-                    console.log('时间222',((curDate.getTime() - cuDate.getTime())/1000)+48);
-                    timdate.starttime = ((curDate.getTime() - cuDate.getTime())/1000)+48
+                    timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
                 }
             }else if(timdate.start_time == null) {
+                    timdate.starttime = '0.000'
+                }else if(timdate.start_time == '计算压力机资源控进程开始') {//计算压力机资源控进程开始
                     timdate.starttime = '0.000'
                 }
             }
@@ -228,8 +228,8 @@
                 
             },
             created(){
-                //this.pressCase();
-                //this.listCase();
+                this.pressCase();
+                this.listCase();
                 this.initWs();
     
                 this.getServerInfo();
@@ -348,14 +348,15 @@
              //停止
         deleteData: function() {                //调用方法将原有数据中对应的id停止
             let _this = this;
+            let deaa =[];
                 if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
                         content: '是否停止该数据',
                         onOk: () => {
-                            var deaa=  this.$route.query.executor_id;
-                            var deaa = []
-                            console.log('数组',deaa)
+                            let deaa = [];
+                            deaa.push(this.$route.query.executor_id)
+                            console.log('是否数组',deaa)
                             this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
