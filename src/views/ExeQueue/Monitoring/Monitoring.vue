@@ -57,10 +57,12 @@
                 if(timdate.starttime != 'null'){
                     let cuDate = new Date(start_time);
                     timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
+                    console.log('秒',(imdate.starttime/1000%60))
+                    console.log('分',(imdate.starttime/1000/60%60))
+                    console.log('时',(imdate.starttime/1000/60/60%24))
+                    console.log('天',(imdate.starttime/1000/60/60/24))
                 }
             }else if(timdate.start_time == null) {
-                    timdate.starttime = '0.000'
-                }else if(timdate.start_time == '计算压力机资源控进程开始') {//计算压力机资源控进程开始
                     timdate.starttime = '0.000'
                 }
             }
@@ -328,13 +330,11 @@
                 var status = e.data
                 var cuttingl = status.substr(1)   //截取0的数据
                 this.statuszt = eval('('+cuttingl+')')
-                console.log('状态++++++++',this.statuszt.exe_description)
                  if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
                     start_time = this.statuszt.exe_time;
                 }
                 if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
                     this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
-                    console.log("13位毫秒", this.timedate);
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                    // timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
@@ -342,6 +342,9 @@
                    // timestampl = timestamp - 300;
                     this.intervalFunc = setInterval(this.listCase, 30000);
                     this.intervalFuncc = setInterval(this.pressCase, 30000);
+                }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
+                    this.statuszt.exe_description = '测试准备中'
+                    start_time = null
                 }
              }
               },
@@ -405,12 +408,10 @@
                         for(var i=0;i<arr.length;i++){
                             if(arr[i].cpuUserPercent == null){
                                 _this.tableData[i].cpuUserPercent = '--'
-                                console.log('123456789')
                             }else {
                                 _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100;
                                  if (String(_this.tableData[i].cpuUserPercent).indexOf('.') > -1)
                                  _this.tableData[i].cpuUserPercent = _this.tableData[i].cpuUserPercent.toFixed(2);
-                                console.log('987654321')
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
@@ -504,16 +505,13 @@
                         for(var i=0;i<ccc.length;i++){
                             if(ccc[i].cpuNum == null){
                                 _this.tableDatal[i].cpuNum = '--'
-                                console.log('123')
                             }else {
                                 var aaa = ccc[i].memSize/1024
                                 var cccc = Math.round(aaa)    //四舍五入  Math.ceil() 向上取整
                                 console.log(cccc)
                                 _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'c'+cccc+'G'
-                                console.log('321')
                             }if(ccc[i].cpuUsedPercent == null){
                                 _this.tableDatal[i].cpuUsedPercent = '--'
-                                console.log('123')
                             }else {
                                 _this.tableDatal[i].cpuUsedPercent=ccc[i].cpuUsedPercent*100;
                                 if (String(_this.tableDatal[i].cpuUsedPercent).indexOf('.') > -1)
@@ -534,8 +532,6 @@
                                  _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
                             }
                         }
-                        console.log('+++++++++++++++++',_this.tableDatal)
-
                     })
                 },
                 //压力机资源跳转
