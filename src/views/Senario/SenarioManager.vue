@@ -1457,17 +1457,6 @@ export default {
         moniterListCase:function(){
             let _this = this;
             _this.isLoading = true;
-            for(var i=0;i<_this.moniterTableData.length;i++){
-                if(_this.moniterTableData[i]._checked == true){
-                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
-                }
-            }
-            if(_this.moniterSelectedData.length > 0){
-                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
-                    return item.id;
-                })
-                console.log("翻页数据",_this.monitorListPage);
-            }
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/list',{
                 header:{},
@@ -1571,17 +1560,17 @@ export default {
             if(_this.showSearchTable){
                 this.moniterPageNo = 1;
             }
-            for(var i=0;i<_this.moniterTableData.length;i++){
-                if(_this.moniterTableData[i]._checked == true){
-                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
-                }
-            }
-            if(_this.moniterSelectedData.length > 0){
-                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
-                    return item.id;
-                })
-                console.log("翻页数据",_this.monitorListPage);
-            }
+            // for(var i=0;i<_this.moniterTableData.length;i++){
+            //     if(_this.moniterTableData[i]._checked == true){
+            //         _this.moniterSelectedData.push(_this.moniterTableData[i]);
+            //     }
+            // }
+            // if(_this.moniterSelectedData.length > 0){
+            //     _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+            //         return item.id;
+            //     })
+            //     console.log("翻页数据",_this.monitorListPage);
+            // }
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
@@ -1620,6 +1609,19 @@ export default {
             let _this = this;
             _this.isLoading = true;
             _this.moniterPageNo = moniterPageNo;
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i]._checked == true){
+                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                }
+            }
+            if(_this.moniterSelectedData.length > 0){
+                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+                    return item.id;
+                })
+                
+            }
+            _this.monitorListPage = [...new Set(_this.monitorListPage)];
+            console.log("翻页数据",_this.monitorListPage);
             if(_this.showSearchTable){
                 console.log("原始表格");
                 _this.moniterListCase();
