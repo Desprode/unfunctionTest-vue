@@ -57,8 +57,8 @@
                 if(timdate.starttime != 'null'){
                     console.log('时间',curDate);
                     let cuDate = new Date(start_time);
-                    console.log('时间222',curDate.getTime() - curDate.getTime() - cuDate.getTime()/1000 );
-                    timdate.starttime = (curDate.getTime() - cuDate.getTime())/1000
+                    console.log('时间222',((curDate.getTime() - cuDate.getTime())/1000)+48);
+                    timdate.starttime = ((curDate.getTime() - cuDate.getTime())/1000)+48
                 }
             }else if(timdate.start_time == null) {
                     timdate.starttime = '0.000'
