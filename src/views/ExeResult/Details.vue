@@ -31,7 +31,7 @@
                     <Input type="textarea" :autosize="{minRows: 3,maxRows: 7}" placeholder="请输入..."  v-model="result_desc" ></Input>
             </FormItem>
             <Form-item align="center">
-                <i-button type="error" style="margin-left: 8px">取消</i-button>
+                <i-button type="error" @click="cancelResult" style="margin-left: 8px" >取消</i-button>
                 <Button type="primary" @click="saveResult">保存</Button>
                 <i-button type="primary">提交缺陷</i-button>
             </Form-item>
@@ -71,7 +71,27 @@
                     },
                     {
                         title: 'jmeter日志',
-                        key: 'jmeter_log_url'
+                        key:'jmeterlog',
+                        render:(h,params)=>{
+                            //href="/testresult/downloadjmeterlog/1715?executorid=1547695895761&infoid=17"
+                            //let url = params.row.jmeter_log_url
+                            return h('div',[
+                                h('a',{
+                                    props:{
+                                        type:'primary',
+                                        size:'small'
+                                    },
+                                    style:{
+                                     marginRight:'5px'
+                                    },
+                                    on:{
+                                        click:()=> {
+                                            this.downloadLog(params.row.jmeterlog)
+                                        }
+                                    }
+                                },params.row.jmeterlog)
+                            ])
+                        }
                     },
                     {
                         title: 'JTL日志',
@@ -205,22 +225,51 @@
                     _this.tableDatas =  response.data.result;
                     // _this.result_is_pass = response.data.resultList.result_is_pass.toString();
                     // _this.result_desc = response.data.resultList.result_desc;
-                    // if(response.status == 500){
-                    //     _this.$Message.error('服务端错误!');
-                    // }else{
-                    //     if("ok" == response.data.result){
-                    //         _this.$Message.success('修改成功!');
-                    //         console.log("修改成功");
-                    //         _this.resulCase();
-                    //     }else{
-                    //         _this.$Message.error('修改失败,'+response.data.err_desc);
-                    //         return;
-                    //     }
-                    // }
+                    if(response.status == 500){
+                        _this.$Message.error('服务端错误!');
+                    }else{
+                        if("ok" == response.data.result){
+                            _this.$Message.success('保存成功!');
+                            console.log("修改成功");
+                            _this.resulCase();
+                        }else{
+                            _this.$Message.error('保存失败,'+response.data.err_desc);
+                            return;
+                        }
+                    }
                 })
                 console.log("保存功能");
             },
-            /**下载*/
+            //取消
+            cancelResult:function(){
+                window.history.go(-1);
+            },
+            /**日志下载*/
+            downloadLog:function(jmeterlog){
+                let _this = this;
+                console.log("jmeterlog",jmeterlog);
+                var executor_id = this.$route.query.executor_id;
+                this.$http.post('/myapi/testresult/download',{
+                    data:{
+                        executor_id:executor_id,
+                    }
+                }).then(function(response){
+                    var blob = new Blob([response.data]);
+                    if (window.navigator.msSaveOrOpenBlob) {
+                        // 兼容IE10
+                        navigator.msSaveBlob(blob,jmeterlog)
+                    } else {
+                        let url = window.URL.createObjectURL(blob);
+                        let link = document.createElement('a');
+                        link.style.display = 'none';
+                        link.href = url;
+                        link.setAttribute('download',jmeterlog);
+                        document.body.appendChild(link);
+                        link.click();
+                    }
+                })
+            },
+            /**报告下载*/
             downloadCase:function(){
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;
