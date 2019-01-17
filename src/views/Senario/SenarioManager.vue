@@ -574,6 +574,7 @@ export default {
                                     click: () => {
                                         let _this = this;
                                         _this.id = item.row.senario_id;
+                                        _this.showExeType =  item.row.senario_type;
                                         //this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/senario/execStatus',{
                                             header:{},
@@ -665,6 +666,7 @@ export default {
             totalPage:0,                           //共多少页
             /**====================执行模态框数据=================== */
             showExeModal:false,                  //执行窗口
+            showExeType:'',
             eveValidate: {        
                 exeType:'1',                             //执行类型
                 exeDateTime:new Date(),                         //执行时间
@@ -721,7 +723,8 @@ export default {
             scomponentOpts:[],
             id:'',   
             monitor_senario_id:'', 
-            monitorList:[],                                 
+            monitorList:[], 
+            monitorListPage:[],                                
             moniterPageNo:1,
             moniterPageSize:10,
             moniterTotalCount:0,                         //共多少条数据
@@ -1369,7 +1372,8 @@ export default {
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='1';
                     _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.executor_id,senario_name:response.data.resultMap.senario_name,
-                    senario_id:response.data.resultMap.senario_id
+                    senario_id:response.data.resultMap.senario_id,
+                    senario_type:_this.showExeType,
                     }});
                 })
             }else{
@@ -1388,7 +1392,8 @@ export default {
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='0';
                     _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name,
-                    senario_id:response.data.resultMap.senario_id
+                    senario_id:response.data.resultMap.senario_id,
+                    senario_type:_this.showExeType,
                     }});
                 })
             }
@@ -1398,11 +1403,6 @@ export default {
             this.showExeModal = false;
             this.eveValidate.exeType='1';
         },
-
-
-
-
-
         /**================================设置模态框事件================================ */
         setOk:function(name){
             this.$refs[name].validate((valid) => {
@@ -1457,6 +1457,17 @@ export default {
         moniterListCase:function(){
             let _this = this;
             _this.isLoading = true;
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i]._checked == true){
+                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                }
+            }
+            if(_this.moniterSelectedData.length > 0){
+                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+                    return item.id;
+                })
+                console.log("翻页数据",_this.monitorListPage);
+            }
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/list',{
                 header:{},
@@ -1464,7 +1475,7 @@ export default {
                     id:_this.id,
                     pageNo:_this.moniterPageNo,
                     pageSize:_this.moniterPageSize,
-                    pageChecked:_this.monitorList,
+                    pageChecked:_this.monitorListPage,
                 }
             }).then(function(response){
                 console.log(response.data.resultList);
@@ -1491,7 +1502,7 @@ export default {
             this.monitorAddShow = false;
             this.moniterPageNo = 1;
             console.log('监控取消事件');
-            this.monitorList = [];    //清空翻页保存的数据
+            this.monitorListPage = [];    //清空翻页保存的数据
             clearInterval(this.timer)
         },
         /**确认事件 */
@@ -1504,7 +1515,7 @@ export default {
                 this.monitorAddShow = false;
                 this.showSearchTable = true;
                 this.moniterPageNo = 1;
-                this.monitorList = [];
+                this.monitorListPage = [];
                 clearInterval(this.timer);
             }
             console.log(this.editCount);
@@ -1560,6 +1571,17 @@ export default {
             if(_this.showSearchTable){
                 this.moniterPageNo = 1;
             }
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i]._checked == true){
+                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                }
+            }
+            if(_this.moniterSelectedData.length > 0){
+                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+                    return item.id;
+                })
+                console.log("翻页数据",_this.monitorListPage);
+            }
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
@@ -1573,7 +1595,7 @@ export default {
                         prodIp:_this.moniterValidate.ip,
                         pageNo:_this.moniterPageNo,
                         pageSize:_this.moniterPageSize,
-                        pageChecked:_this.monitorList,
+                        pageChecked:_this.monitorListPage,
                     }
                 }).then(function(response){
                     console.log(response);
@@ -1600,29 +1622,9 @@ export default {
             _this.moniterPageNo = moniterPageNo;
             if(_this.showSearchTable){
                 console.log("原始表格");
-                for(var i=0;i<_this.moniterTableData.length;i++){
-                    if(_this.moniterTableData[i]._checked == true){
-                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
-                    }
-                }
-                if(_this.moniterSelectedData.length > 0){
-                    _this.monitorList = _this.moniterSelectedData.map(item=>{
-                        return item.servPartId;
-                    })
-                }
                 _this.moniterListCase();
             }else{
                 console.log("搜索后表格",_this.moniterTableData);
-                for(var i=0;i<_this.moniterTableData.length;i++){
-                    if(_this.moniterTableData[i]._checked == true){
-                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
-                    }
-                }
-                if(_this.moniterSelectedData.length > 0){
-                    _this.monitorList = _this.moniterSelectedData.map(item=>{
-                        return item.id;
-                    })
-                }
                 _this.moniterCase();
             }; 
         },
@@ -1641,39 +1643,31 @@ export default {
         moniterSave:function(){
             let _this = this;
             //本身数据表格
-            //  if(_this.showSearchTable){
-            //      console.log("原始表格");
-            //      _this.moniterSelectedData= [];
-            //     for(var i=0;i<_this.moniterTableData.length;i++){
-            //         if(_this.moniterTableData[i]._checked == true){
-            //             _this.moniterSelectedData.push(_this.moniterTableData[i]);
-            //         }
-            //     }
-            //     console.log("选中的数据",_this.moniterSelectedData);
-            //     if(_this.moniterSelectedData.length > 0){
-            //         _this.monitorList = _this.moniterSelectedData.map(item=>{
-            //             return item.servPartId;
-            //         })
-            //         //this.$http.defaults.withCredentials = false;
-            //         this.$http.post("/myapi/monitorSetting/addSelectedMachine",{
-            //             header:{},
-            //             data:{
-            //                 selected_monitor_list:_this.monitorList,
-            //                 senarioid:_this.monitor_senario_id,
-            //             },
-            //         }).then(function(response){
-            //             _this.moniterListCase();
-            //         });
-            //     }else{
-            //         console.log("未选中");
-            //     }
-            //  }else{
                  console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
+            if(_this.showSearchTable){
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
                         _this.moniterSelectedData.push(_this.moniterTableData[i]);
                     }
+                };
+                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                    return item.servPartId;
+                });
+                this.$http.post("/myapi/monitorSetting/addMachine",{
+                    header:{},
+                    data:{
+                        monitorList:_this.monitorList,
+                        senarioid:_this.monitor_senario_id,
+                    },
+                }).then(function(response){
+                    _this.moniterListCase();
+                });
+            }else{
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    };
                 }
                 if(_this.moniterSelectedData.length > 0){
                     if(_this.subSysName_old !== _this.subSysName_new ){
@@ -1721,8 +1715,8 @@ export default {
                 }else{
                     _this.$Message.error("至少选择一条数据");
                 }
-           // }
-        },
+            }
+        }, 
         /**自定义监控添加 */
         moniterAdd:function(){
             this.monitorAddShow = true;

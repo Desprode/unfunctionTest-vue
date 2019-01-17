@@ -1241,7 +1241,7 @@
             //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
 
             //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
-            flushFlag = false;
+            this.flushFlag = false;
 
             for (var i = 0; i < this.datapos_cpu.length; i++) {
                 var flag = false;
@@ -1378,7 +1378,7 @@
             this.myChart_net.clear();
             this.myChart_net.setOption(this.option_net);
             //恢复定时刷新
-            flushFlag = true;
+            this.flushFlag = true;
 
             },
                 
