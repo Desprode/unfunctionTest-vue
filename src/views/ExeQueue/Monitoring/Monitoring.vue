@@ -1,21 +1,21 @@
 ﻿ <template>
     <div>
         <div align="left">
-                <font size="5" color="#01babc">实时监控</font>
+                <font size="5" color="#330000">实时监控</font>
         </div></br>
                 <!--<div align="right" >右对齐，<div align="left" >左对齐  deleteCase-->
                 <Button style="float:right" @click="deleteData">停止</Button>
             <div align="left">
-                <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
+                <font size="3" color="#330000">场景名称:{{senario_name}}</font>
             </div></br>
             <div align="left">
-                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{result}}</font>
+                        <font size="3" color="#330000" v-model="result">已运行时间:{{result}}</font>
             </div></br>
             <div align="left">  
-                        <font size="3" color="#01babc"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
+                        <font size="3" color="#330000"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
             </div>
             <div align="left">
-                <font size="3" color="#01babc">详细描述:</font>
+                <font size="3" color="#330000">详细描述:</font>
                 <Input style="width:400px"  readonly="readonly"  type="textarea" :autosize="{minRows:2,maxRows:3}" v-model="describe">{{describe}}</Input>
             </div>
         <div align="left">
@@ -48,7 +48,7 @@
         let timestampl = null;
     export default {
         beforeMount(){
-            setInterval(getflush,1000)
+        this.stopes= setInterval(getflush,1000)
             let timdate = this
             function getflush(){
                 let curDate = new Date();
@@ -131,7 +131,7 @@
                             key: 'cpuUsedPercent'
                         },
                         {
-                            title: 'Men%',
+                            title: 'MEM%%',
                             key: 'memoryUsedPercent'
                         },
                         {
@@ -183,11 +183,11 @@
                             children: [
                                 {
                                     title: 'used',
-                                    key: 'memoryBufferPercent',
+                                    key: 'memoryUsedPercent',
                                 },
                                 {
-                                    title: 'used-cache%buffer',
-                                    key: 'memoryCachePercent',
+                                    title: 'cache+buffer',
+                                    key: 'memoryBufferPercent',
                                 },
                             ]
                         },
@@ -197,16 +197,20 @@
                             children: [
                                 {
                                     title: 'IOPS',
+                                    key: 'iops',
+                                },
+                                {
+                                    title: 'ioread',
                                     key: 'ioRead',
                                 },
                                 {
-                                    title: 'IO-read%wirte',
+                                    title: 'ioWrite',
                                     key: 'ioWrite',
                                 },
                             ]
                         },
                         {
-                            title: 'network',
+                            title: 'network(KB)',
                             align: 'center',
                             children: [
                                 {
@@ -232,6 +236,7 @@
                     pressureAgentInfo: {},
                     intervalFunc:null,
                     intervalFuncc:null,
+                    stopes:null,
                 }
             },
             beforeDestroy(){
@@ -240,6 +245,8 @@
 
             clearInterval(this.intervalFuncc);
             this.intervalFuncc = null;
+            clearInterval(this.stopes);
+            this.stopes = null;
         },
             mounted(){
                 
@@ -352,14 +359,13 @@
                     this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                   // timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
-                   // console.log("时间++++++：",timestamp);
-                   // timestampl = timestamp - 300;
                     this.intervalFunc = setInterval(this.listCase, 2000);
                     this.intervalFuncc = setInterval(this.pressCase, 2000);
                 }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
                     this.statuszt.exe_description = '测试准备中'
                     start_time = null
+                }if(this.statuszt.exe_description === '测试执行结束'){
+                    this.intervalFuncc = false
                 }
              }
               },
@@ -374,7 +380,6 @@
                         onOk: () => {
                             let deaa = [];
                             deaa.push(this.$route.query.executor_id)
-                            console.log('是否数组',deaa)
                             this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/testresult/runtests/cancel",{
                                 header:{},
@@ -383,6 +388,8 @@
                                 }
                             }).then(function(){
                                 _this.$Message.info('停止成功');
+                                _this.$router.push({path:'/ExeQueue',query:{}});
+                                
                             })
                         },
                         onCancel: () => {
@@ -397,7 +404,6 @@
                  listCase: function() {
                     let _this = this;
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
-                    console.log("第二个页面接收的ID",executor_id);
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值  this.$route.query.senario_type为1的话 不显示后两个列表
                     var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
                     var timestamp = timestampl - 300;
@@ -442,45 +448,52 @@
                                 if (String(_this.tableData[i].cpuIOWaitPercent).indexOf('.') > -1)
                                  _this.tableData[i].cpuIOWaitPercent = _this.tableData[i].cpuIOWaitPercent.toFixed(2);
                             }
+                            if(arr[i].memoryUsedPercent == null){
+                                _this.tableData[i].memoryUsedPercent = '--'
+                            }else {
+                                _this.tableData[i].memoryUsedPercent=arr[i].memoryUsedPercent*100;
+                                if (String(_this.tableData[i].memoryUsedPercent).indexOf('.') > -1)
+                                 _this.tableData[i].memoryUsedPercent = _this.tableData[i].memoryUsedPercent.toFixed(2);
+                            }
                             if(arr[i].memoryBufferPercent == null){
                                 _this.tableData[i].memoryBufferPercent = '--';
                             }else {
-                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100;
+                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100 + arr[i].memoryCachePercent*100;
                                 if (String(_this.tableData[i].memoryBufferPercent).indexOf('.') > -1)
                                  _this.tableData[i].memoryBufferPercent = _this.tableData[i].memoryBufferPercent.toFixed(2);
                             }
-                            if(arr[i].memoryCachePercent == null){
-                                _this.tableData[i].memoryCachePercent = '--';
-                            }else {
-                                _this.tableData[i].memoryCachePercent=arr[i].memoryCachePercent*100;
-                                if (String(_this.tableData[i].memoryCachePercent).indexOf('.') > -1)
-                                 _this.tableData[i].memoryCachePercent = _this.tableData[i].memoryCachePercent.toFixed(2);
-                            }
-                            if(arr[i].ioRead == null){
+                            if(arr[i].ioRead == null&&arr[i].ioRead == 0){
                                 _this.tableData[i].ioRead = '--';
                             }else {
                                 _this.tableData[i].ioRead=arr[i].ioRead*100;
                                 if (String(_this.tableData[i].ioRead).indexOf('.') > -1)
                                  _this.tableData[i].ioRead = _this.tableData[i].ioRead.toFixed(2);
                             }
-                            if(arr[i].ioWrite == null){
+                            if(arr[i].ioWrite == null&&arr[i].ioWrite == 0){
                                 _this.tableData[i].ioWrite = '--';
                             }else {
                                 _this.tableData[i].ioWrite=arr[i].ioWrite*100;
                                 if (String(_this.tableData[i].ioWrite).indexOf('.') > -1)
                                  _this.tableData[i].ioWrite = _this.tableData[i].ioWrite.toFixed(2);
                             }
+                            if(arr[i].iops == null){
+                                _this.tableData[i].iops = '--'
+                            }else {
+                                _this.tableData[i].iops=arr[i].iops*100;
+                                if (String(_this.tableData[i].iops).indexOf('.') > -1)
+                                 _this.tableData[i].iops = _this.tableData[i].iops.toFixed(2);
+                            }
                             if(arr[i].netRead == null){
                                 _this.tableData[i].netRead = '--';
                             }else {
-                                _this.tableData[i].netRead=arr[i].netRead*100;
+                                _this.tableData[i].netRead=arr[i].netRead/1024;
                                 if (String(_this.tableData[i].netRead).indexOf('.') > -1)
                                  _this.tableData[i].netRead = _this.tableData[i].netRead.toFixed(2);
                             }
                             if(arr[i].netWrite == null){
                                 _this.tableData[i].netWrite = '--';
                             }else {
-                                _this.tableData[i].netWrite=arr[i].netWrite*100;
+                                _this.tableData[i].netWrite=arr[i].netWrite/1024;
                                 if (String(_this.tableData[i].netWrite).indexOf('.') > -1)
                                  _this.tableData[i].netWrite = _this.tableData[i].netWrite.toFixed(2);
                             }
@@ -502,9 +515,7 @@
                 pressCase: function() {
                     let _this = this;
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值 '+this.$route.query.executor_id+'
-                    console.log("第二个页面接收的ID+++",executor_id);
                     var senario_name = this.$route.query.senario_name; 
-                    console.log("第二个页面接收的场景名称",senario_name);
                     var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
                     var timestamp = timestampl - 300;
                     this.$http.defaults.withCredentials = false;
@@ -554,7 +565,7 @@
                     var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                     this.pressureAgentInfo.start= start;
                     this.pressureAgentInfo.selected = row.prodIp;
-                    this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo}});
+                    this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo,row:row}});
                     console.log('这个是',this.pressureAgentInfo)
                 },
                 //服务器资源跳转
