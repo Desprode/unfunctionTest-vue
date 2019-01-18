@@ -1825,7 +1825,7 @@ export default {
                 }
                     _this.monitorListPage.splice(i,1);
             }
-             console.log("选中的数据",this.moniterTableData);
+            //console.log("选中的数据",this.moniterTableData);
         },
         /**全选 */
         moniterOnSelectionAll:function(){
