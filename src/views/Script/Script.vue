@@ -33,9 +33,9 @@
                 <div class="tableBox">
                     <div class="tableBtnBox">                       
                         <Button @click="addScript"  type="primary">新增</Button>
-                        <!-- <Button @click="deleteScript" type="error">删除</Button> -->
+                        <Button @click="deleteScript" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border highlight-row  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" ></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -273,9 +273,30 @@ export default {
             pageNo:'',
             columns: [
             	{
-                    type: 'selection',
-                    width: 50,
-                    align: 'center'
+                    title: '选择',
+                    align: 'center',
+                    width: 60,
+                    key:'id',
+                    render:(h,params)=>{
+                        return h('div',[
+                            h('Checkbox',{
+                                props:{
+                                    value:params.row.id
+                                },
+                                on:{
+                                    'on-cange':(e)=>{
+                                        console.log("e111111111111eeeeeeeeeeeeeeeeeee",e)
+                                        this.tableData.forEach((items)=>{
+                                            //先取消所选的对象
+                                            this.$set(items,'checkBox',false)
+                                        });
+                                            //再将勾选的对象设置为true
+                                        this.tableData[params.index].id = e;
+                                    }
+                                }
+                            })
+                        ])
+                    }
                 },
                 {
                     title: '脚本名称',
@@ -310,7 +331,7 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:290,
+                    width:200,
                     render: (h, item) => {
                         return h('div', [
                             h('Button', {
@@ -323,7 +344,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showSetScript = true;
+                                        
                                         console.log(item.row);
                                         let _this = this;
                                         // this.$http.defaults.withCredentials = false;
@@ -333,16 +354,23 @@ export default {
                                             }
                                         }).then(function(response){
                                             console.log("script编辑接口",response.data);
-                                            _this.setValidate.script_name= response.data.resultList[0].script_name;
-                                            _this.setValidate.script_id= response.data.resultList[0].script_id;
-                                            _this.setValidate.app_name= response.data.resultList[0].app_name;
-                                            _this.setValidate.memo= response.data.resultList[0].memo;
-                                            _this.setValidate.create_time= response.data.resultList[0].created_time;
-                                            _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                            _this.filesize=response.data.resultList[0].script_filesize,
-                                            _this.script_filepath=response.data.resultList[0].script_filepath,
-                                            _this.script_id=response.data.resultList[0].script_id,
-                                            _this.rowid=response.data.resultList[0].id
+                                            if(response.data.err_desc ==="脚本关联场景正在运行，不可以修改"){
+                                                _this.showSetScript = false;
+                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍后再试！")
+                                                return;
+                                            }else{
+                                                _this.showSetScript = true;
+                                                _this.setValidate.script_name= response.data.resultList[0].script_name;
+                                                _this.setValidate.script_id= response.data.resultList[0].script_id;
+                                                _this.setValidate.app_name= response.data.resultList[0].app_name;
+                                                _this.setValidate.memo= response.data.resultList[0].memo;
+                                                _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                                _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                                                _this.filesize=response.data.resultList[0].script_filesize,
+                                                _this.script_filepath=response.data.resultList[0].script_filepath,
+                                                _this.script_id=response.data.resultList[0].script_id,
+                                                _this.rowid=response.data.resultList[0].id
+                                            }
                                         })
                                     }
                                 }
@@ -366,76 +394,56 @@ export default {
                                                 id:item.row.id,
                                             }
                                         }).then(function(response){
-                                            console.log("script编辑接口response.data",response.data);
-                                            _this.rowid=response.data.executor_id;
-                                            _this.csvList = response.data.resultList;
-                                            console.log("_this.csvList======"+_this.csvList);
+                                            if(response.data.resultList.length ==0){
+                                                console.log("_=--=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=");
+                                                _this.$Message.error("当前脚本无参数化文件，无法进行配置，请确认后在重试！"); 
+                                            }else{
+                                                console.log("script编辑接口response.data",response.data.resultList);
+                                                _this.rowid=response.data.executor_id;
+                                                _this.csvList = response.data.resultList;
+                                                console.log("_this.csvList======",_this.csvList);
+                                            }
+                                            
                                         })
                                     }
                                 }
                             },'参数设置'),
-                            h('Button', {
-                                props: {
-                                    type: 'primary',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
-                                on: {
-                                    click: () => {
-                                        let _this = this;
-                                        _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
-                                        // this.showDetail = true;
-                                        // console.log(item.row);
-                                        // let _this = this;
-                                        // this.$http.post('/myapi/scripts/view',{
-                                        //     data:{
-                                        //         id:item.row.id,
-                                        //     }
-                                        // }).then(function(response){
-                                        //     console.log("script编辑接口response.data",response.data);
-                                        //     _this.setValidate.script_name= response.data.resultList[0].script_name;
-                                        //     _this.setValidate.script_id= response.data.resultList[0].script_id;
-                                        //     _this.setValidate.app_name= response.data.resultList[0].app_name;
-                                        //     _this.setValidate.memo= response.data.resultList[0].memo;
-                                        //     _this.setValidate.create_time= response.data.resultList[0].created_time;
-                                        //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                        //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
-                                        //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
-                                        //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
-                                        //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
+                            // h('Button', {
+                            //     props: {
+                            //         type: 'primary',
+                            //         size: 'small'
+                            //     },
+                            //     style: {
+                            //         marginRight: '5px'
+                            //     },
+                            //     on: {
+                            //         click: () => {
+                            //             let _this = this;
+                            //             _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
+                            //             // this.showDetail = true;
+                            //             // console.log(item.row);
+                            //             // let _this = this;
+                            //             // this.$http.post('/myapi/scripts/view',{
+                            //             //     data:{
+                            //             //         id:item.row.id,
+                            //             //     }
+                            //             // }).then(function(response){
+                            //             //     console.log("script编辑接口response.data",response.data);
+                            //             //     _this.setValidate.script_name= response.data.resultList[0].script_name;
+                            //             //     _this.setValidate.script_id= response.data.resultList[0].script_id;
+                            //             //     _this.setValidate.app_name= response.data.resultList[0].app_name;
+                            //             //     _this.setValidate.memo= response.data.resultList[0].memo;
+                            //             //     _this.setValidate.create_time= response.data.resultList[0].created_time;
+                            //             //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                            //             //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
+                            //             //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
+                            //             //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
+                            //             //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
                                             
-                                        // })
-                                    }
-                                }
-                            },'详情'),
-                            h('Button', {
-                                props: {
-                                    type: 'error',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
-                                on: {
-                                    click: () => {
-                                        let _this = this;
-                                        this.$http.post("/myapi/scripts/delete",{
-                                            data:{
-                                                id:item.row.id,
-                                            }
-                                        }).then(function(response){
-                                            if(response.status == 500){
-                                                _this.$Message.error('服务端错误!');
-                                            }else{
-                                                _this.$Message.info('删除成功');
-                                                _this.listCase();
-                                            }
-                                        })
-                                    }
-                                }
-                            }, '删除'),
+                            //             // })
+                            //         }
+                            //     }
+                            // },'详情'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -670,56 +678,56 @@ export default {
                 this.cmpOpts = [];
             }
         },
-        // /*删除按钮功能*/
-        // deleteScript: function() {
-        //     console.log("删除多条按钮");
-        //     let selectedData=this.selectedData;      //选中要删除的数据
-        //     let resArr = [];                         
-        //     let deleteId = [];                     //选中数据的id
-        //     if(selectedData.length>0){               //如果有选中的数据
-        //         for(let i in selectedData){         //进行遍历
-        //             //idstr = selectedData[i].id +",";
-        //             deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-        //             console.log(deleteId);
-        //             this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-        //         } 
-        //     }else{
-        //             this.$Message.error("请选择要删除的数据")
-        //     }
-        // }, 
-        // deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-        //     console.log("删除后台数据内容",deleArr)
-        //     let _this = this;
-        //     let tableData = _this.tableData;          //原有的数据
-        //     tableData.forEach((item, index) => {      //对原有的数据进行遍历
-        //         if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
-        //             _this.$Modal.confirm({
-        //                 title:'确认',
-        //                 content: '是否删除该数据',
-        //                 onOk: () => {
-        //                     // this.$http.defaults.withCredentials = false;
-        //                     this.$http.post("/myapi/scripts/delete",{
-        //                         data:{
-        //                            // ids:deleArr,
-        //                             id:deleArr[0],
-        //                         }
-        //                     }).then(function(response){
-        //                         if(response.status == 500){
-        //                             _this.$Message.error('服务端错误!');
-        //                         }else{
-        //                             tableData.splice(index, 1);        //即删除该数据上
-        //                             _this.$Message.info('删除成功');
-        //                         }
-        //                     })
-        //                 },
-        //                 onCancel: () => {
-        //                     _this.$Message.info('删除失败');
-        //                 }
-        //             }); 
+        /*删除按钮功能*/
+        deleteScript: function() {
+            console.log("删除多条按钮");
+            let selectedData=this.selectedData;      //选中要删除的数据
+            let resArr = [];                         
+            let deleteId = [];                     //选中数据的id
+            if(selectedData.length>0){               //如果有选中的数据
+                for(let i in selectedData){         //进行遍历
+                    //idstr = selectedData[i].id +",";
+                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
+                    console.log(deleteId);
+                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
+                } 
+            }else{
+                    this.$Message.error("请选择要删除的数据")
+            }
+        }, 
+        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
+            console.log("删除后台数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否删除该数据',
+                        onOk: () => {
+                            // this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/scripts/delete",{
+                                data:{
+                                   // ids:deleArr,
+                                    id:deleArr[0],
+                                }
+                            }).then(function(response){
+                                if(response.status == 500){
+                                    _this.$Message.error('服务端错误!');
+                                }else{
+                                    tableData.splice(index, 1);        //即删除该数据上
+                                    _this.$Message.info('删除成功');
+                                }
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
                    
-        //         }
-        //     });
-        // },
+                }
+            });
+        },
         listCase: function() {
             let _this = this;
             // this.$http.defaults.withCredentials = false;
@@ -731,7 +739,7 @@ export default {
                     app_name:_this.app_name,
                     script_manager_id:_this.creater,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
-                    pageSize: 15                    
+                    pageSize: 10                    
                 }
             }).then(function (response) {
                 console.log('response:');
@@ -822,10 +830,10 @@ export default {
             this.selectedData = data;
             //console.log(data)
         },
-
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/script_detail',query:{script_id:row.id}});
-        },
+        //双击方法
+        // onRowDblClick: function(row) {
+        //     this.$router.push({path:'/script_detail',query:{script_id:row.id}});
+        // },
 
         
         /**添加新数据弹出模态框 */
