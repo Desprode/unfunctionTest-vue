@@ -1609,10 +1609,12 @@ export default {
             let _this = this;
             _this.isLoading = true;
             _this.moniterPageNo = moniterPageNo;
+            console.log("_this.moniterTableData",_this.moniterTableData);
             for(var i=0;i<_this.moniterTableData.length;i++){
                 if(_this.moniterTableData[i]._checked == true){
                     _this.moniterSelectedData.push(_this.moniterTableData[i]);
                 }
+                console.log("_this.moniterSelectedData",_this.moniterSelectedData);
             }
             if(_this.moniterSelectedData.length > 0){
                 _this.monitorListPage = _this.moniterSelectedData.map(item=>{
@@ -1821,7 +1823,9 @@ export default {
                 if(_this.moniterTableData[i].servPartId == selection.servPartId){
                     _this.moniterTableData[i]._checked = false;
                 }
+                    _this.monitorListPage.splice(i,1);
             }
+             console.log("选中的数据",this.moniterTableData);
         },
         /**全选 */
         moniterOnSelectionAll:function(){
