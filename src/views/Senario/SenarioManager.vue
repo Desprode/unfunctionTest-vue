@@ -1658,6 +1658,7 @@ export default {
                 _this.monitorList = _this.moniterSelectedData.map(item=>{
                     return item.servPartId;
                 });
+                _this.monitorList = [...new Set(_this.monitorList)];
                 console.log("_this.monitorList",_this.monitorList);
                 this.$http.post("/myapi/monitorSetting/addMachine",{
                     header:{},
@@ -1685,6 +1686,7 @@ export default {
                                 _this.monitorList = _this.moniterSelectedData.map(item=>{
                                     return item.servPartId;
                                 })
+                                _this.monitorList = [...new Set(_this.monitorList)];
                                 console.log("_this.monitorList",_this.monitorList);
                                 //this.$http.defaults.withCredentials = false;
                                 this.$http.post("/myapi/monitorSetting/addMachine",{
@@ -1707,6 +1709,7 @@ export default {
                         _this.monitorList = _this.moniterSelectedData.map(item=>{
                             return item.servPartId;
                         })
+                        _this.monitorList = [...new Set(_this.monitorList)];
                         console.log("_this.monitorList",_this.monitorList);
                         //this.$http.defaults.withCredentials = false;
                         this.$http.post("/myapi/monitorSetting/addMachine",{
