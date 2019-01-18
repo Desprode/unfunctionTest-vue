@@ -552,7 +552,7 @@
                     console.log(row);
                     this.serverInfo.start= start;
                     this.serverInfo.selected = row.prodIp;
-                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo}});
+                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo,row:row}});
                     console.log('这个是',this.serverInfo)
                 }
             }
