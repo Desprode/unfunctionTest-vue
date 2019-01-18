@@ -1,4 +1,4 @@
-﻿<template>
+﻿ <template>
     <div>
         <div align="left">
                 <font size="5" color="#01babc">实时监控</font>
@@ -9,7 +9,7 @@
                 <font size="3" color="#01babc">场景名称:{{senario_name}}</font>
             </div></br>
             <div align="left">
-                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{starttime}}秒</font>
+                        <font size="3" color="#01babc" v-model="starttime">已运行时间:{{result}}</font>
             </div></br>
             <div align="left">  
                         <font size="3" color="#01babc"  v-model="statuszt.exe_description">状态:{{statuszt.exe_description}}</font>
@@ -57,13 +57,27 @@
                 if(timdate.starttime != 'null'){
                     let cuDate = new Date(start_time);
                     timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
-                    console.log('秒',(imdate.starttime/1000%60))
-                    console.log('分',(imdate.starttime/1000/60%60))
-                    console.log('时',(imdate.starttime/1000/60/60%24))
-                    console.log('天',(imdate.starttime/1000/60/60/24))
-                }
+                   var theTime = timdate.starttime
+                   var theTime1 = 0;
+                   var theTime2 = 0;
+                   if(theTime > 60){
+                    theTime1 = parseInt(theTime/60);
+                    theTime = parseInt(theTime%60);
+                    if(theTime1 > 60){
+                        theTime2 = parseInt(theTime1/60);
+                        theTime1 = parseInt(theTime1%60);
+                    }
+                   }
+                   timdate.result = ""+parseInt(theTime)+"秒"
+                   if(theTime1 > 0){
+                    timdate.result = ""+parseInt(theTime1)+"分"+timdate.result
+                   } 
+                   if(theTime2 > 0){
+                    timdate.result = ""+parseInt(theTime2)+"小时"+timdate.result
+                   }
+                } 
             }else if(timdate.start_time == null) {
-                    timdate.starttime = '0.000'
+                    timdate.result = '0.000'
                 }
             }
         },
@@ -73,10 +87,11 @@
                     describe: '',
                     statuszt:'',
                     timedate: '',
+                    result:'0.000',
                     starttime:'0.000',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
-                    iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk",
+                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId=123&refresh=5s&kiosk",
+                    iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId=123&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
                         list: [], 
@@ -230,8 +245,8 @@
                 
             },
             created(){
-                this.pressCase();
-                this.listCase();
+                //this.pressCase();
+                //this.listCase();
                 this.initWs();
     
                 this.getServerInfo();
@@ -340,8 +355,8 @@
                    // timestamp = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                    // console.log("时间++++++：",timestamp);
                    // timestampl = timestamp - 300;
-                    this.intervalFunc = setInterval(this.listCase, 30000);
-                    this.intervalFuncc = setInterval(this.pressCase, 30000);
+                    this.intervalFunc = setInterval(this.listCase, 2000);
+                    this.intervalFuncc = setInterval(this.pressCase, 2000);
                 }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
                     this.statuszt.exe_description = '测试准备中'
                     start_time = null
