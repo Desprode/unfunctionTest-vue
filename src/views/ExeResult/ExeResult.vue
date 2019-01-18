@@ -65,7 +65,7 @@
                 <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
-                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
@@ -415,6 +415,7 @@ export default {
         //页面展示
         listCase: function() {
             let _this = this;
+            _this.isLoading=true;
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
                 data: {
@@ -432,12 +433,13 @@ export default {
             }).then(function (response) {
                 let result =  response.data.result;
                 console.log("result: ", result);
-                if (result == "ok"){
-                    console.log("******** result ok *********");
-                }
+                // if (result == "ok"){
+                //     console.log("******** result ok *********");
+                // }
                 _this.tableData =  response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
+                _this.isLoading=false;
             })
         },
         //聚合报告
