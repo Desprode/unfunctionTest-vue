@@ -162,7 +162,7 @@
                 //当前选用的IP和模式
                 cpumode: [],   //cpu
                 memmode: [],    
-                //iomode: ["IOPS", "read", "write"],
+                iomode: ["IOPS", "read", "write"],
                 ipmode: [],//选择后的结果
 
 
@@ -793,11 +793,11 @@
                 this.myChart_net.setOption(this.option_net);
             },
             updateChart_cpu(fromTime, toTime) {
-                    //console.log("shuaxin");
-                    //console.log(this.cpumode);
-                    //console.log(this.ipmode);
-                    //console.log(fromTime);
-                    //console.log(toTime);
+                    console.log("shuaxin");
+                    console.log(this.cpumode);
+                    console.log(this.ipmode);
+                    console.log(fromTime);
+                    console.log(toTime);
 
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 let url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
@@ -989,7 +989,7 @@
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
                 }).then(function(response){
-                    //console.log(response);
+                    console.log(response);
                     let result = response.data;
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
