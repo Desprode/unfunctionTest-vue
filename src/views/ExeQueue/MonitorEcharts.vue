@@ -50,7 +50,7 @@
                         </FormItem>
                     </Col>
                     <Col span="4">
-                         <Button @click="confirm" type="primary">确定</Button>
+                         <Button @click="selectUpdate" type="primary">确定</Button>
                     </Col>
                 </Row> 
             </Form>
@@ -79,12 +79,12 @@
                 model:'',
                 prodIPList:[],
                 prodIPListSend:[],
-                CPUList:["users","sys","wait","used"],
+                CPUList:["user","sys","wait","Used"],
                 MemoryList:["buffer","cache","free","used"],
                 CPU:[
                     {
-                        value:'users',
-                        label:'users'
+                        value:'user',
+                        label:'user'
                     },
                     {
                         value:'sys',
@@ -95,8 +95,8 @@
                         label:'wait'
                     },
                     {
-                        value:'used',
-                        label:'used'
+                        value:'Used',
+                        label:'Used'
                     }
                 ],
                 Memory:[
@@ -185,19 +185,14 @@
             }
         },
          beforeDestroy(){
-            if(!this.chart){
-                return;
-            }
-            this.chart.dispose();
-            this.chart=null;
-            this.initCpu.dispose();
-            this.initCpu = null;
-            this.initMem.dispose();
-            this.initMem = null;
-            this.initIo.dispose();
-            this.initIo = null;
-            this.initNet.dispose();
-            this.initNet = null;
+            this.myChart_cpu.dispose();
+            this.myChart_cpu = null;
+            this.myChart_mem.dispose();
+            this.myChart_mem = null;
+            this.myChart_io.dispose();
+            this.myChart_io = null;
+            this.myChart_net.dispose();
+            this.myChart_net = null;
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
         },
@@ -266,11 +261,8 @@
             },
             //点击确认之后重新赋值
             confirm:function(){
-                let _this = this;
-                _this.cpumode = _this.CPUList;
-                _this.memmode = _this.MemoryList;
-                _this.ipmode = _this.prodIPList;
-                _this.selectUpdate();
+                
+                this.selectUpdate();
             },
             initAll(){
                 //iplist:所有ip的集合
@@ -1239,7 +1231,14 @@
 
             selectUpdate(){
             //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
-
+                console.log("this.MemoryList",this.MemoryList);
+                this.cpumode = this.CPUList;
+                this.memmode = this.MemoryList;
+                this.ipmode = this.prodIPList;
+                console.log("_this.cpumode",this.cpumode);
+                console.log("_this.memmode",this.memmode);
+                console.log("_this.MemoryList",this.MemoryList);
+                console.log("_this.ipmode",this.ipmode);
             //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
             this.flushFlag = false;
 
@@ -1278,7 +1277,6 @@
 
             this.chartdata_mem.splice(0, this.chartdata_mem.length);
             this.legend_mem.splice(0, this.legend_mem.length);
-            this.memmode.splice(0, this.memmode.length);
 
             for (var i = 0; i < this.datapos_mem.length; i++) {
                 var flag = false;
