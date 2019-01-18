@@ -150,6 +150,9 @@
                     <FormItem label="脚本说明:" prop="memo">                      
                         <Input v-model="setValidate.memo"></Input>
                     </FormItem>
+                    <FormItem label="文件大小:" prop="script_filesize">                      
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_filesize}}</div>
+                    </FormItem>
                     <FormItem label="创建时间:" prop="create_time">                      
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
                     </FormItem>
@@ -177,15 +180,15 @@
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--script edit end-->
-            <!--script detail detail detail detail begin  now not use-->
+            <!--script edit end
+            script detail detail detail detail begin  now not use
             <Modal v-model="showDetail" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>脚本详情</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
                     <FormItem label="脚本ID:"  >                     
-                        <!-- <Input v-model="setValidate.script_id"></Input> -->
+                        <Input v-model="setValidate.script_id"></Input>
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div>
                     </FormItem>
                     <FormItem label="脚本名称:" prop="script_name">                      
@@ -210,12 +213,12 @@
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_manager_id}} </div>
                     </FormItem>
                 </Form>
-                <!-- <div slot="footer">
+                 <div slot="footer">
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
-                </div> -->
+                </div> 
             </Modal>
-            <!--script detail end-->
+            script detail end-->
         </Card>
     </div>
 </template>
@@ -344,8 +347,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        
-                                        console.log(item.row);
+                                        //console.log(item.row);
                                         let _this = this;
                                         // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/checkEdit',{
@@ -366,7 +368,7 @@ export default {
                                                 _this.setValidate.memo= response.data.resultList[0].memo;
                                                 _this.setValidate.create_time= response.data.resultList[0].created_time;
                                                 _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                                _this.filesize=response.data.resultList[0].script_filesize,
+                                                _this.setValidate.script_filesize=response.data.resultList[0].script_filesize,
                                                 _this.script_filepath=response.data.resultList[0].script_filepath,
                                                 _this.script_id=response.data.resultList[0].script_id,
                                                 _this.rowid=response.data.resultList[0].id
@@ -388,6 +390,7 @@ export default {
                                         this.showParamStatus = true;
                                         console.log(item.row);
                                         let _this = this;
+                                        _this.csvList=[];
                                         // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/param',{
                                             data:{
@@ -860,6 +863,7 @@ export default {
         handleParamSubmit (name) {
             this.$refs[name].validate((valid) => {
                 let _this = this;
+                console.log("4a5454as54da5sdasd",name);
                 if (valid) {
                     // this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/scripts/doParam",{
