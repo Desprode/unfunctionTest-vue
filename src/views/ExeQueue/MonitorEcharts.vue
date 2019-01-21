@@ -5,7 +5,7 @@
                 <Row>
                     <Col span="6">
                         <FormItem label="部署单元">
-                            <Select v-model="model" @on-change="funsChange">
+                            <Select v-model="model" @on-open-change="funsChange">
                                 <Option v-for="(item,index) in serverInfo.subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
                             </Select>
                         </FormItem>
