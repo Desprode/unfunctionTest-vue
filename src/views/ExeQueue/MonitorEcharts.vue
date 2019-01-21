@@ -12,7 +12,7 @@
                     </Col>
                     <Col span="24" v-if="prodIPRow">
                         <FormItem label="服务器地址"  :label-width="80">
-                            <Select v-model="prodIPList" multiple @on-change="prodIPChange">
+                            <Select v-model="prodIPList" multiple @on-change="prodIPChange">  
                                 <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
