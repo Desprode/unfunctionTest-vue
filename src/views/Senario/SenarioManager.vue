@@ -1534,7 +1534,7 @@ export default {
                 })
             }
         },
-        /**模糊查询物理子系统 */
+        /**模糊查询物理子系统 */        
         scomponentRemote:function(query){
             this.scomponentLoading = true;
             setTimeout(() => {
