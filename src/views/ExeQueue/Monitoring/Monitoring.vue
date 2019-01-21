@@ -90,8 +90,8 @@
                     result:'0.000',
                     starttime:'0.000',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
-                    iframeUrl:"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId=123&refresh=5s&kiosk",
-                    iframeUrll:"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId=123&refresh=5s&kiosk",
+                    iframeUrl: '',//"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId=123&refresh=5s&kiosk",
+                    iframeUrll: '',//"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId=123&refresh=5s&kiosk",
                     formItem: {
                         cmpOpts: [],
                         list: [], 
@@ -108,10 +108,13 @@
                             title: '序号',
                             type: 'index',
                             align: 'center',
-                            width: 60
+                            width: 60,
+                            render: (h, params) => {
+                                return h('span', params.index + (this.pageNo - 1) * this.pageSize + 1);
+                            }
                         },
                         {
-                            title: 'ip',
+                            title: 'IP地址',
                             key: 'prodIp'
                         },
                         {
@@ -131,7 +134,7 @@
                             key: 'cpuUsedPercent'
                         },
                         {
-                            title: 'MEM%%',
+                            title: 'MEM%',
                             key: 'memoryUsedPercent'
                         },
                         {
@@ -156,7 +159,7 @@
                             key: 'funDesc'
                         },
                         {
-                            title: '操作系统类型',
+                            title: '操作系统',
                             key: 'osVersion'
                         },
                         {
@@ -172,7 +175,7 @@
                                     key: 'cpuSysPercent',
                                 },
                                 {
-                                    title: 'Iowait',
+                                    title: 'iowait',
                                     key: 'cpuIOWaitPercent',
                                 }
                             ]
@@ -200,17 +203,17 @@
                                     key: 'iops',
                                 },
                                 {
-                                    title: 'ioread',
+                                    title: 'IORead',
                                     key: 'ioRead',
                                 },
                                 {
-                                    title: 'ioWrite',
+                                    title: 'IOWrite',
                                     key: 'ioWrite',
                                 },
                             ]
                         },
                         {
-                            title: 'network(KB)',
+                            title: 'Network(KB)',
                             align: 'center',
                             children: [
                                 {
@@ -359,8 +362,8 @@
                     this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
                     this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                     this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                    this.intervalFunc = setInterval(this.listCase, 2000);
-                    this.intervalFuncc = setInterval(this.pressCase, 2000);
+                    this.intervalFunc = setInterval(this.listCase, 10000);
+                    this.intervalFuncc = setInterval(this.pressCase, 10000);
                 }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
                     this.statuszt.exe_description = '测试准备中'
                     start_time = null
@@ -477,9 +480,15 @@
                                  _this.tableData[i].ioWrite = _this.tableData[i].ioWrite.toFixed(2);
                             }
                             if(arr[i].iops == null){
-                                _this.tableData[i].iops = '--'
+                                if(arr[i].ioRead != null && arr[i].ioWrite != null){
+                                     _this.tableData[i].iops=arr[i].ioRead + arr[i].ioWrite;
+                                    if (String(_this.tableData[i].iops).indexOf('.') > -1)
+                                        _this.tableData[i].iops = _this.tableData[i].iops.toFixed(2);
+                                }else {
+                                    _this.tableData[i].iops = '--';
+                                }
                             }else {
-                                _this.tableData[i].iops=arr[i].iops*100;
+                                _this.tableData[i].iops=arr[i].iops;
                                 if (String(_this.tableData[i].iops).indexOf('.') > -1)
                                  _this.tableData[i].iops = _this.tableData[i].iops.toFixed(2);
                             }
@@ -526,16 +535,18 @@
                         console.log(response);
                         console.log('请求回来的表格数据555: ', response.data);
                         _this.tableDatal = response.data.result;  
-                        _this.tableDatal = response.data.result;
                         var ccc = response.data.result;
                         for(var i=0;i<ccc.length;i++){
                             if(ccc[i].cpuNum == null){
                                 _this.tableDatal[i].cpuNum = '--'
                             }else {
-                                var aaa = ccc[i].memSize/1024
-                                var cccc = Math.round(aaa)    //四舍五入  Math.ceil() 向上取整
-                                console.log(cccc)
-                                _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'c'+cccc+'G'
+                                if( ccc[i].memSize == null ){
+                                    _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C';
+                                }else{
+                                var aaa = ccc[i].memSize/1024;
+                                var cccc = Math.round(aaa);    //四舍五入  Math.ceil() 向上取整
+                                _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C'+cccc+'G';
+                                }
                             }if(ccc[i].cpuUsedPercent == null){
                                 _this.tableDatal[i].cpuUsedPercent = '--'
                             }else {
@@ -551,9 +562,16 @@
                                  _this.tableDatal[i].memoryUsedPercent = _this.tableDatal[i].memoryUsedPercent.toFixed(2);
                             }
                             if(ccc[i].iops == null){
-                                _this.tableDatal[i].iops = '--'
+                                if(ccc[i].ioRead != null && ccc[i].ioWrite != null ) {
+                                    _this.tableDatal[i].iops = ccc[i].ioRead + ccc[i].ioWrite;
+                                   if (String(_this.tableDatal[i].iops).indexOf('.') > -1)
+                                        _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2); 
+                                }
+                                else{
+                                    _this.tableDatal[i].iops = '--';
+                                }
                             }else {
-                                _this.tableDatal[i].iops=ccc[i].iops*100;
+                                _this.tableDatal[i].iops=ccc[i].iops;
                                 if (String(_this.tableDatal[i].iops).indexOf('.') > -1)
                                  _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
                             }
