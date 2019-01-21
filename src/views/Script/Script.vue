@@ -35,7 +35,7 @@
                         <Button @click="addScript"  type="primary">新增</Button>
                         <Button @click="deleteScript" type="error">删除</Button>
                     </div>
-                    <Table border highlight-row  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" ></Table>
+                    <Table border ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -85,8 +85,10 @@
                         <Row>
                             <i-col span="24">
                                 <Form-item label="物理子系统：" prop="app_name">
-                                    <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" 
-                                        clearable
+                                    <Select  
+                                        clearable 
+                                        v-model="addValidate.app_name" 
+                                        placeholder="请选择物理子系统" 
                                         filterable 
                                         remote 
                                         :remote-method="searchAppname" 
@@ -119,6 +121,7 @@
                                         :format="['zip']" 
                                         :on-success="uploadSuccess"
                                         :on-progress="uploadProgress"
+                                        :on-remove="uploadRemove"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -156,6 +159,9 @@
                     <FormItem label="创建时间:" prop="create_time">                      
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
                     </FormItem>
+                    <FormItem label="更新时间:" prop="create_time">                      
+                            <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
+                        </FormItem>
                     <i-col span="20">
                         <Form-item label="更新脚本：" prop="script_filename">
                             <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
@@ -279,45 +285,90 @@ export default {
                     title: '选择',
                     align: 'center',
                     width: 60,
-                    key:'id',
+                    key:'checkBox',
                     render:(h,params)=>{
                         return h('div',[
-                            h('Checkbox',{
+                            h('Checkbox',{  
                                 props:{
-                                    value:params.row.id
+                                    value:params.row.checkBox
                                 },
                                 on:{
-                                    'on-cange':(e)=>{
-                                        console.log("e111111111111eeeeeeeeeeeeeeeeeee",e)
+                                    'on-change':(e)=>{
+                                        console.log(e)
                                         this.tableData.forEach((items)=>{
-                                            //先取消所选的对象
+                                            //先取消所有对象的勾选，checkBox设置为false
                                             this.$set(items,'checkBox',false)
                                         });
-                                            //再将勾选的对象设置为true
-                                        this.tableData[params.index].id = e;
+                                        //再将勾选的对象的checkBox设置为true
+                                        this.tableData[params.index].checkBox =e
                                     }
                                 }
                             })
                         ])
-                    }
+                    }                    
                 },
                 {
                     title: '脚本名称',
                     key: 'script_name',
                     width: 220,
-                    sortable: true
-                    // ellipsis: true, 
-                    //tooltip: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_name
+                                }
+                            }, params.row.script_name)
+                        ]);
+                    }
                 },
                 {
                     title: '物理子系统',
                     width: 250,
-                    key: 'app_name'
+                    key: 'app_name',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.app_name
+                                }
+                            }, params.row.app_name)
+                        ]);
+                    }
                 },
                 {
                     title: '脚本文件',
                     key: 'script_filename',
                     width: 205,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_filename
+                                }
+                            }, params.row.script_filename)
+                        ]);
+                    }
                 },
                 {
                     title: '创建人',
@@ -325,7 +376,7 @@ export default {
                     width: 80,                    
                 },
                 {
-                    title: '创建时间',
+                    title: '更新时间',
                     key: 'created_time',
                     width: 160,
                     align: 'center',
@@ -387,7 +438,6 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showParamStatus = true;
                                         console.log(item.row);
                                         let _this = this;
                                         _this.csvList=[];
@@ -400,7 +450,9 @@ export default {
                                             if(response.data.resultList.length ==0){
                                                 console.log("_=--=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=");
                                                 _this.$Message.error("当前脚本无参数化文件，无法进行配置，请确认后在重试！"); 
+                                                _this.showParamStatus = false;
                                             }else{
+                                                _this.showParamStatus = true;
                                                 console.log("script编辑接口response.data",response.data.resultList);
                                                 _this.rowid=response.data.executor_id;
                                                 _this.csvList = response.data.resultList;
@@ -522,6 +574,7 @@ export default {
         this.listCase();
     },
     methods: {
+        //下载
         handleDownload:function(rowid,fileName){
             let _this = this;
             // this.$http.defaults.withCredentials = false;
@@ -535,7 +588,7 @@ export default {
                     _this.$Message.error(response.data.err_desc);
                     return;
                 }
-                //console.log("script编辑接口response.data",response.data);
+                console.log("script编辑接口response.data",response.data);
                // let fileName = item.row.script_filename // 文件地址
                 var blob = new Blob([response.data])
                 if (window.navigator.msSaveOrOpenBlob) {
@@ -549,15 +602,22 @@ export default {
                     link.setAttribute('download', fileName);
                     document.body.appendChild(link);
                     link.click();
+                    URL.revokeObjectURL(link.href)
                 }
             })
         },
         uploadPro:function(file){
             console.log("file",file.name);
         },
+        //文件格式验证失败
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
+        //移除文件时
+        uploadRemove(){
+            this.$refs.upload.clearFiles();
+        },
+        //文件上传时方法
         uploadProgress:function(res,file){
             this.$Spin.show({
                 render: (h) => {
@@ -610,6 +670,7 @@ export default {
             // console.log("this.csvList[index].enable:"+this.csvList[index].enable);
         },
         setMoreCmpParams: function(obj) {
+            console.log("obj".obj)
             this.addValidate.app_id = obj.value;
             this.addValidate.app_name = obj.label;
         }, 
@@ -683,8 +744,8 @@ export default {
         },
         /*删除按钮功能*/
         deleteScript: function() {
-            console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
+            console.log("删除按钮",selectedData);
             let resArr = [];                         
             let deleteId = [];                     //选中数据的id
             if(selectedData.length>0){               //如果有选中的数据
@@ -880,7 +941,6 @@ export default {
                             }else{
                                 this.$Message.error("设置失败!");
                             }
-                            _this.showParamStatus = false;
                         }
                     })
                 } else {
@@ -889,6 +949,7 @@ export default {
                 console.log(_this);                 //方法接口写好时再清空之前输入的
                  //this.$refs[name].resetFields();
             });
+            this.showParamStatus = false;
         },
         /***模态框弹出时确定事件: 验证表单提交 */
         submitScript (name,scriptFlag) {

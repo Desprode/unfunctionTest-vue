@@ -122,6 +122,7 @@
                     <Button color="#1c2438"  @click="cancel()">取消</Button>
                     <Button type="primary"   @click="handleSubmit('addValidate')">确认</Button>
                 </div>
+                <Spin size="large" fix v-if="spinShow">机器正在添加，请稍等...</Spin>
             </Modal>
             <!--新建机器时弹出的对话框end-->
             <!--编辑机器时弹出的对话框begin-->
@@ -216,6 +217,7 @@ export default {
         return {
             rowid:'',
             srchCmploading: false,
+            spinShow:false,
             isLoading:false,
             cmpOpts: [],
             list: [], 
@@ -517,20 +519,6 @@ export default {
         stopMachine (id,ip,userName,userPwd) {
             let _this = this;
             _this.isLoading = true;
-            // _this.isLoading.show({
-            //         render: (h) => {
-            //             return h('div', [
-            //                 h('Icon', {
-            //                     'class': 'demo-spin-icon-load',
-            //                     props: {
-            //                         type: 'load-c',
-            //                         size: 18
-            //                     }
-            //                 }),
-            //                 h('div', '机器'+ip+'停止中...')
-            //             ])
-            //         }
-            //     });
             this.$http.post('/myapi/machine/stopAgent',{
                 data:{
                     id:id,
@@ -603,9 +591,9 @@ export default {
                         },
                         onCancel: () => {
                             _this.$Message.info('删除失败');
+                            _this.listCase();
                         }
                     }); 
-                   
                 }
             });
         },
@@ -641,6 +629,7 @@ export default {
         },
         /**添加新数据弹出模态框 */
         addMachine:function(){
+            this.spinShow = false;
             this.Deletips = true;
             console.log("新建显示模态框");
         },
@@ -665,7 +654,7 @@ export default {
         handleSubmit (name) {
             let _this = this;
             console.log(this.addValidate);
-            //提交添加请求
+            _this.spinShow=true;
             this.$refs[name].validate((valid) => {
                 if (valid) {
                     console.log("开始添加");
@@ -693,7 +682,8 @@ export default {
                             }
                             _this.Deletips = false;
                             _this.$refs[name].resetFields();
-                            // _this.listCase();
+                            _this.$Spin.hide();
+                            _this.listCase();
                         }
                     })
                 } else {
@@ -929,8 +919,5 @@ display: flex;
 }
 .demo-spin-icon-load{
         animation: ani-demo-spin 1s linear infinite;
-        min-height: 200px;
-        max-height: 400px;
-        
     }
 </style>

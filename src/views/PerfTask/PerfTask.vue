@@ -430,7 +430,12 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        //console.log("文档")
+                                        //this.detailCase(params.row.id);
+                                            console.log("第一个页面传递的ID",params.row.id);
+                                             this.$router.push({
+                                                path:'/merge',
+                                                query:{id:params.row.id}
+                                            })
                                     }
                                 }
                             }, '文档')
@@ -951,7 +956,7 @@ export default {
             this.$Message.info('点击了取消');
             this.addPTaskModal = false;
         },
-
+       
         /**==================== 编辑任务相关事件 ====================*/
         handleEditPTaskSubmit (editPTaskData) {
             let _this = this;
