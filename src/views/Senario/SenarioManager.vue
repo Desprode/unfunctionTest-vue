@@ -198,7 +198,7 @@
                             </FormItem>
                         </Col>
                         <Col span="12"  v-if="showSetType !='03'?true:false">
-                            <FormItem label="每个线程组运行时常 ：" prop="per_duration" :label-width="150">
+                            <FormItem label="每个线程组运行时长 ：" prop="per_duration" :label-width="150">
                                 <Input v-model="setValidate.per_duration" :number="true"></Input>
                             </FormItem>
                         </Col>
@@ -257,13 +257,13 @@
                     <Row class="caseBoxRow">
                         <Col span="9">
                             <FormItem label="IP" prop="ip">
-                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase() clearable>
+                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase() clearable @on-blur="onBlurMonitorSearch">
                                 </Input>
                             </FormItem>
                         </Col>
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
-                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
+                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
                             </FormItem>
@@ -276,7 +276,7 @@
                     <Row v-show="isShowMoniterMore">
                         <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
-                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()>
+                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
                                     <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
                                     <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
@@ -1129,7 +1129,7 @@ export default {
             //         console.log(this.tableData[i]);
             //     }
             // }
-            console.log("选中要删除的数据",row,selection)
+            console.log("选中要删除的数据",this.selectedData)
             //console.log(data)
         },
         onSelectCancel:function(row,selection){
@@ -1144,7 +1144,7 @@ export default {
             //         _this.selectedData.splice(index, 1);        //即删除该数据上
             //     }
             // });
-            console.log("取消选中要删除的数据",row,selection)
+            console.log("取消选中要删除的数据",_this.selectedData)
         },
        
         /**添加新数据弹出模态框 */
@@ -1492,6 +1492,7 @@ export default {
             this.moniterPageNo = 1;
             console.log('监控取消事件');
             this.monitorListPage = [];    //清空翻页保存的数据
+            this.subSysName_old = '';
             clearInterval(this.timer)
         },
         /**确认事件 */
@@ -1505,6 +1506,7 @@ export default {
                 this.showSearchTable = true;
                 this.moniterPageNo = 1;
                 this.monitorListPage = [];
+                this.subSysName_old = '';
                 clearInterval(this.timer);
             }
             console.log(this.editCount);
@@ -1555,7 +1557,6 @@ export default {
         /**列表查询 */
         moniterCase:function(){
             let _this = this;
-            _this.isLoading = true;
             console.log('系统名称',_this.moniterValidate.sComponent,'ip',_this.moniterValidate.ip);
             if(_this.showSearchTable){
                 this.moniterPageNo = 1;
@@ -1574,6 +1575,7 @@ export default {
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
+                _this.isLoading = true;
                 //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/monitorSetting/search',{
                     header:{},
@@ -1601,6 +1603,24 @@ export default {
                     }
                     //_this.moniterReset();
                 })
+            }
+        },
+        onBlurMonitorSearch:function(){
+            if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterListCase();
+            }else{
+                console.log("未清空");
+            }
+        },
+        clearMonitorSearch:function(){
+            console.log(this.moniterValidate.ip);
+            console.log(this.moniterValidate.sComponent);
+            console.log(this.moniterValidate.inviro_type);
+            this.moniterValidate.sComponent = '';
+            if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterListCase();
+            }else{
+                console.log("未清空");
             }
         },
          /**切换页码 */
@@ -1650,6 +1670,7 @@ export default {
                  console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
             if(_this.showSearchTable){
+                if(_this.moniterSelectedData.length > 0){
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
                         _this.moniterSelectedData.push(_this.moniterTableData[i]);
@@ -1669,6 +1690,9 @@ export default {
                 }).then(function(response){
                     _this.moniterListCase();
                 });
+                }else{
+                    _this.$Message.error("至少选择一条数据");
+                }
             }else{
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
@@ -1676,7 +1700,7 @@ export default {
                     };
                 }
                 if(_this.moniterSelectedData.length > 0){
-                    if(_this.subSysName_old !== _this.subSysName_new ){
+                    if(_this.subSysName_old !== _this.subSysName_new && _this.subSysName_old !== ''){
                         console.log("不相同");
                         _this.$Modal.confirm({
                             title:'确认',
