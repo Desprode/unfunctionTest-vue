@@ -676,9 +676,10 @@ export default {
                         }else{
                             if("ok" == response.data.result){
                                 _this.$Message.success('添加成功！');
-                                
+                                _this.spinShow=false;
                             }else{
                                 _this.$Message.error('添加失败'+response.data.err_desc);
+                                _this.spinShow=false;
                             }
                             _this.Deletips = false;
                             _this.$refs[name].resetFields();
@@ -688,6 +689,7 @@ export default {
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
+                    _this.spinShow=false;
                 }
             });
         },  
