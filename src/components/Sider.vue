@@ -39,47 +39,11 @@
             系统插件管理
           </MenuItem>
         </Submenu>
-        <!-- <MenuItem name="1-6">
-          <Icon type="ios-cog" />
-          <span>插件管理</span>
-          <MenuItem name="1-6">
-            <Icon type="ios-cog" />
-            <span>插件管理1</span>
-            <router-link to="/perftask" />
-          </MenuItem>
-        </MenuItem> -->
         <MenuItem name="1-7" v-show="hasMchnMng">
           <router-link to="/machine" />
           <Icon type="ios-keypad" />
           <span>机器管理</span>
         </MenuItem>
-
-        
-        <!-- <MenuItem name="1-11" >
-          <router-link  to="/InterfaceCase" />
-          <Icon type="ios-navigate"></Icon>
-          <span>接口管理</span>
-        </Submenu> -->
-        <!-- <MenuItem name="1-12">
-          <router-link to="/environmentManage" />
-          <Icon type="ios-keypad"></Icon>
-          <span>环境管理</span>
-        </MenuItem> -->
-        <!-- <MenuItem name="1-8">
-          <router-link to="/AddGlobalConfig" />
-          <Icon type="ios-analytics"></Icon>
-          <span>全局配置</span>
-        </MenuItem> -->
-        <!-- <MenuItem name="1-9">
-          <router-link to="/baffleConfiguration" />
-          <Icon type="ios-book-outline" />
-          <span>挡板配置</span>
-        </MenuItem> -->
-        <!-- <MenuItem name="1-10">
-          <router-link to="/standardBasis" />
-          <Icon type="ios-barcode-outline" />
-         <span>依据标准</span>
-        </MenuItem> -->
       </Menu>
       <Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '-12px 8px 0 0'}" type="chevron-left" size="24" class="triggerBtn" color="white" ></Icon>
     </Sider>
@@ -172,41 +136,8 @@
                 // console.log("*** getUsrPermissions *** sysPlgnMng: ", sysPlgnMng);
                 // let mchnMng = _this.$Global.userPermissions.findIndex(n => n == "apts_nfunMchnMng");
                 // console.log("*** getUsrPermissions *** mchnMng: ", mchnMng);
-
-
-
-                // console.log("userPermissions after: ", _this.userPermissions);
-                // resp = {'result': 'ok', 'perms': _this.userPermissions};
-                // resp.set('result', 'ok');
-                // resp.set('perms', _this.userPermissions);
             }
-
-            // console.log('--- resp: --- ', resp);
         })
-        // let result = this.$Global.getUserPerms(username);
-        // console.log('*** result *** ', result);
-        // console.log('keys: ', result.keys());
-        // console.log('*** result.has("result") *** ', result.has('result'));
-        // console.log('*** result.get(result) *** ', result.get('result'));
-        // // let permissions = this.$Global.userPermissions;
-        // // console.log("now in Sider.vue, permissions is ", permissions);
-
-        // if ( result && result.has("result") && result.get(result) == "ok") {
-        //   let permissions = result.get('perms');
-        //   console.log("*** permissions *** ", permissions);
-          
-        //   let sysPlgnMng = permissions.findIndex(n => n == "apts_nfunSysPlgnMng");
-        //   console.log("*** getUsrPermissions *** sysPlgnMng: ", sysPlgnMng);
-        //   let mchnMng = permissions.findIndex(n => n == "apts_nfunMchnMng");
-        //   console.log("*** getUsrPermissions *** mchnMng: ", mchnMng);
-        // }
-
-        // if (permissions && get_perms.result == "fail") {
-        //     this.$Message.error("无法获取当前登录用户的权限信息");
-        // } else if (get_perms && get_perms.result == "ok") {
-        //     let perms = get_perms.perms;
-        //     console.log("perms: ", perms);
-        // }
       }, 
 
       collapsedSider () {
