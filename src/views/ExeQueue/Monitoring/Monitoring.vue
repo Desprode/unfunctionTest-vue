@@ -552,7 +552,8 @@
                         this.statuszt.exe_description = '测试准备中'
                         start_time = null
                     }if(this.statuszt.exe_description === '测试执行结束'){
-                        this.StopTimer();
+                        setTimeout(this.StopTimer(), 300);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
+                    //    this.StopTimer();
                     }
                 }
             },
