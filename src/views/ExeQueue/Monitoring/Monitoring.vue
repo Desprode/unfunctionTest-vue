@@ -103,16 +103,13 @@
                         executor_id:'',
                         textarea: ''
                     },
+                    //压力机
                     columns: [
                         {
                             title: '序号',
                             type: 'index',
                             align: 'center',
-                            width: 60,
-                            render: (h, params) => {
-                                console.log("231214",params);
-                                return h('span', params.index + (this.pageNo - 1) * this.pageSize + 1);
-                            }
+                            width: 60
                         },
                         {
                             title: 'IP地址',
@@ -132,24 +129,76 @@
                         },
                         {
                             title: 'CPU%',
-                            key: 'cpuUsedPercent'
+                            key: 'cpuUsedPercent',
+                            render: (h, params) => {
+                                let texts='';
+                                if(params.row.cpuUsedPercent == null){
+                                    texts = '--';
+                                }else{
+                                    let tmp = parseFloat(params.row.cpuUsedPercent) * 100;
+                                    texts = tmp.toFixed(2);
+                                }
+                                return h('div',{
+                                    props:{
+                                    },
+                                },texts);
+                            }
                         },
                         {
                             title: 'MEM%',
-                            key: 'memoryUsedPercent'
+                            key: 'memoryUsedPercent',
+                            render: (h, params) => {
+                                let texts='';
+                                if(params.row.memoryUsedPercent == null){
+                                    texts = '--';
+                                }else{
+                                    let tmp = parseFloat(params.row.memoryUsedPercent) * 100;
+                                    texts = tmp.toFixed(2);
+                                }
+                                return h('div',{
+                                    props:{
+                                    },
+                                },texts);
+                            }
                         },
                         {
                             title: 'IOPS',
-                            key: 'iops'
+                            key: 'iops',
+                            render: (h, params) => {
+                                let texts='';
+                                if(params.row.iops == null){
+                                    if(params.row.ioRead != null && params.row.ioRead != null){
+                                        texts = (parseFloat(params.row.ioRead) + parseFloat(params.row.ioWrite)).toFixed(2);
+                                    }else{
+                                        texts = '--';
+                                    }
+                                }else{
+                                    texts = params.row.iops.toFixed(2);
+                                }
+                                return h('div',{
+                                    props:{
+                                    },
+                                },texts);
+                            }                            
                         }
                     ],
                     tableDatal: [],
+                    //服务器
                     columns1: [
                         {
                             title: '序号',
                             type: 'index',
                             align: 'center',
-                            width: 60
+                            width: 60,
+                            render: (h, params) => {
+                                console.log(params);
+                                let texts = params.index + (this.pageNo - 1) * this.pageSize + 1;
+                                return h('div',{
+                                    props:{
+                                        },
+                                },texts);
+                            //    return h('span', params.index + (this.pageNo - 1) * this.pageSize + 1);
+                            }
                         },
                         {
                             title: 'IP地址',
@@ -168,16 +217,55 @@
                             align: 'center',
                             children: [
                                 {
-                                    title: 'used',
+                                    title: 'Used',
                                     key: 'cpuUsedPercent',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.cpuUsedPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            let tmp = parseFloat(params.row.cpuUsedPercent) * 100;
+                                            texts = tmp.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
-                                    title: 'sys',
+                                    title: 'Sys',
                                     key: 'cpuSysPercent',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.cpuSysPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            let tmp = parseFloat(params.row.cpuSysPercent) * 100;
+                                            texts = tmp.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
                                     title: 'iowait',
                                     key: 'cpuIOWaitPercent',
+                                     render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.cpuIOWaitPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            let tmp = parseFloat(params.row.cpuIOWaitPercent) * 100;
+                                            texts = tmp.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 }
                             ]
                         },
@@ -186,12 +274,39 @@
                             align: 'center',
                             children: [
                                 {
-                                    title: 'used',
+                                    title: 'Used',
                                     key: 'memoryUsedPercent',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.memoryUsedPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            let tmp = parseFloat(params.row.memoryUsedPercent) * 100;
+                                            texts = tmp.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
                                     title: 'cache+buffer',
                                     key: 'memoryBufferPercent',
+                                    render: (h, params) => {
+                                        
+                                        let texts='';
+                                        if(params.row.memoryBufferPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            let tmp = (parseFloat(params.row.memoryBufferPercent) + parseFloat(params.row.memoryCachePercent))* 100;
+                                            texts = tmp.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                             ]
                         },
@@ -202,14 +317,54 @@
                                 {
                                     title: 'IOPS',
                                     key: 'iops',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.iops == null){
+                                            if(params.row.ioRead != null && params.row.ioRead != null){
+                                                texts = (parseFloat(params.row.ioRead) + parseFloat(params.row.ioWrite)).toFixed(2);
+                                            }else{
+                                                texts = '--';
+                                            }
+                                        }else{
+                                            texts = params.row.iops.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
                                     title: 'IORead',
                                     key: 'ioRead',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.ioRead == null){
+                                            texts = '--';
+                                        }else{
+                                            texts = params.row.ioRead.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
                                     title: 'IOWrite',
                                     key: 'ioWrite',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.cpuSysPercent == null){
+                                            texts = '--';
+                                        }else{
+                                            texts = params.row.ioWrite.toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                             ]
                         },
@@ -218,12 +373,36 @@
                             align: 'center',
                             children: [
                                 {
-                                    title: 'receive',
+                                    title: 'netRead',
                                     key: 'netRead',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.netRead == null){
+                                            texts = '--';
+                                        }else{
+                                            texts = (params.row.netRead /1024).toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                                 {
-                                    title: 'transmit',
+                                    title: 'netWrite',
                                     key: 'netWrite',
+                                    render: (h, params) => {
+                                        let texts='';
+                                        if(params.row.netWrite == null){
+                                            texts = '--';
+                                        }else{
+                                            texts = (params.row.netWrite /1024).toFixed(2);
+                                        }
+                                        return h('div',{
+                                            props:{
+                                            },
+                                        },texts);
+                                    }
                                 },
                             ]
                         }
@@ -365,13 +544,15 @@
                         this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
                         this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                         this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                        this.listCase();
+                        this.pressCase();
                         this.intervalFunc = setInterval(this.listCase, 10000);
                         this.intervalFuncc = setInterval(this.pressCase, 10000);
                     }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
                         this.statuszt.exe_description = '测试准备中'
                         start_time = null
                     }if(this.statuszt.exe_description === '测试执行结束'){
-                        this.intervalFuncc = false
+                        this.StopTimer();
                     }
                 }
             },
@@ -395,7 +576,7 @@
                             }).then(function(){
                                 _this.$Message.info('停止成功');
                                 _this.$router.push({path:'/ExeQueue',query:{}});
-                                
+                                _this.StopTimer();
                             })
                         },
                         onCancel: () => {
@@ -423,79 +604,13 @@
                             pageSize:_this.pageSize,
                         }
                     }).then(function (response) {
-                        console.log(response);
                         console.log('请求回来的表格数据: ', response.data);
                         _this.totalCount = response.headers.totalcount;
                         _this.totalPage = response.headers.totalpage;
                         console.log(response.headers.totalcount);
                         console.log(_this.totalCount);
                         _this.tableData = response.data.resultList;
-                        var arr = response.data.resultList;
-                        for(var i=0;i<arr.length;i++){
-                        //    _this.tableData[i].osVersion = arr[i].osVersion;
-                        //    _this.tableData[i].prodIp = arr[i].prodIp;
-                        //    _this.tableData[i].funDesc = arr[i].funDesc;
-                            if(arr[i].cpuUsedPercent == null){
-                                _this.tableData[i].cpuUsedPercent = '--'
-                            }else {
-                                _this.tableData[i].cpuUsedPercent=(parseFloat(arr[i].cpuUsedPercent)*100).toFixed(2);
-                            }
-                            if(arr[i].cpuSysPercent == null){
-                                _this.tableData[i].cpuSysPercent = '--';
-                            }else {
-                                _this.tableData[i].cpuSysPercent=(parseFloat(arr[i].cpuSysPercent)*100).toFixed(2);
-                    
-                            }
-                            if(arr[i].cpuIOWaitPercent == null){
-                                _this.tableData[i].cpuIOWaitPercent = '--';
-                            }else {
-                                _this.tableData[i].cpuIOWaitPercent= (parseFloat(arr[i].cpuIOWaitPercent)*100).toFixed(2);
-                            }
-                            if(arr[i].memoryUsedPercent == null){
-                                _this.tableData[i].memoryUsedPercent = '--'
-                            }else {
-                                _this.tableData[i].memoryUsedPercent=(parseFloat(arr[i].memoryUsedPercent)*100).toFixed(2);
-                            }
-                            if(arr[i].memoryBufferPercent == null){
-                                _this.tableData[i].memoryBufferPercent = '--';
-                            } else {
-                                let tmp = parseFloat(arr[i].memoryBufferPercent) + parseFloat(arr[i].memoryCachePercent);
-                                let tmp2 = Number(tmp * 100);
-                                _this.tableData[i].memoryBufferPercent= tmp2.toFix(2);
-                            }
-                            if(arr[i].ioRead == null){
-                                _this.tableData[i].ioRead = '--';
-                            }else {
-                                _this.tableData[i].ioRead= arr[i].ioRead.toFix(2);
-                            }
-                            if(arr[i].ioWrite == null){
-                                _this.tableData[i].ioWrite = '--';
-                            }else {
-                                _this.tableData[i].ioWrite= arr[i].ioWrite.toFixed(2);
-                            }
-                            if(arr[i].iops == null){
-                                if(arr[i].ioRead != null && arr[i].ioWrite != null){
-                                    let tmp = arr[i].ioRead + arr[i].ioWrite;
-                                    _this.tableData[i].iops= tmp.toFix(2);
-                                }else {
-                                    _this.tableData[i].iops = '--';
-                                }
-                            }else {
-                                _this.tableData[i].iops= arr[i].iops.toFixed(2);
-                            }
-                            if(arr[i].netRead == null){
-                                _this.tableData[i].netRead = '--';
-                            }else {
-                                _this.tableData[i].netRead=(arr[i].netRead/1024).toFixed(2);
-                            }
-                            if(arr[i].netWrite == null){
-                                _this.tableData[i].netWrite = '--';
-                            }else {
-                                _this.tableData[i].netWrite=(arr[i].netWrites/1024).toFixed(2);
- //                               if (String(_this.tableData[i].netWrite).indexOf('.') > -1)
- //                               _this.tableData[i].netWrite = _this.tableData[i].netWrite.toFixed(2);
-                            }
-                        }
+   
                     })
                 },
                 /**切换页码 */
@@ -510,6 +625,17 @@
                     this.pageSize = pageSize;
                     this.listCase();
                 },
+
+                /**停止外呼操作，场景结束，主动停止时调用，页面关闭在destory里 */
+                StopTimer:function(){
+                    clearInterval(this.intervalFunc);
+                    clearInterval(this.intervalFuncc);
+                    clearInterval(this.stopes);
+
+                    this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
+                    this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
+                },
+
                 pressCase: function() {
                     let _this = this;
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值 '+this.$route.query.executor_id+'
@@ -521,46 +647,8 @@
                         data: {
                         }
                     }).then(function (response) {
-                        console.log(response);
                         console.log('请求回来的表格数据555: ', response.data);
                         _this.tableDatal = response.data.result;  
-                        var ccc = response.data.result;
-                        for(var i=0;i<ccc.length;i++){
-                            if(ccc[i].cpuNum == null){
-                                _this.tableDatal[i].cpuNum = '--'
-                            }else {
-                                if( ccc[i].memSize == null ){
-                                    _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C';
-                                }else{
-                                var aaa = parseInt(ccc[i].memSize)/1024;
-                                var cccc = Math.round(aaa);    //四舍五入  Math.ceil() 向上取整
-                                _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C'+cccc+'G';
-                                }
-                            }if(ccc[i].cpuUsedPercent == null){
-                                _this.tableDatal[i].cpuUsedPercent = '--'
-                            }else {
-                                _this.tableDatal[i].cpuUsedPercent=parseFloat(ccc[i].cpuUsedPercent)*100;
-                                _this.tableDatal[i].cpuUsedPercent = _this.tableDatal[i].cpuUsedPercent.toFixed(2);
-                            } 
-                            if(ccc[i].memoryUsedPercent == null){
-                                _this.tableDatal[i].memoryUsedPercent = '--'
-                            }else {
-                                _this.tableDatal[i].memoryUsedPercent=parseFloat(ccc[i].memoryUsedPercent)*100;
-                                _this.tableDatal[i].memoryUsedPercent = _this.tableDatal[i].memoryUsedPercent.toFixed(2);
-                            }
-                            if(ccc[i].iops == null){
-                                if(ccc[i].ioRead != null && ccc[i].ioWrite != null ) {
-                                    _this.tableDatal[i].iops = parseFloat(ccc[i].ioRead) + parseFloat(ccc[i].ioWrite);
-                                    _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2); 
-                                }
-                                else{
-                                    _this.tableDatal[i].iops = '--';
-                                }
-                            }else {
-                                _this.tableDatal[i].iops=parseFloat(ccc[i].iops);
-                                _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
-                            }
-                        }
                     })
                 },
                 //压力机资源跳转
