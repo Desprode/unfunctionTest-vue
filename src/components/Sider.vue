@@ -34,7 +34,7 @@
             <router-link to="/userpluginmgr" />
             用户插件管理
           </MenuItem>
-          <MenuItem name="2-2">
+          <MenuItem name="2-2" v-show="hasSysPlgnMng">
             <router-link to="/syspluginmgr" />
             系统插件管理
           </MenuItem>
@@ -48,7 +48,7 @@
             <router-link to="/perftask" />
           </MenuItem>
         </MenuItem> -->
-        <MenuItem name="1-7">
+        <MenuItem name="1-7" v-show="hasMchnMng">
           <router-link to="/machine" />
           <Icon type="ios-keypad" />
           <span>机器管理</span>
@@ -87,10 +87,16 @@
   </div>
 </template>
 <script>
+  import global_ from 'header/global'
+  import cookie_ from 'header/cookie'
+  import axios from 'axios'
+
   export default {
     name: 'sider',
     data(){
       return{
+        hasSysPlgnMng: false, 
+        hasMchnMng: false, 
         isCollapsed: false,
         pathActive:{
           agile:["1","1-1"],
@@ -107,7 +113,102 @@
         currentMenu:"1-1",//1-1
       }
     },
+    created () {
+      let userName = this.$Global.getCookie('username');
+      console.log("userName: ", userName);
+      let _this = this;
+
+      if (userName == '' || userName == null || userName == undefined) {
+          //验证用户是否登陆，发送请求获取，有可能用户在其他页面做过登陆操作。
+          axios.get(global_.login2_url + '/api/checkLogin', { params: {} }).then((parm) => {
+            let parmdata = parm.data;
+            // console.log(parmdata.nickname+"!!!!!!!!!");
+            cookie_.setCookie('nickname', parmdata.nickname, 'd30');
+            cookie_.setCookie('username', parmdata.username, 'd30');
+
+            console.log('*** sider.vue *** parmdata.username: ', parmdata.username);
+
+            this.getUsrPermissions(parmdata.username);
+          }).catch((error) => {})
+      } else {
+        console.log('*** sider.vue *** userName: ', userName);
+        this.getUsrPermissions(userName);
+      }
+    }, 
     methods:{
+      /**获取用户权限信息 */
+      getUsrPermissions(username) {
+        let _this = this;
+
+        axios.post('/myapi/user/getUserPermissions', {
+            userId: username,
+        }).then(function (response) {
+            if (response.data.result == "fail") {
+                // resp = {'result': 'fail'};
+                // resp.set('result', 'fail');
+            } else if (response.data.result == "ok") {
+                // console.log("get user permissions: ", response);
+                let results = response.data.resultList;
+                // console.log("results: ", results);
+
+                _this.$Global.userPermissions = [];
+                // console.log("userPermissions before: ", _this.userPermissions);
+                for (let perm in results) {
+                    // console.log("perm: ", results[perm].name);
+                    _this.$Global.userPermissions.push(results[perm].name);
+
+                    if ( results[perm].name == 'apts_nfunSysPlgnMng' ) {
+                      console.log("apts_nfunSysPlgnMng True !!!");
+                      _this.hasSysPlgnMng = true;
+                    } else if ( results[perm].name == 'apts_nfunMchnMng' ) {
+                      console.log("apts_nfunMchnMng True !!!");
+                      _this.hasMchnMng = true;
+                    }
+                }
+                console.log("***_this.$Global.userPermissions *** ", _this.$Global.userPermissions);
+
+                // 这段代码保留，勿删
+                // let sysPlgnMng = _this.$Global.userPermissions.findIndex(n => n == "apts_nfunSysPlgnMng");
+                // console.log("*** getUsrPermissions *** sysPlgnMng: ", sysPlgnMng);
+                // let mchnMng = _this.$Global.userPermissions.findIndex(n => n == "apts_nfunMchnMng");
+                // console.log("*** getUsrPermissions *** mchnMng: ", mchnMng);
+
+
+
+                // console.log("userPermissions after: ", _this.userPermissions);
+                // resp = {'result': 'ok', 'perms': _this.userPermissions};
+                // resp.set('result', 'ok');
+                // resp.set('perms', _this.userPermissions);
+            }
+
+            // console.log('--- resp: --- ', resp);
+        })
+        // let result = this.$Global.getUserPerms(username);
+        // console.log('*** result *** ', result);
+        // console.log('keys: ', result.keys());
+        // console.log('*** result.has("result") *** ', result.has('result'));
+        // console.log('*** result.get(result) *** ', result.get('result'));
+        // // let permissions = this.$Global.userPermissions;
+        // // console.log("now in Sider.vue, permissions is ", permissions);
+
+        // if ( result && result.has("result") && result.get(result) == "ok") {
+        //   let permissions = result.get('perms');
+        //   console.log("*** permissions *** ", permissions);
+          
+        //   let sysPlgnMng = permissions.findIndex(n => n == "apts_nfunSysPlgnMng");
+        //   console.log("*** getUsrPermissions *** sysPlgnMng: ", sysPlgnMng);
+        //   let mchnMng = permissions.findIndex(n => n == "apts_nfunMchnMng");
+        //   console.log("*** getUsrPermissions *** mchnMng: ", mchnMng);
+        // }
+
+        // if (permissions && get_perms.result == "fail") {
+        //     this.$Message.error("无法获取当前登录用户的权限信息");
+        // } else if (get_perms && get_perms.result == "ok") {
+        //     let perms = get_perms.perms;
+        //     console.log("perms: ", perms);
+        // }
+      }, 
+
       collapsedSider () {
         this.$refs.SiderBox.toggleCollapse();
       },

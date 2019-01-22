@@ -148,6 +148,22 @@
                                 </Form-item>
                             </i-col>
                         </Row>
+                        <Row>
+                            <Col span="17">
+                                <Form-item label="非功能测试人员" prop="perftask_rel_users">
+                                    <Transfer
+                                        :data="nfunTestMngrs"
+                                        :target-keys="selectedTestMngrs"
+                                        :titles="['可选人员列表', '已选人员列表']"
+                                        filterable
+                                        :filter-method="filterMethod"
+                                        @on-change="handleChange2"
+                                        style="text-align: -webkit-left;">
+                                        <!-- :target-keys="targetKeys2" -->
+                                    </Transfer>
+                                </Form-item>
+                            </Col>
+                        </Row>
                     </Form>
                 </div>
                 <div slot="footer">
@@ -193,6 +209,22 @@
                                     <Option v-for="item in taskStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </FormItem>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col span="17">
+                            <Form-item label="非功能测试人员" prop="perftask_rel_users">
+                                <Transfer
+                                    :data="nfunTestMngrs"
+                                    :target-keys="selectedTestMngrs"
+                                    :titles="['可选人员列表', '已选人员列表']"
+                                    filterable
+                                    :filter-method="filterMethod"
+                                    @on-change="handleChange2"
+                                    style="text-align: -webkit-left;">
+                                    <!-- :target-keys="targetKeys2" -->
+                                </Transfer>
+                            </Form-item>
                         </Col>
                     </Row>
                 </Form>
@@ -404,22 +436,8 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.editPTaskModal = true;
                                         // console.log('params.row: ', params.row);
-                                        this.editPTaskValidate.index = params.row._index;
-                                        this.editPTaskValidate.id = params.row.id;
-                                        this.editPTaskValidate.component_name = params.row.component_name;
-                                        this.editPTaskValidate.perftask_name = params.row.perftask_name;
-                                        this.editPTaskValidate.perftask_begin_date = params.row.perftask_begin_date;
-                                        this.editPTaskValidate.perftask_end_date = params.row.perftask_end_date;
-                                        this.editPTaskValidate.online_date = params.row.online_date;
-                                        this.editPTaskValidate.perftask_status = params.row.perftask_status;
-                                        this.editPTaskValidate.ptask_source = params.row.ptask_source;
-                                            // if (params.row.$isEdit) {
-                                            //     this.handleSave(params.row);
-                                            // } else {
-                                            //     this.handleEdit(params.row);
-                                            // }
+                                        this.editPTask(params.row);
                                     }
                                 }
                             }, '编辑'),        // params.row.$isEdit ? '保存' : '编辑'
@@ -453,6 +471,7 @@ export default {
                 perftask_begin_date: '',    // 任务开始日期
                 perftask_end_date: '',      // 任务结束日期
                 online_date: '',            // 投产日期
+                perftask_rel_users: '',     // 非功能测试人员
             },
             addRuleValidate: {
                 task_name: [
@@ -471,6 +490,11 @@ export default {
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
             },
+            // nfunTestMngrs: this.getMockData(),
+            nfunTestMngrs: [],
+            // targetKeys2: this.getTargetKeys(), 
+            selectedTestMngrs: [], 
+            // pftaskRelUsrsTitle: ['可选人员列表', '选定的非功能测试人员'],
 
             /**==================== 任务编辑弹出框数据 ====================*/
             editPTaskModal: false, 
@@ -484,6 +508,7 @@ export default {
                 online_date: '',            // 投产日期——可编辑
                 perftask_status: '',        // 任务状态——可编辑
                 ptask_source: '',           // 任务来源
+                perftask_rel_users: '',     // 非功能测试人员
             },
             editPTaskRuleVldt: {
                 task_name: [
@@ -692,6 +717,7 @@ export default {
          * 所以为了保证cookie中始终都有当前用户的信息，这里也做了一下用户信息获取和放cookie */
         let nickName = cookie_.getCookie('nickname');
         let userName = this.$Global.getCookie('username');
+        let _this = this;
 
         // console.log("*** nickname: ", nickName);
         // console.log("*** username: ", userName);
@@ -708,45 +734,40 @@ export default {
                 // console.log("after set --- username: ", cookie_.getCookie('username'));
 
                 /**获取用户权限信息 */
-                this.$http.post('/myapi/user/getUserPermissions', {
-                    userId: parmdata.username,
-                    // header: {},
-                    // data: {
-                    //     userId: parmdata.username, 
-                    // }
-                }).then(function (response) {
-                    if (response.data.result == "fail") {
-                        let errDesc = _this.handleErrCode(response);
+                // let get_perms = _this.$Global.getUserPerms(parmdata.username);
+                // console.log("now after self login, perms is ", get_perms);
 
-                        _this.$Message.error(errDesc);
-                    } else if (response.data.result == "ok") {
-                        console.log("get user permissions: ", response);
-                    }
-                })
+                // if (get_perms && get_perms.result == "fail") {
+                //     _this.$Message.error("无法获取当前登录用户的权限信息");
+                // } else if (get_perms && get_perms.result == "ok") {
+                //     let perms = get_perms.perms;
+                //     console.log("perms: ", perms);
+                // }
 
-                /**获取任务列表 */
-                this.listPTask();
+                // /**获取任务列表 */
+                // _this.listPTask();
+
+                /**获取用户权限信息并加载任务列表界面 */
+                _this.getUsrPermissions(parmdata.username);
             }).catch((error) => {})
         } else {
             /**获取用户权限信息 */
-            this.$http.post('/myapi/user/getUserPermissions', {
-                userId: userName,
-                // header: {},
-                // data: {
-                //     userId: userName, 
-                // }
-            }).then(function (response) {
-                if (response.data.result == "fail") {
-                    let errDesc = _this.handleErrCode(response);
+            // _this.$Global.getUserPerms(userName);
+            // let permissions = _this.$Global.userPermissions;
+            // console.log("now after ICDP login, permissions is ", permissions);
 
-                    _this.$Message.error(errDesc);
-                } else if (response.data.result == "ok") {
-                    console.log("get user permissions: ", response);
-                }
-            })
+            // if (permissions && get_perms.result == "fail") {
+            //     _this.$Message.error("无法获取当前登录用户的权限信息");
+            // } else if (get_perms && get_perms.result == "ok") {
+            //     let perms = get_perms.perms;
+            //     console.log("perms: ", perms);
+            // }
 
-            /**获取任务列表 */
-            this.listPTask();
+            // /**获取任务列表 */
+            // _this.listPTask();
+
+            /**获取用户权限信息并加载任务列表界面 */
+            _this.getUsrPermissions(userName);
         }
     },
     methods: {
@@ -754,8 +775,68 @@ export default {
             alert(ev.keyCode)
         },
 
+        /**获取用户权限信息 */
+        getUsrPermissions(username) {
+            let _this = this;
+
+            axios.post('/myapi/user/getUserPermissions', {
+                userId: username,
+            }).then(function (response) {
+                if (response.data.result == "fail") {
+                } else if (response.data.result == "ok") {
+                    // console.log("get user permissions: ", response);
+                    let results = response.data.resultList;
+                    // console.log("results: ", results);
+
+                    _this.$Global.userPermissions = [];
+                    // console.log("userPermissions before: ", _this.userPermissions);
+                    for (let perm in results) {
+                        // console.log("perm: ", results[perm].name);
+                        _this.$Global.userPermissions.push(results[perm].name);
+                    }
+                    // console.log("***_this.$Global.userPermissions *** ", _this.$Global.userPermissions);
+                }
+
+                /**获取任务列表 */
+                _this.listPTask();
+            })
+        }, 
+
+        // /**==================== 获取用户权限列表 ====================*/
+        // getPermissions: function(username){}, 
+
+        // /**==================== 获取用户权限列表(未放global前) ====================*/
+        // getUserPerms: function(username){
+        //     let _this = this;
+
+        //     this.$http.post('/myapi/user/getUserPermissions', {
+        //         userId: username,
+        //         // header: {},
+        //         // data: {
+        //         //     userId: parmdata.username, 
+        //         // }
+        //     }).then(function (response) {
+        //         if (response.data.result == "fail") {
+        //             let errDesc = _this.handleErrCode(response);
+
+        //             _this.$Message.error(errDesc);
+        //         } else if (response.data.result == "ok") {
+        //             console.log("get user permissions: ", response);
+        //             let results = response.data.resultList;
+        //             // console.log("results: ", results);
+
+        //             console.log("userPermissions: ", _this.$Global.userPermissions);
+        //             for (let perm in results) {
+        //                 // console.log("perm: ", results[perm].name);
+        //                 _this.$Global.userPermissions.push(results[perm].name);
+        //             } 
+        //             console.log("userPermissions: ", _this.$Global.userPermissions);
+        //         }
+        //     })
+        // }, 
+
         /**==================== 物理子系统检索 ====================*/
-        srchComponent:function(query){
+        srchComponent: function(query){
             // console.log("now in srchComponent, this is ", this);
             this.cmpOpts = [];
             if(query !== ''){
@@ -825,6 +906,8 @@ export default {
         /**==================== 任务列表相关事件 ====================*/
         listPTask: function() {
             let _this = this;
+
+            // console.log('^^^ permission in listPTask ^^^ ', _this.$Global.userPermissions);
             // console.log("任务来源:", _this.sTaskSource);
             // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/perftask/list', {
@@ -883,15 +966,6 @@ export default {
         // onRowDblClick: function(row) {
         //     this.$router.push({path:'/addCase',query:{id:row.id}});
         // },
-        
-        // /**点击保存之后的事件 */
-        // handleSave(row){
-        //     //console.log("这是保存",row)
-        // },
-        // /**点击编辑之后的事件 */
-        // handleEdit(row){
-        //     //console.log("这是编辑",row)
-        // },
 
         // /**删除一条数据 */
         // remove(index){
@@ -903,10 +977,17 @@ export default {
         /**添加新数据弹出模态框 */
         addPTask:function(){
             this.addPTaskModal = true;
+
+            this.getTestMngrsData();
+
+            // let testMngrs = this.getTestMngrsData();
+            // console.log('&&& testMngrs &&& ', testMngrs);
+            // this.nfunTestMngrs = testMngrs;
         },
         handleSubmit (name) {
             let _this = this;
             // console.log("**********************this: ", _this);
+            // console.log("********* selectedTestMngrs *********", this.selectedTestMngrs);
             
             this.$refs[name].validate((valid) => {
                 if (valid) {
@@ -922,6 +1003,7 @@ export default {
                             perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
                             online_date: _this.addValidate.online_date,
                             perftask_source: "2",
+                            rel_users: _this.selectedTestMngrs, 
                         }
                     }).then(function (response) {
                         if (response.data.result == "fail") {
@@ -951,8 +1033,246 @@ export default {
             this.$Message.info('点击了取消');
             this.addPTaskModal = false;
         },
+        getTestMngrsData () {
+            let _this = this;
+            this.nfunTestMngrs = [];
+            this.selectedTestMngrs = [];
+
+            // this.
+
+            // this.selectedTestMngrs.push({
+            //     key: cookie_.getCookie('nickname')  + '(' + cookie_.getCookie('username') + ')', 
+            //     label: cookie_.getCookie('nickname')  + '(' + cookie_.getCookie('username') + ')', 
+            //     disabled: true
+            // });
+            // console.log("--- selectedTestMngrs --- ", this.selectedTestMngrs);
+
+            this.$http.post('/myapi/user/getRoleUsers', {
+                role: "apts_nfunTestMngr",      // 角色
+                user: "",                      // 用户的user_name或nick_name模糊搜索，本项未来可空
+                page: 1, 
+                limit: 100, 
+            }).then(function (response) {
+                if (response.data.result == "fail") {
+                    let errDesc = _this.handleErrCode(response);
+
+                    _this.$Message.error(errDesc);
+                } else if (response.data.result == "ok") {
+                    // console.log("--- response.data --- ", response.data.resultList);
+                    let usersList = response.data.resultList;
+                    // console.log("cookie username: ", cookie_.getCookie('username'));
+
+                    for ( let index in usersList ) {
+                        // 将任务的创建人设置成不可编辑的（只能在已选列表中）
+                        if ( cookie_.getCookie('username') == usersList[index].username ) {
+                            _this.nfunTestMngrs.push({
+                                key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                label: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                disabled: true
+                            });
+                            _this.selectedTestMngrs.push(usersList[index].nickname + '(' + usersList[index].username + ')');
+                        } else {
+                            _this.nfunTestMngrs.push({
+                                key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                label: usersList[index].nickname + '(' + usersList[index].username + ')'
+                            });
+                        }
+                    }
+                    // console.log("--- selectedTestMngrs --- ", _this.selectedTestMngrs);
+                }
+            })
+
+            // setTimeout(() => {
+            //     return testMngrs;
+            // }, 500);
+        }, 
+        // getMockData () {
+        //     let mockData = [];
+        //     for (let i = 1; i <= 20; i++) {
+        //         mockData.push({
+        //             key: i.toString(),
+        //             label: 'Content ' + i,
+        //             description: 'The desc of content  ' + i,
+        //             disabled: Math.random() * 3 < 1
+        //         });
+        //     }
+        //     return mockData;
+        // },
+        // getTargetKeys () {
+        //     return this.getMockData()
+        //             .filter(() => Math.random() * 2 > 1)
+        //             .map(item => item.key);
+        // },
+        handleChange2 (newTargetKeys) {
+            // this.targetKeys2 = newTargetKeys;
+            // console.log("newTargetKeys: ", newTargetKeys);
+            this.selectedTestMngrs = newTargetKeys;
+        },
+        filterMethod (data, query) {
+            return data.label.indexOf(query) > -1;
+            // console.log("^^^ filterMethod data ^^^ ", data);
+            // console.log("^^^ filterMethod query ^^^ ", query);
+
+            // let _this = this;
+
+            // if ( query == '' ) {
+            //     console.log("query is ''");
+            //     return data;
+            // } else {
+            //     console.log("query is ", query);
+
+            //     let optionalTestMngrs = [];
+
+            //     this.$http.post('/myapi/user/getRoleUsers', {
+            //         role: "apts_nfunTestMngr",      // 角色
+            //         user: query,                      // 用户的user_name或nick_name模糊搜索，本项未来可空
+            //         page: 1, 
+            //         limit: 100, 
+            //     }).then(function (response) {
+            //         if (response.data.result == "fail") {
+            //             let errDesc = _this.handleErrCode(response);
+
+            //             _this.$Message.error(errDesc);
+            //         } else if (response.data.result == "ok") {
+            //             console.log("--- response.data --- ", response.data.resultList);
+            //             let usersList = response.data.resultList;
+
+            //             for ( let index in usersList ) {
+            //                 optionalTestMngrs.push({
+            //                     key: usersList[index].nickname, 
+            //                     label: usersList[index].nickname + '(' + usersList[index].username + ')'
+            //                 });
+            //             }
+            //             console.log("--- optionalTestMngrs --- ", optionalTestMngrs);
+            //         }
+            //     })
+
+            //     setTimeout(() => {
+            //         console.log("=== setTimeout === ", optionalTestMngrs);
+            //         return optionalTestMngrs;
+            //     }, 500);
+            // }
+        }, 
 
         /**==================== 编辑任务相关事件 ====================*/
+        editPTask( ptaskTRowData ) {
+            let _this = this;
+
+            // console.log("ptaskTRowData: ", ptaskTRowData);
+
+            this.nfunTestMngrs = [];
+            this.selectedTestMngrs = [];
+
+            this.editPTaskModal = true;
+            
+            this.editPTaskValidate.index = ptaskTRowData._index;
+            this.editPTaskValidate.id = ptaskTRowData.id;
+            this.editPTaskValidate.component_name = ptaskTRowData.component_name;
+            this.editPTaskValidate.perftask_name = ptaskTRowData.perftask_name;
+            this.editPTaskValidate.perftask_begin_date = ptaskTRowData.perftask_begin_date;
+            this.editPTaskValidate.perftask_end_date = ptaskTRowData.perftask_end_date;
+            this.editPTaskValidate.online_date = ptaskTRowData.online_date;
+            this.editPTaskValidate.perftask_status = ptaskTRowData.perftask_status;
+            this.editPTaskValidate.ptask_source = ptaskTRowData.ptask_source;
+
+            this.$http.post('/myapi/perftask/view', {
+                header: {},
+                data: {
+                    id: _this.editPTaskValidate.id,  
+                }
+            }).then(function (response) {
+                if (response.data.result == "fail") {
+                    let errDesc = _this.handleErrCode(response);
+
+                    _this.$Message.error(errDesc);
+                    _this.editPTaskModal = false;
+                } else if (response.data.result == "ok") {
+                    let creator_username = response.data.resultList[0].username;
+                    let creator_membername = response.data.resultList[0].ptask_creator_name;
+                    let rel_users = response.data.resultMap.rel_users;
+                    // console.log("creator_username: ", creator_username);
+                    // console.log("rel_users: ", rel_users);
+
+                    _this.$http.post('/myapi/user/getRoleUsers', {
+                        role: "apts_nfunTestMngr",      // 角色
+                        user: "",                      // 用户的user_name或nick_name模糊搜索，本项未来可空
+                        page: 1, 
+                        limit: 100, 
+                    }).then(function (resp) {
+                        if (resp.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(resp);
+
+                            _this.$Message.error(errDesc);
+                        } else if (resp.data.result == "ok") {
+                            let usersList = resp.data.resultList;
+
+                            for ( let index in usersList ) {
+                                // 将任务的创建人设置成不可编辑的（只能在已选列表中）
+                                if ( creator_username == usersList[index].username ) {
+                                    _this.nfunTestMngrs.push({
+                                        key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                        label: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                        disabled: true
+                                    });
+                                } else {
+                                    _this.nfunTestMngrs.push({
+                                        key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+                                        label: usersList[index].nickname + '(' + usersList[index].username + ')'
+                                    });
+                                }
+                            }
+                            // console.log("--- selectedTestMngrs --- ", _this.selectedTestMngrs);
+
+                            // 将任务的创建人加入到已选列表中
+                            let sel_creator = 0;
+                            
+                            for ( let i in rel_users ) {
+                                if ( rel_users[i].username == creator_username ) {
+                                    sel_creator = 1;
+                                }
+                                _this.selectedTestMngrs.push(rel_users[i].member_name + '(' + rel_users[i].username + ')');
+                            }
+
+                            if ( sel_creator == 0 ) {
+                                _this.selectedTestMngrs.push(creator_membername + '(' + creator_username + ')');
+                            }
+                        }
+                    })
+                }
+            })
+
+            // this.$http.post('/myapi/user/getRoleUsers', {
+            //     role: "apts_nfunTestMngr",      // 角色
+            //     user: "",                      // 用户的user_name或nick_name模糊搜索，本项未来可空
+            //     page: 1, 
+            //     limit: 100, 
+            // }).then(function (response) {
+            //     if (response.data.result == "fail") {
+            //         let errDesc = _this.handleErrCode(response);
+
+            //         _this.$Message.error(errDesc);
+            //     } else if (response.data.result == "ok") {
+            //         let usersList = response.data.resultList;
+
+            //         // for ( let index in usersList ) {
+            //         //     if ( cookie_.getCookie('username') == usersList[index].username ) {
+            //         //         _this.nfunTestMngrs.push({
+            //         //             key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+            //         //             label: usersList[index].nickname + '(' + usersList[index].username + ')', 
+            //         //             disabled: true
+            //         //         });
+            //         //         // _this.selectedTestMngrs.push(usersList[index].nickname + '(' + usersList[index].username + ')');
+            //         //     } else {
+            //         //         _this.nfunTestMngrs.push({
+            //         //             key: usersList[index].nickname + '(' + usersList[index].username + ')', 
+            //         //             label: usersList[index].nickname + '(' + usersList[index].username + ')'
+            //         //         });
+            //         //     }
+            //         // }
+            //         // console.log("--- selectedTestMngrs --- ", _this.selectedTestMngrs);
+            //     }
+            // })
+        }, 
         handleEditPTaskSubmit (editPTaskData) {
             let _this = this;
             // console.log("**********************this: ", _this);
@@ -960,6 +1280,7 @@ export default {
             
             this.$refs[editPTaskData].validate((valid) => {
                 if (valid) {
+                    console.log("selectedTestMngrs in edit: ", _this.selectedTestMngrs);
                     // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/perftask/edit', {
                         header: {},
@@ -970,6 +1291,7 @@ export default {
                             perftask_end_date: _this.editPTaskValidate.perftask_end_date,
                             online_date: _this.editPTaskValidate.online_date,
                             perftask_status: _this.editPTaskValidate.perftask_status, 
+                            rel_users: _this.selectedTestMngrs, 
                         }
                     }).then(function (response) {
                         if (response.data.result == "fail") {
@@ -1009,7 +1331,8 @@ export default {
                 this.delPTaskValidate.delPTaskList = selectedData;
                 // console.log("this.delPTaskValidate.delPTaskList: ", this.delPTaskValidate.delPTaskList);
             }else{
-                    this.$Message.error("请选择要删除的数据")
+                    this.$Message.error("请选择要删除的数据");
+                    // console.log("---");
             }
         }, 
         handleDelPTaskSubmit (delPTaskData) {

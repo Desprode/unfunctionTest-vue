@@ -1,4 +1,7 @@
 <script>
+import axios from 'axios'
+
+/** 日期格式化 */
 function formatDate(date, fmt) {
     // console.log('now in formatDate, with date is ', date)
     let o = {
@@ -33,7 +36,50 @@ function getCookie(name){
         return null;
 }
 
+// /** 获取用户权限列表 */
+// function getUserPerms(username){
+//     let _this = this;
+//     // let resp = new Map();
+//     let resp = {};
+    
+//     axios.post('/myapi/user/getUserPermissions', {
+//         userId: username,
+//     }).then(function (response) {
+//         if (response.data.result == "fail") {
+//             resp = {'result': 'fail'};
+//             // resp.set('result', 'fail');
+//         } else if (response.data.result == "ok") {
+//             // console.log("get user permissions: ", response);
+//             let results = response.data.resultList;
+//             // console.log("results: ", results);
+
+//             _this.userPermissions = [];
+//             // console.log("userPermissions before: ", _this.userPermissions);
+//             for (let perm in results) {
+//                 // console.log("perm: ", results[perm].name);
+//                 _this.userPermissions.push(results[perm].name);
+//             } 
+//             // console.log("userPermissions after: ", _this.userPermissions);
+
+//             resp = {'result': 'ok', 'perms': _this.userPermissions};
+//             // resp.set('result', 'ok');
+//             // resp.set('perms', _this.userPermissions);
+//         }
+
+//         console.log('--- resp: --- ', resp);
+//     })
+    
+//     console.log('=== resp: === ', resp);
+//     console.log('resp.result: ', resp.result);
+//     console.log('resp["result"]: ', resp["result"]);
+
+//     return resp
+// }
+
 export default {
+    // 用户权限
+    userPermissions: [], 
+
     // 任务状态
     taskStatusList: [
         {value: '00', label: '新建'},
@@ -75,6 +121,9 @@ export default {
     formatDate, 
 
     // 获取cookie中的值
-    getCookie, 
+    getCookie,
+    
+    // // 获取用户权限列表
+    // getUserPerms, 
 }
 </script>
