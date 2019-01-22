@@ -40,15 +40,15 @@
             </Tabs>
         </div>
     </div> 
-    </template>
-    <script> 
+</template>
+<script> 
     var websocket = null;
-        let start_time = null;
-        let timestamp = null;
-        let timestampl = null;
+    let start_time = null;
+    let timestamp = null;
+    let timestampl = null;
     export default {
         beforeMount(){
-        this.stopes= setInterval(getflush,1000)
+            this.stopes= setInterval(getflush,1000)
             let timdate = this
             function getflush(){
                 let curDate = new Date();
@@ -81,7 +81,7 @@
                 }
             }
         },
-            data () {
+        data () {
                 return {
                     senario_name:this.$route.query.senario_name,
                     describe: '',
@@ -110,6 +110,7 @@
                             align: 'center',
                             width: 60,
                             render: (h, params) => {
+                                console.log("231214",params);
                                 return h('span', params.index + (this.pageNo - 1) * this.pageSize + 1);
                             }
                         },
@@ -168,7 +169,7 @@
                             children: [
                                 {
                                     title: 'used',
-                                    key: 'cpuUserPercent',
+                                    key: 'cpuUsedPercent',
                                 },
                                 {
                                     title: 'sys',
@@ -242,7 +243,7 @@
                     stopes:null,
                 }
             },
-            beforeDestroy(){
+        beforeDestroy(){
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
 
@@ -251,20 +252,20 @@
             clearInterval(this.stopes);
             this.stopes = null;
         },
-            mounted(){
+        mounted(){
                 
-            },
-            created(){
+        },
+        created(){
                 //this.pressCase();
                 //this.listCase();
                 this.initWs();
     
                 this.getServerInfo();
                 this.getPressureaAgentInfo();
-            },
-            methods:{ 
+        },
+        methods:{ 
                 //服务器资源信息
-                getServerInfo: function() {
+            getServerInfo: function() {
                     console.log("服务器资源信息");
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
@@ -311,9 +312,9 @@
                         console.log("serverInfo",_this.serverInfo);
                         console.log(subsys);
                     });
-                },
+            },
             //压力机信息
-                getPressureaAgentInfo: function() {
+            getPressureaAgentInfo: function() {
                     console.log("压力机信息");
                     let _this = this;
                     this.$http.defaults.withCredentials = false;
@@ -321,6 +322,8 @@
                     }).then(function (response) {
                         console.log(response);
                         let result = response.data.resultList;
+                        if(result.length == 0)
+                            return;
                         let subsys = [];
                         let funDesc = result[0].funDesc;
 
@@ -339,39 +342,39 @@
                          console.log("getpressInfo");
                         console.log(subsys);
                     });
-                },
-              initWs() {
+            },
+            initWs() {
                this.ws =new WebSocket(this.wsurl)
                this.ws.onmessage = this.getmessage
-              },
-              getmessage(e){
-             var res = e.data
-             console.log("这个里面是什么",res)
-             var _cutting = res.substr(0,1); //截取
-             if(_cutting =='1'){      // 判断是不是开头是1的数据
-             this.describe+=e.data.substr(1)
-             this.describe+='\r\n'    //换行
-             }else if(_cutting =='0'){   // 判断是不是开头是0的数据
-                var status = e.data
-                var cuttingl = status.substr(1)   //截取0的数据
-                this.statuszt = eval('('+cuttingl+')')
-                 if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
-                    start_time = this.statuszt.exe_time;
+            },
+            getmessage(e){
+                var res = e.data
+                console.log("这个里面是什么",res)
+                var _cutting = res.substr(0,1); //截取
+                if(_cutting =='1'){      // 判断是不是开头是1的数据
+                this.describe+=e.data.substr(1)
+                this.describe+='\r\n'    //换行
+                }else if(_cutting =='0'){   // 判断是不是开头是0的数据
+                    var status = e.data
+                    var cuttingl = status.substr(1)   //截取0的数据
+                    this.statuszt = eval('('+cuttingl+')')
+                    if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
+                        start_time = this.statuszt.exe_time;
+                    }
+                    if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
+                        this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
+                        this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                        this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                        this.intervalFunc = setInterval(this.listCase, 10000);
+                        this.intervalFuncc = setInterval(this.pressCase, 10000);
+                    }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
+                        this.statuszt.exe_description = '测试准备中'
+                        start_time = null
+                    }if(this.statuszt.exe_description === '测试执行结束'){
+                        this.intervalFuncc = false
+                    }
                 }
-                if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
-                    this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
-                    this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                    this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                    this.intervalFunc = setInterval(this.listCase, 10000);
-                    this.intervalFuncc = setInterval(this.pressCase, 10000);
-                }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
-                    this.statuszt.exe_description = '测试准备中'
-                    start_time = null
-                }if(this.statuszt.exe_description === '测试执行结束'){
-                    this.intervalFuncc = false
-                }
-             }
-              },
+            },
              //停止
         deleteData: function() {                //调用方法将原有数据中对应的id停止
             let _this = this;
@@ -404,7 +407,7 @@
         },
                 
                  //服务器资源
-                 listCase: function() {
+                listCase: function() {
                     let _this = this;
                     var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
                     var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值  this.$route.query.senario_type为1的话 不显示后两个列表
@@ -422,7 +425,6 @@
                     }).then(function (response) {
                         console.log(response);
                         console.log('请求回来的表格数据: ', response.data);
-                        _this.tableData = response.data.resultList;
                         _this.totalCount = response.headers.totalcount;
                         _this.totalPage = response.headers.totalpage;
                         console.log(response.headers.totalcount);
@@ -430,81 +432,68 @@
                         _this.tableData = response.data.resultList;
                         var arr = response.data.resultList;
                         for(var i=0;i<arr.length;i++){
-                            if(arr[i].cpuUserPercent == null){
-                                _this.tableData[i].cpuUserPercent = '--'
+                        //    _this.tableData[i].osVersion = arr[i].osVersion;
+                        //    _this.tableData[i].prodIp = arr[i].prodIp;
+                        //    _this.tableData[i].funDesc = arr[i].funDesc;
+                            if(arr[i].cpuUsedPercent == null){
+                                _this.tableData[i].cpuUsedPercent = '--'
                             }else {
-                                _this.tableData[i].cpuUserPercent=arr[i].cpuUserPercent*100;
-                                 if (String(_this.tableData[i].cpuUserPercent).indexOf('.') > -1)
-                                 _this.tableData[i].cpuUserPercent = _this.tableData[i].cpuUserPercent.toFixed(2);
+                                _this.tableData[i].cpuUsedPercent=(parseFloat(arr[i].cpuUsedPercent)*100).toFixed(2);
                             }
                             if(arr[i].cpuSysPercent == null){
                                 _this.tableData[i].cpuSysPercent = '--';
                             }else {
-                                _this.tableData[i].cpuSysPercent=arr[i].cpuSysPercent*100;
-                                if (String(_this.tableData[i].cpuSysPercent).indexOf('.') > -1)
-                                 _this.tableData[i].cpuSysPercent = _this.tableData[i].cpuSysPercent.toFixed(2);
+                                _this.tableData[i].cpuSysPercent=(parseFloat(arr[i].cpuSysPercent)*100).toFixed(2);
+                    
                             }
                             if(arr[i].cpuIOWaitPercent == null){
                                 _this.tableData[i].cpuIOWaitPercent = '--';
                             }else {
-                                _this.tableData[i].cpuIOWaitPercent=arr[i].cpuIOWaitPercent*100;
-                                if (String(_this.tableData[i].cpuIOWaitPercent).indexOf('.') > -1)
-                                 _this.tableData[i].cpuIOWaitPercent = _this.tableData[i].cpuIOWaitPercent.toFixed(2);
+                                _this.tableData[i].cpuIOWaitPercent= (parseFloat(arr[i].cpuIOWaitPercent)*100).toFixed(2);
                             }
                             if(arr[i].memoryUsedPercent == null){
                                 _this.tableData[i].memoryUsedPercent = '--'
                             }else {
-                                _this.tableData[i].memoryUsedPercent=arr[i].memoryUsedPercent*100;
-                                if (String(_this.tableData[i].memoryUsedPercent).indexOf('.') > -1)
-                                 _this.tableData[i].memoryUsedPercent = _this.tableData[i].memoryUsedPercent.toFixed(2);
+                                _this.tableData[i].memoryUsedPercent=(parseFloat(arr[i].memoryUsedPercent)*100).toFixed(2);
                             }
                             if(arr[i].memoryBufferPercent == null){
                                 _this.tableData[i].memoryBufferPercent = '--';
-                            }else {
-                                _this.tableData[i].memoryBufferPercent=arr[i].memoryBufferPercent*100 + arr[i].memoryCachePercent*100;
-                                if (String(_this.tableData[i].memoryBufferPercent).indexOf('.') > -1)
-                                 _this.tableData[i].memoryBufferPercent = _this.tableData[i].memoryBufferPercent.toFixed(2);
+                            } else {
+                                let tmp = parseFloat(arr[i].memoryBufferPercent) + parseFloat(arr[i].memoryCachePercent);
+                                let tmp2 = Number(tmp * 100);
+                                _this.tableData[i].memoryBufferPercent= tmp2.toFix(2);
                             }
-                            if(arr[i].ioRead == null&&arr[i].ioRead == 0){
+                            if(arr[i].ioRead == null){
                                 _this.tableData[i].ioRead = '--';
                             }else {
-                                _this.tableData[i].ioRead=arr[i].ioRead*100;
-                                if (String(_this.tableData[i].ioRead).indexOf('.') > -1)
-                                 _this.tableData[i].ioRead = _this.tableData[i].ioRead.toFixed(2);
+                                _this.tableData[i].ioRead= arr[i].ioRead.toFix(2);
                             }
-                            if(arr[i].ioWrite == null&&arr[i].ioWrite == 0){
+                            if(arr[i].ioWrite == null){
                                 _this.tableData[i].ioWrite = '--';
                             }else {
-                                _this.tableData[i].ioWrite=arr[i].ioWrite*100;
-                                if (String(_this.tableData[i].ioWrite).indexOf('.') > -1)
-                                 _this.tableData[i].ioWrite = _this.tableData[i].ioWrite.toFixed(2);
+                                _this.tableData[i].ioWrite= arr[i].ioWrite.toFixed(2);
                             }
                             if(arr[i].iops == null){
                                 if(arr[i].ioRead != null && arr[i].ioWrite != null){
-                                     _this.tableData[i].iops=arr[i].ioRead + arr[i].ioWrite;
-                                    if (String(_this.tableData[i].iops).indexOf('.') > -1)
-                                        _this.tableData[i].iops = _this.tableData[i].iops.toFixed(2);
+                                    let tmp = arr[i].ioRead + arr[i].ioWrite;
+                                    _this.tableData[i].iops= tmp.toFix(2);
                                 }else {
                                     _this.tableData[i].iops = '--';
                                 }
                             }else {
-                                _this.tableData[i].iops=arr[i].iops;
-                                if (String(_this.tableData[i].iops).indexOf('.') > -1)
-                                 _this.tableData[i].iops = _this.tableData[i].iops.toFixed(2);
+                                _this.tableData[i].iops= arr[i].iops.toFixed(2);
                             }
                             if(arr[i].netRead == null){
                                 _this.tableData[i].netRead = '--';
                             }else {
-                                _this.tableData[i].netRead=arr[i].netRead/1024;
-                                if (String(_this.tableData[i].netRead).indexOf('.') > -1)
-                                 _this.tableData[i].netRead = _this.tableData[i].netRead.toFixed(2);
+                                _this.tableData[i].netRead=(arr[i].netRead/1024).toFixed(2);
                             }
                             if(arr[i].netWrite == null){
                                 _this.tableData[i].netWrite = '--';
                             }else {
-                                _this.tableData[i].netWrite=arr[i].netWrite/1024;
-                                if (String(_this.tableData[i].netWrite).indexOf('.') > -1)
-                                 _this.tableData[i].netWrite = _this.tableData[i].netWrite.toFixed(2);
+                                _this.tableData[i].netWrite=(arr[i].netWrites/1024).toFixed(2);
+ //                               if (String(_this.tableData[i].netWrite).indexOf('.') > -1)
+ //                               _this.tableData[i].netWrite = _this.tableData[i].netWrite.toFixed(2);
                             }
                         }
                     })
@@ -543,37 +532,33 @@
                                 if( ccc[i].memSize == null ){
                                     _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C';
                                 }else{
-                                var aaa = ccc[i].memSize/1024;
+                                var aaa = parseInt(ccc[i].memSize)/1024;
                                 var cccc = Math.round(aaa);    //四舍五入  Math.ceil() 向上取整
                                 _this.tableDatal[i].cpuNum = ccc[i].cpuNum+'C'+cccc+'G';
                                 }
                             }if(ccc[i].cpuUsedPercent == null){
                                 _this.tableDatal[i].cpuUsedPercent = '--'
                             }else {
-                                _this.tableDatal[i].cpuUsedPercent=ccc[i].cpuUsedPercent*100;
-                                if (String(_this.tableDatal[i].cpuUsedPercent).indexOf('.') > -1)
-                                 _this.tableDatal[i].cpuUsedPercent = _this.tableDatal[i].cpuUsedPercent.toFixed(2);
+                                _this.tableDatal[i].cpuUsedPercent=parseFloat(ccc[i].cpuUsedPercent)*100;
+                                _this.tableDatal[i].cpuUsedPercent = _this.tableDatal[i].cpuUsedPercent.toFixed(2);
                             } 
                             if(ccc[i].memoryUsedPercent == null){
                                 _this.tableDatal[i].memoryUsedPercent = '--'
                             }else {
-                                _this.tableDatal[i].memoryUsedPercent=ccc[i].memoryUsedPercent*100;
-                                if (String(_this.tableDatal[i].memoryUsedPercent).indexOf('.') > -1)
-                                 _this.tableDatal[i].memoryUsedPercent = _this.tableDatal[i].memoryUsedPercent.toFixed(2);
+                                _this.tableDatal[i].memoryUsedPercent=parseFloat(ccc[i].memoryUsedPercent)*100;
+                                _this.tableDatal[i].memoryUsedPercent = _this.tableDatal[i].memoryUsedPercent.toFixed(2);
                             }
                             if(ccc[i].iops == null){
                                 if(ccc[i].ioRead != null && ccc[i].ioWrite != null ) {
-                                    _this.tableDatal[i].iops = ccc[i].ioRead + ccc[i].ioWrite;
-                                   if (String(_this.tableDatal[i].iops).indexOf('.') > -1)
-                                        _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2); 
+                                    _this.tableDatal[i].iops = parseFloat(ccc[i].ioRead) + parseFloat(ccc[i].ioWrite);
+                                    _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2); 
                                 }
                                 else{
                                     _this.tableDatal[i].iops = '--';
                                 }
                             }else {
-                                _this.tableDatal[i].iops=ccc[i].iops;
-                                if (String(_this.tableDatal[i].iops).indexOf('.') > -1)
-                                 _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
+                                _this.tableDatal[i].iops=parseFloat(ccc[i].iops);
+                                _this.tableDatal[i].iops = _this.tableDatal[i].iops.toFixed(2);
                             }
                         }
                     })
