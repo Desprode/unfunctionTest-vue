@@ -32,7 +32,11 @@
                         <Row class="caseBoxRow" v-show="isShowMore">
                             <Col span="8">
                                 <FormItem label="创建人:" prop="senario_creator">
-                                <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input>
+                                <!--输入查询==》支持远程搜索-->
+                                <!-- <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input> -->
+                                <Select v-model="formValidate.senario_creator" placeholder="输入场景创建人" clearable filterable remote :remote-method="senarioCreatorRemote" :loading="perftaskNameLoading" @on-open-change="senario_creator" @keyup.enter.native= listCase()>
+                                        <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}({{opts.username}})</Option>
+                                    </Select>
                                 </FormItem>
                             </Col>
                             <Col span="8">
@@ -62,7 +66,7 @@
                     <Button @click="deleteCase" type="error" class="actionBtn">删除</Button>
                 </div>
                 <div class="tableBox">
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-selection-change="onSelectionChanged" show-header></Table>
+                    <Table border :loading="isLoadingList" ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -71,7 +75,7 @@
             </div>
 
         <!--============================================删除任务模态框==================================-->
-            <Modal v-model="delSenarioModal" width="800">
+            <Modal v-model="delSenarioModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>请确认是否删除以下任务</span>
                 </p>
@@ -91,7 +95,7 @@
                 </div>
             </Modal>
             <!--=========================未删除成功模态框======================================-->
-             <Modal v-model="noDeleteModal" width="800">
+             <Modal v-model="noDeleteModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="text-align:center" >
                     <span>以下任务在进行中，未删除成功</span>
                 </p>
@@ -105,7 +109,7 @@
                     </Row>
             </Modal>
         <!--========================================创建场景模态框：=================================-->
-            <Modal v-model="showAddModal" width="800">
+            <Modal v-model="showAddModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>新增</span>
                 </p>
@@ -126,13 +130,13 @@
                     </FormItem>
                     <FormItem label="关联任务:" prop="ref_task_name">
                         <Select v-model="addValidate.ref_task_name" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskRemote" :loading="perftaskLoading" @on-change="perftaskOptChange" :label-in-value="true" @on-clear="perftaskClear" @on-open-change="perftask" @keyup.enter.native= "handleSubmit('addValidate')">
-                            <Scroll :on-reach-bottom="perftaskReachBottom">
+                            <!-- <Scroll :on-reach-bottom="perftaskReachBottom"> -->
                                 <Option v-for="(opts,index) in perftaskOpts" :value="opts.value" :key="index">{{opts.label}}</Option>    
-                            </Scroll>                
+                            <!-- </Scroll>                 -->
                         </Select>
                     </FormItem>
                     <FormItem label="关联脚本:" prop="ref_script_name">
-                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" @keyup.enter.native= "handleSubmit('addValidate')">
+                        <Select v-model="addValidate.ref_script_name" placeholder="请选择脚本" clearable :disabled="isDisabled" filterable remote :remote-method="refscriptRemote" :loading="perftaskLoading" @on-open-change="script" @keyup.enter.native= "handleSubmit('addValidate')">
                                 <Option v-for="(opts,index) in scriptOpts" :value="opts.value" :key="index">{{opts.label}}</Option>          
                         </Select>
                     </FormItem>
@@ -145,7 +149,7 @@
             </Modal>
 
         <!--=======================================执行操作模态框：===================================-->
-            <Modal v-model="showExeModal" width="800">
+            <Modal v-model="showExeModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>执行时间设置</span>
                 </p>
@@ -167,7 +171,7 @@
             </Modal>
 
         <!--======================================场景设置模态框======================================-->
-            <Modal v-model="showSetModal" width="800">
+            <Modal v-model="showSetModal" width="800" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>编辑场景</span>
                 </p>
@@ -194,7 +198,7 @@
                             </FormItem>
                         </Col>
                         <Col span="12"  v-if="showSetType !='03'?true:false">
-                            <FormItem label="每个线程组运行时常 ：" prop="per_duration" :label-width="150">
+                            <FormItem label="每个线程组运行时长 ：" prop="per_duration" :label-width="150">
                                 <Input v-model="setValidate.per_duration" :number="true"></Input>
                             </FormItem>
                         </Col>
@@ -245,23 +249,23 @@
                 </div>
             </Modal>
         <!--=================================监控配置模态框============================================-->
-            <Modal v-model="showMoniterModal" width="830">
+            <Modal v-model="showMoniterModal" width="830" :closable="false" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>监控配置</span>
                 </p>
                 <Form ref="moniterValidate" :model="moniterValidate" :label-width="80" >
                     <Row class="caseBoxRow">
-                        <Col span="10">
-                            <FormItem label="系统名称" prop="sComponent">
-                                <Select v-model="moniterValidate.sComponent" placeholder="请选择脚本" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()>
-                                <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
-                        </Select>
-                            </FormItem>
-                        </Col>
                         <Col span="9">
                             <FormItem label="IP" prop="ip">
-                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase()>
+                                <Input v-model="moniterValidate.ip" @keyup.enter.native = moniterCase() clearable @on-blur="onBlurMonitorSearch">
                                 </Input>
+                            </FormItem>
+                        </Col>
+                        <Col span="10">
+                            <FormItem label="系统名称" prop="sComponent">
+                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
+                                <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
+                        </Select>
                             </FormItem>
                         </Col>
                         <Col span="5">
@@ -272,7 +276,7 @@
                     <Row v-show="isShowMoniterMore">
                         <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
-                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()>
+                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
                                     <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
                                     <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
@@ -356,8 +360,15 @@
                     <Button @click="moniterSave" type="primary">保存并修改</Button>
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
-                <div class="tableBox">
-                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-selection-change="moniterSelectionChanged"></Table>
+                <div class="tableBox" v-if="showSearchTable">
+                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
+                        <div class="pageBox" v-if="moniterTableData != undefined">
+                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                            <p>总共{{moniterTotalPage}}页</p>
+                        </div>
+                </div>
+                <div class="tableBox" v-else>
+                    <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
                             <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
@@ -376,7 +387,9 @@ export default {
     name: 'TestCase',
     data () { 
         return {
-            
+            isLoadingList:true,
+            isLoading:true,
+            timer:null,
             isbouterAlive: true,
             formValidate:{
                 senario_name:'',                                      //场景名称             
@@ -387,6 +400,7 @@ export default {
             },
             perftaskNameLoading:false,
             isShowMore:false,                                   //是否显示更多查询条件
+            searchCreatorOpts:[],
             searchOpts:[],
             searchList:[],
             /**============删除模态框数据========= */
@@ -433,38 +447,82 @@ export default {
             	{
                     type: 'selection',
                     width: 40,
-                    align: 'center'
+                    align: 'center',
                 },
                 {
                     title: 'ID',
                     key: 'senario_id',
-                    width: 60,
+                    sortable:'true',
                 },
                 {
                     title: '关联任务',
                     key: 'perftask_name',
-                    ellipsis: true, 
-                    width:100,
+                    //ellipsis: true, 
                     align:'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.perftask_name
+                                }
+                            }, params.row.perftask_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    width:140,
-                    ellipsis: true, 
+                    //ellipsis: true, 
                     align:'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.senario_name
+                                }
+                            }, params.row.senario_name)
+                        ]);
+                    }
                 },
                 {
                     title: '关联脚本',
                     key: 'script_name',
-                    width:100,
                     align: 'center',
                     ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_name
+                                }
+                            }, params.row.script_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景类型',
                     key: 'senario_type',
-                    width:100,
                     align: 'center',
                     render:(h,params) =>{
                         let _this = this;
@@ -475,7 +533,6 @@ export default {
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
-                    width:100,
                     align: 'center',
                     render:(h,params)=>{
                         let _this = this;
@@ -490,14 +547,13 @@ export default {
                 {
                     title: '线程组并发数',
                     key: 'threads_total',
-                    width:90,
                     align: 'center',
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
-                    width:155,
                     align: 'center',
+                    sortable:'true'
                 },
                 {
                     title:'操作',
@@ -518,6 +574,7 @@ export default {
                                     click: () => {
                                         let _this = this;
                                         _this.id = item.row.senario_id;
+                                        _this.showExeType =  item.row.senario_type;
                                         //this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/senario/execStatus',{
                                             header:{},
@@ -585,7 +642,9 @@ export default {
                                         this.showMoniterModal = true;
                                         this.id = item.row.senario_id;
                                         this.monitor_senario_id = item.row.senario_id;
+                                        this.showSetType =  item.row.senario_type;
                                         this.moniterListCase();
+                                        this.moniterSelectedData = [];
                                     }
                                 }
                             },'监控配置'),
@@ -595,6 +654,7 @@ export default {
                     }
                 }
             ],
+            checkedId:[],
             tableData: [],
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
@@ -606,6 +666,7 @@ export default {
             totalPage:0,                           //共多少页
             /**====================执行模态框数据=================== */
             showExeModal:false,                  //执行窗口
+            showExeType:'',
             eveValidate: {        
                 exeType:'1',                             //执行类型
                 exeDateTime:new Date(),                         //执行时间
@@ -658,10 +719,12 @@ export default {
             showMoniterModal:false,
             isShowMoniterMore:false,
             scomponentLoading:false,
+            showSearchTable:true,
             scomponentOpts:[],
             id:'',   
             monitor_senario_id:'', 
-            monitorList:[],                                 
+            monitorList:[], 
+            monitorListPage:[],                                
             moniterPageNo:1,
             moniterPageSize:10,
             moniterTotalCount:0,                         //共多少条数据
@@ -840,6 +903,7 @@ export default {
         /**========================================加载列表中的数据======================================= */
         listCase: function() {
             let _this = this;
+            _this.isLoadingList = true;
             console.log("键盘按下")
             // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             //this.$http.defaults.withCredentials = false;
@@ -867,6 +931,17 @@ export default {
                         scriptName:item.script_name,
                     }
                 })
+                _this.selectedData.map(item=>{
+                    _this.checkedId.push(item.senario_id);
+                });
+                for(var i=0;i<_this.tableData.length;i++){
+                    if(_this.checkedId.includes(_this.tableData[i].senario_id)){
+                        _this.tableData[i]['_checked'] = true;
+                    }
+                }
+                _this.timer = setTimeout(() => {
+                    _this.isLoadingList = false;
+                }, 1000);
                 console.log("搜索提示选项",_this.searchOpts)
             })
         },
@@ -875,9 +950,10 @@ export default {
         },
         /**切换页码 */
         pageChange:function(pageNo){
-            console.log(pageNo);
-            this.pageNo = pageNo;
-            this.listCase();
+            let _this = this;
+            _this.pageNo = pageNo;
+            _this.listCase();
+            console.log(_this.tableData);
         },
         /**切换页面大小 */
         pageSizeChange:function(pageSize){
@@ -885,6 +961,44 @@ export default {
             this.pageSize = pageSize;
             this.listCase();
         },
+        /**下拉选自动查询 */
+        senario_creator:function(){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:''
+                }
+            }).then(function(response){
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
+        /**创建人远程查询 */
+        senarioCreatorRemote:function(query){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:query
+                }
+            }).then(function(response){
+                console.log("远程查询创建人",response);
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
+        /**关联任务远程查询 */
         perftaskNameRemote:function(query){
             let _this = this;   
             //this.$http.defaults.withCredentials = false;
@@ -904,6 +1018,7 @@ export default {
                 })
             })
         },
+        /*关联脚本远程查询* */
         perfScriptRemote:function(query){
             let _this = this;  
             //this.$http.defaults.withCredentials = false;
@@ -1006,10 +1121,30 @@ export default {
             // });
         //,
             /**选中的数据发生改变 */
-        onSelectionChanged: function(data) {
-            this.selectedData = data;
+        onSelect: function(row,selection) {
+            this.selectedData.push(selection);
+            // for(var i=0;i<this.tableData.length;i++){
+            //     if(this.tableData[i].senario_id == selection.senario_id){
+            //         this.tableData[i]['_checked'] = true;
+            //         console.log(this.tableData[i]);
+            //     }
+            // }
             console.log("选中要删除的数据",this.selectedData)
             //console.log(data)
+        },
+        onSelectCancel:function(row,selection){
+            let _this = this;
+            for(var i=0;i<_this.selectedData.length;i++){
+                if(_this.selectedData[i].senario_id == selection.senario_id){
+                    _this.selectedData.splice(i,1);
+                }
+            }
+            // _this.selectedData.forEach((item,index) => {
+            //     if(_this.selectedData.includes(item)){
+            //         _this.selectedData.splice(index, 1);        //即删除该数据上
+            //     }
+            // });
+            console.log("取消选中要删除的数据",_this.selectedData)
         },
        
         /**添加新数据弹出模态框 */
@@ -1056,52 +1191,44 @@ export default {
             this.showAddModal = false;
         },
         /**通过任务管理加载出来的关联任务 */
-        perftask:function(openStatus){
-            console.log(openStatus)
-            if(openStatus){
-                let _this = this;
-                //this.$http.defaults.withCredentials = false;
-                this.$http.post("/myapi/perftask/list",{
-                    data:{
-                        perftask_name:'',    //第一次请求时关联任务为空
+        perftask:function(){
+            let _this = this;
+            //this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:'',    //第一次请求时关联任务为空
+                }
+            }).then(function(response){
+                // console.log("任务管理请求回的数据",response.data.resultList);
+                // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                _this.perftaskOpts = response.data.resultList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
                     }
-                }).then(function(response){
-                    // console.log("任务管理请求回的数据",response.data.resultList);
-                    // console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                    _this.perftaskOpts = response.data.resultList.map(item=>{
-                        return {
-                            value:item.id,
-                            label:item.perftask_name,
-                        }
-                    })
-                    console.log("关联任务选项",_this.perftaskOpts);
-                    console.log('response',response);
                 })
-            }
+            })
         },
         /**远程加载关联任务方法 */
         perftaskRemote:function(query){
             console.log("输入的参数",query);
-            this.perftaskLoading = true;
-            setTimeout(() => {
-                this.perftaskLoading = false;
-                let _this = this;
-                //this.$http.defaults.withCredentials = false;
-                this.$http.post("/myapi/perftask/list",{
-                    data:{
-                        perftask_name:query,
+            let _this = this;
+            //this.$http.defaults.withCredentials = false;
+            this.$http.post("/myapi/perftask/list",{
+                data:{
+                    perftask_name:query,
+                }
+            }).then(function(response){
+                console.log("任务管理请求回的数据",response.data.resultList);
+                console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
+                _this.perftaskOpts =response.data.resultList.map(item=>{
+                    return {
+                        value:item.id,
+                        label:item.perftask_name,
                     }
-                }).then(function(response){
-                    console.log("任务管理请求回的数据",response.data.resultList);
-                    console.log("传到后台的任务管理数据",_this.addValidate.ref_task_name);
-                    _this.perftaskOpts =response.data.resultList.map(item=>{
-                        return {
-                            value:item.id,
-                            label:item.perftask_name,
-                        }
-                    })
                 })
-            }, 200);
+                console.log("_this.perftaskOpts",_this.perftaskOpts);
+            })
         },
         
         /**关联任务选中项改变时根据id加载對應关联脚本 */
@@ -1116,6 +1243,7 @@ export default {
             }).then(function(response){
                 console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
                 if(response.data.resultList.length == 0 || response.data.resultList.length == undefined){
+                    _this.addValidate.ref_script_name = '';
                     _this.isDisabled = true;
                 }else{
                     _this.isDisabled = false;
@@ -1127,6 +1255,40 @@ export default {
                     })
                 }
             })
+        },
+        script:function(openstatus){
+            let _this = this;
+            _this.id = _this.addValidate.ref_task_name;
+            //this.$http.defaults.withCredentials = false;
+            if(openstatus){
+                console.log(openstatus);
+                this.$http.post("/myapi/perftask/taskRelatedScript",{
+                    data:{
+                        id:_this.id
+                    }
+                }).then(function(response){
+                    console.log("关联脚本返回数据",response.data.resultList,response.data.resultList.length)
+                    // if(response.data.resultList.length == 0 || response.data.resultList.length == undefined){
+                    //     _this.addValidate.ref_script_name = '';
+                    //     console.log("没有关联脚本数据");
+                    //     _this.isDisabled = true;
+                    // }else{
+                    //     _this.isDisabled = false;
+                    //     _this.scriptOpts = response.data.resultList.map(item=>{
+                    //         return {
+                    //             value:item.id,
+                    //             label:item.script_name,
+                    //         }
+                    //     })
+                    // }
+                    _this.scriptOpts = response.data.resultList.map(item=>{
+                        return {
+                            value:item.id,
+                            label:item.script_name,
+                        }
+                    })
+                })
+            }
         },
         perftaskClear:function(){
             console.log("关联任务中的内容被清空了");
@@ -1159,37 +1321,37 @@ export default {
                 })
             }, 200);
         },
-        perftaskReachBottom:function(){
-            console.log("到达底部了");
-            let _this = this;
-            return new Promise(resolve => {
-                setTimeout(()=>{
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/perftask/list",{
-                        header:{},
-                        data:{
-                            pageno:_this.pNo+1,
-                        },
-                    }).then(function(response){
-                        console.log("触底响应",response.headers.pageno);
-                        console.log(response);
-                        _this.perftaskOpts = response.data.resultList.map(item=>{
-                            return {
-                                value:item.id,
-                                label:item.perftask_name,
-                            }
-                        });
-                        _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskOpts);
-                        console.log(_this.perftaskOpts);
-                        if(_this.pNo < response.headers.totalpage){
-                            _this.pNo++;
-                        }else{
-                            console.log("没有更多了")
-                        }
-                    })
-                },200)
-            })
-        },
+        // perftaskReachBottom:function(){
+        //     console.log("到达底部了");
+        //     let _this = this;
+        //     return new Promise(resolve => {
+        //         setTimeout(()=>{
+        //             //this.$http.defaults.withCredentials = false;
+        //             this.$http.post("/myapi/perftask/list",{
+        //                 header:{},
+        //                 data:{
+        //                     pageno:_this.pNo+1,
+        //                 },
+        //             }).then(function(response){
+        //                 console.log("触底响应",response.headers.pageno);
+        //                 console.log(response);
+        //                 _this.perftaskOpts = response.data.resultList.map(item=>{
+        //                     return {
+        //                         value:item.id,
+        //                         label:item.perftask_name,
+        //                     }
+        //                 });
+        //                 _this.perftaskOpts = _this.perftaskOpts.concat(_this.perftaskOpts);
+        //                 console.log(_this.perftaskOpts);
+        //                 if(_this.pNo < response.headers.totalpage){
+        //                     _this.pNo++;
+        //                 }else{
+        //                     console.log("没有更多了")
+        //                 }
+        //             })
+        //         },200)
+        //     })
+        // },
         /**=========================================执行模态框事件==================================== */
         
         /**确认事件 */
@@ -1209,7 +1371,10 @@ export default {
                     console.log(response);
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='1';
-                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.executor_id,senario_name:response.data.resultMap.senario_name}});
+                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.executor_id,senario_name:response.data.resultMap.senario_name,
+                    senario_id:response.data.resultMap.senario_id,
+                    senario_type:_this.showExeType,
+                    }});
                 })
             }else{
                 console.log(this.eveValidate.exeDateTime);
@@ -1223,10 +1388,13 @@ export default {
                     }
                 }).then(function(response){
                     console.log("定时执行");
-                    console.log(response.data.resultMap.exec_id);
+                    console.log(response.data.resultMap);
                     _this.showExeModal = false;
                     _this.eveValidate.exeType='0';
-                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name}});
+                    _this.$router.push({path:'/monitoring',query:{executor_id:response.data.resultMap.exec_id,senario_name:response.data.resultMap.senario_name,
+                    senario_id:response.data.resultMap.senario_id,
+                    senario_type:_this.showExeType,
+                    }});
                 })
             }
         },
@@ -1235,11 +1403,6 @@ export default {
             this.showExeModal = false;
             this.eveValidate.exeType='1';
         },
-
-
-
-
-
         /**================================设置模态框事件================================ */
         setOk:function(name){
             this.$refs[name].validate((valid) => {
@@ -1262,8 +1425,7 @@ export default {
                     }).then(function(response){
                         _this.$Message.success('提交成功!');
                         _this.showSetModal = false;
-                        console.log('response',);
-                        console.log(_this.threadList);
+                        _this.listCase();
                     })
                     
                 } else {
@@ -1294,6 +1456,7 @@ export default {
         /**=============================监控配置事件=============================== */
         moniterListCase:function(){
             let _this = this;
+            _this.isLoading = true;
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/monitorSetting/list',{
                 header:{},
@@ -1301,15 +1464,20 @@ export default {
                     id:_this.id,
                     pageNo:_this.moniterPageNo,
                     pageSize:_this.moniterPageSize,
+                    pageChecked:_this.monitorListPage,
                 }
             }).then(function(response){
                 console.log(response.data.resultList);
                 _this.moniterTableData = response.data.resultList;
                 _this.moniterTotalCount = response.headers.totalcount;
                 _this.moniterTotalPage = response.headers.totalpage;
-                if(response.data.resultList != undefined){
+                if(response.data.resultList != undefined && response.data.resultList != [] ){
                     _this.subSysName_old = response.data.resultList[0].subSysName;
                 }
+                _this.showSearchTable = true;
+                _this.timer = setTimeout(() => {
+                    _this.isLoading = false;
+                }, 1000);
                 console.log(response);
                 console.log(_this.moniterTableData);
 
@@ -1318,9 +1486,14 @@ export default {
         /**取消事件 */
         moniterCancel:function(){
             this.showMoniterModal = false;
+            this.showSearchTable = true;
             this.editCount = 0;
             this.monitorAddShow = false;
+            this.moniterPageNo = 1;
             console.log('监控取消事件');
+            this.monitorListPage = [];    //清空翻页保存的数据
+            this.subSysName_old = '';
+            clearInterval(this.timer)
         },
         /**确认事件 */
         moniterOk:function(){
@@ -1330,6 +1503,11 @@ export default {
             }else{
                 this.showMoniterModal = false;
                 this.monitorAddShow = false;
+                this.showSearchTable = true;
+                this.moniterPageNo = 1;
+                this.monitorListPage = [];
+                this.subSysName_old = '';
+                clearInterval(this.timer);
             }
             console.log(this.editCount);
         },
@@ -1337,6 +1515,7 @@ export default {
         moniterReset:function(name){
             this.$refs[name].resetFields();
         },
+        /**系统名称下拉选自动加载 */
         openMonitorChange:function(openStatus){
             console.log(openStatus);
             let _this =this;
@@ -1355,7 +1534,7 @@ export default {
                 })
             }
         },
-        /**模糊查询物理子系统 */
+        /**模糊查询物理子系统 */        
         scomponentRemote:function(query){
             this.scomponentLoading = true;
             setTimeout(() => {
@@ -1379,9 +1558,24 @@ export default {
         moniterCase:function(){
             let _this = this;
             console.log('系统名称',_this.moniterValidate.sComponent,'ip',_this.moniterValidate.ip);
+            if(_this.showSearchTable){
+                this.moniterPageNo = 1;
+            }
+            // for(var i=0;i<_this.moniterTableData.length;i++){
+            //     if(_this.moniterTableData[i]._checked == true){
+            //         _this.moniterSelectedData.push(_this.moniterTableData[i]);
+            //     }
+            // }
+            // if(_this.moniterSelectedData.length > 0){
+            //     _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+            //         return item.id;
+            //     })
+            //     console.log("翻页数据",_this.monitorListPage);
+            // }
             if((_this.moniterValidate.sComponent == ''|| _this.moniterValidate.sComponent == undefined) && (_this.moniterValidate.ip == '' || _this.moniterValidate.ip == undefined) ){
                 _this.$Message.error('至少输入系统名称或ip中的一个条件进行查询');
             }else{
+                _this.isLoading = true;
                 //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/monitorSetting/search',{
                     header:{},
@@ -1392,83 +1586,171 @@ export default {
                         prodIp:_this.moniterValidate.ip,
                         pageNo:_this.moniterPageNo,
                         pageSize:_this.moniterPageSize,
+                        pageChecked:_this.monitorListPage,
                     }
                 }).then(function(response){
                     console.log(response);
-                    console.log(_this.moniterValidate.sComponent)
+                     _this.timer = setInterval(() => {
+                        _this.isLoading = false;
+                    }, 2000);
+                    console.log(_this.moniterValidate.sComponent);
+                    _this.showSearchTable = false;
                     _this.moniterTableData = response.data.resultList;
                     _this.moniterTotalCount = response.headers.totalcount;
                     _this.moniterTotalPage = response.headers.totalpage;
-                    if(response.data.resultList != undefined){
+                    if(response.data.resultList != undefined || response.data.resultList != [] ){
                         _this.subSysName_new = response.data.resultList[0].subSysName;
                     }
-                    _this.moniterReset();
+                    //_this.moniterReset();
                 })
+            }
+        },
+        onBlurMonitorSearch:function(){
+            if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterListCase();
+            }else{
+                console.log("未清空");
+            }
+        },
+        clearMonitorSearch:function(){
+            console.log(this.moniterValidate.ip);
+            console.log(this.moniterValidate.sComponent);
+            console.log(this.moniterValidate.inviro_type);
+            this.moniterValidate.sComponent = '';
+            if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterListCase();
+            }else{
+                console.log("未清空");
             }
         },
          /**切换页码 */
         moniterPageChange:function(moniterPageNo){
             console.log(moniterPageNo);
-            this.moniterPageNo = moniterPageNo;
-            this.moniterListCase();
+            let _this = this;
+            _this.isLoading = true;
+            _this.moniterPageNo = moniterPageNo;
+            console.log("_this.moniterTableData",_this.moniterTableData);
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i]._checked == true){
+                    _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                }
+                console.log("_this.moniterSelectedData",_this.moniterSelectedData);
+            }
+            if(_this.moniterSelectedData.length > 0){
+                _this.monitorListPage = _this.moniterSelectedData.map(item=>{
+                    return item.id;
+                })
+                
+            }
+            _this.monitorListPage = [...new Set(_this.monitorListPage)];
+            console.log("翻页数据",_this.monitorListPage);
+            if(_this.showSearchTable){
+                console.log("原始表格");
+                _this.moniterListCase();
+            }else{
+                console.log("搜索后表格",_this.moniterTableData);
+                _this.moniterCase();
+            }; 
         },
         /**切换页面大小 */
         moniterPageSizeChange:function(pageSize){
             console.log(pageSize);
-            this.moniterPageSize = pageSize;
-            this.moniterListCase();
+            let _this = this;
+            _this.moniterPageSize = pageSize;
+            if(_this.showSearchTable){
+                _this.moniterListCase();
+            }else{
+                _this.moniterCase();
+            }; 
         },
         /**保存并修改事件 */
         moniterSave:function(){
-            console.log('旧的系统名称',this.subSysName_old,'新的系统名称',this.subSysName_new);
-            if(this.moniterSelectedData.length > 0){
-                let _this = this;
-                if(_this.subSysName_old !== _this.subSysName_new ){
-                    console.log("不相同");
-                    _this.$Modal.confirm({
-                        title:'确认',
-                        content: '系统名称将发生改变',
-                        onOk: () => {
-                            console.log("不相同确认");
-                            _this.monitorList = _this.moniterSelectedData.map(item=>{
-                                return item.servPartId;
-                            })
-                            //this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/monitorSetting/addMachine",{
-                                header:{},
-                                data:{
-                                    monitorList:_this.monitorList,
-                                    senarioid:_this.monitor_senario_id,
-                                },
-                            }).then(function(response){
-                                _this.moniterListCase();
-                            });
-                        },
-                        onCancel: () => {
-                            console.log("不相同取消");
-                            _this.$Message.info('修改失败，系统未发生改变');
-                        }
-                    }); 
+            let _this = this;
+            //本身数据表格
+                 console.log("搜索后表格");
+                console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
+            if(_this.showSearchTable){
+                if(_this.moniterSelectedData.length > 0){
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    }
+                };
+                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                    return item.servPartId;
+                });
+                _this.monitorList = [...new Set(_this.monitorList)];
+                console.log("_this.monitorList",_this.monitorList);
+                this.$http.post("/myapi/monitorSetting/addMachine",{
+                    header:{},
+                    data:{
+                        monitorList:_this.monitorList,
+                        senarioid:_this.monitor_senario_id,
+                    },
+                }).then(function(response){
+                    _this.moniterListCase();
+                });
                 }else{
-                    console.log("相同");
-                    _this.monitorList = _this.moniterSelectedData.map(item=>{
-                        return item.servPartId;
-                    })
-                    //this.$http.defaults.withCredentials = false;
-                    this.$http.post("/myapi/monitorSetting/addMachine",{
-                        header:{},
-                        data:{
-                            monitorList:_this.monitorList,
-                            senarioid:_this.monitor_senario_id,
-                        },
-                    }).then(function(response){
-                         _this.moniterListCase();
-                    });
+                    _this.$Message.error("至少选择一条数据");
                 }
             }else{
-                this.$Message.error("至少选择一条数据");
+                for(var i=0;i<_this.moniterTableData.length;i++){
+                    if(_this.moniterTableData[i]._checked == true){
+                        _this.moniterSelectedData.push(_this.moniterTableData[i]);
+                    };
+                }
+                if(_this.moniterSelectedData.length > 0){
+                    if(_this.subSysName_old !== _this.subSysName_new && _this.subSysName_old !== ''){
+                        console.log("不相同");
+                        _this.$Modal.confirm({
+                            title:'确认',
+                            content: '系统名称将发生改变',
+                            onOk: () => {
+                                console.log("不相同确认");
+                                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                                    return item.servPartId;
+                                })
+                                _this.monitorList = [...new Set(_this.monitorList)];
+                                console.log("_this.monitorList",_this.monitorList);
+                                //this.$http.defaults.withCredentials = false;
+                                this.$http.post("/myapi/monitorSetting/addMachine",{
+                                    header:{},
+                                    data:{
+                                        monitorList:_this.monitorList,
+                                        senarioid:_this.monitor_senario_id,
+                                    },
+                                }).then(function(response){
+                                    _this.moniterListCase();
+                                });
+                            },
+                            onCancel: () => {
+                                console.log("不相同取消");
+                                _this.$Message.info('修改失败，系统未发生改变');
+                            }
+                        }); 
+                    }else{
+                        console.log("相同");
+                        _this.monitorList = _this.moniterSelectedData.map(item=>{
+                            return item.servPartId;
+                        })
+                        _this.monitorList = [...new Set(_this.monitorList)];
+                        console.log("_this.monitorList",_this.monitorList);
+                        //this.$http.defaults.withCredentials = false;
+                        this.$http.post("/myapi/monitorSetting/addMachine",{
+                            header:{},
+                            data:{
+                                monitorList:_this.monitorList,
+                                senarioid:_this.monitor_senario_id,
+                            },
+                        }).then(function(response){
+                            _this.moniterListCase();
+                        });
+                    }
+                }else{
+                    _this.$Message.error("至少选择一条数据");
+                }
             }
-        },
+        }, 
         /**自定义监控添加 */
         moniterAdd:function(){
             this.monitorAddShow = true;
@@ -1497,6 +1779,7 @@ export default {
             }, 200);
         },
         /**下拉框下拉加载 */
+
         openMonitorAddChange:function(openStatus){
             let _this =this;
             if(openStatus){
@@ -1553,10 +1836,43 @@ export default {
             this.$refs[name].resetFields();
         },
         /**选中的数据 */
-        moniterSelectionChanged:function(data){
-            this.moniterSelectedData = data;
-            console.log("选中的数据",this.moniterSelectedData);
+        moniterOnSelection:function(row,selection){
+            for(var i=0;i<this.moniterTableData.length;i++){
+                if(this.moniterTableData[i].servPartId == selection.servPartId){
+                    this.moniterTableData[i]._checked = true;
+                }
+            }
+            console.log("选中的数据",this.moniterTableData);
         },
+        onMonitorSelectCancel:function(row,selection){
+            let _this = this;
+            for(var i=0;i<_this.moniterTableData.length;i++){
+                if(_this.moniterTableData[i].servPartId == selection.servPartId){
+                    _this.moniterTableData[i]._checked = false;
+                }
+                    _this.monitorListPage.splice(i,1);
+            }
+            //console.log("选中的数据",this.moniterTableData);
+        },
+        /**全选 */
+        moniterOnSelectionAll:function(){
+            for(var i=0;i<this.moniterTableData.length;i++){
+                this.moniterTableData[i]._checked = true;
+            }
+        },
+        onMonitorSelectCancelAll:function(){
+            for(var i=0;i<this.moniterTableData.length;i++){
+                this.moniterTableData[i]._checked = false;
+            }
+        },
+        // onMonitorSelectCancel:function(row,selection){
+        //     let _this = this;
+        //     for(var i=0;i<_this.moniterSelectedData.length;i++){
+        //         if(_this.moniterSelectedData[i].servPartId == selection.servPartId){
+        //             _this.moniterSelectedData.splice(i,1);
+        //         }
+        //     }
+        // },
         /**数据编辑 */
         handleEdit:function(row) {
             this.$set(row, '$isEdit', true);

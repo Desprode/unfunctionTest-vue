@@ -5,12 +5,12 @@
                 <h3 class="Title">
                     <span>脚本管理</span>
                 </h3>
-                <Form ref="formValidate"   class="formValidate">
+                <Form ref="formValidate"   class="formValidate" >
                     <div class="rowbox">
                         <Row :gutter="16">
                             <Col span="2" class="searchLable">脚本名称:</Col>
                             <Col span="4">
-                                <Input clearable v-model="script_name" placeholder="输入脚本名称"></Input>                                
+                                <Input clearable v-model="script_name" placeholder="请输入脚本名称"></Input>                                
                             </Col>
                             <Col span="2" class="searchLable">物理子系统:</Col>
                             <Col span="4">
@@ -19,13 +19,13 @@
                             <Col span="2" class="searchLable">创建人:</Col>
                             <Col span="4">
                                 <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading">
+                                        :remote-method="searchCreater" :loading="srchCmploading" ref="cre">
                                     <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
                                 </Select>
                             </Col>
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
-                                <Button @click="handleReset('formValidate')" type="default"  ghost>重置</Button>
+                                <Button @click="handleReset" type="default"  ghost>重置</Button>
                             </Col>
                         </Row>
                     </div>                    
@@ -35,7 +35,7 @@
                         <Button @click="addScript"  type="primary">新增</Button>
                         <Button @click="deleteScript" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -50,17 +50,14 @@
                 <div style="text-align:center">
                     <i-form ref="paramValidate" :model="paramValidate" :rules="paramValidate" :label-width="100" >
                         <h3>请勾选可以拆分的参数化文件：</h3><br>
-                        <!-- <Row v-for="(item,index) in csvList" :key="index"> -->
                             <Col span="8" v-for="(item,index) in csvList" :key="index" >
                                 <FormItem :label-width="20" prop="fileName" style="float:left">
                                     <Checkbox v-model="item.enable == 'true'?true:false" @on-change="isChecked(index)">{{item.fileName}}</Checkbox>  
                                 </FormItem>
                                 <br v-if="index/3 ==0">
                             </Col>
-                           <Row  v-for="(item,index) in csvList" :key="index">
-
+                           <Row  v-for="(item,index11) in csvList" :key="index11">
                             </Row> 
-                        <!-- </Row> -->
                     </i-form>
                 </div>
                 <div slot="footer">
@@ -75,20 +72,23 @@
                     <Icon type="ios-information-circle"></Icon>
                     <span>添加脚本</span>
                 </p>
-                <div style="text-align:center">
-                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
+                <div style="text-align:left">
+                    <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" >
                         <Row>
                             <i-col span="24">
                                 <Form-item label="脚本名称：" prop="script_name">
-                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" ></i-input>
+                                    <i-input v-model="addValidate.script_name"  placeholder="请输入脚本名称" @on-blur="checkScriptName()" ></i-input>
+                                    <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>
                                 </Form-item>
                             </i-col>
                         </Row>
                         <Row>
                             <i-col span="24">
-                                <Form-item label="物理子系统" >
-                                    <Select  clearable v-model="addValidate.app_name" placeholder="请选择物理子系统" 
-                                        clearable
+                                <Form-item label="物理子系统：" prop="app_name">
+                                    <Select  
+                                        clearable 
+                                        v-model="addValidate.app_name" 
+                                        placeholder="请选择物理子系统" 
                                         filterable 
                                         remote 
                                         :remote-method="searchAppname" 
@@ -110,16 +110,18 @@
                         <Row>
                             <i-col span="20">
                                 <Form-item label="上传文件：" prop="script_filename">
-                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
+                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.zip格式)" @click="" aria-readonly="true"></i-input>
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
                                 <Upload ref="upload"
                                         name="file"
-                                        action="/myapi/scripts/upload" 
-                                        :before-upload="handleUpload" 
+                                        action="/myapi/scripts/upload"
+                                        :before-upload="handleUpload"
                                         :format="['zip']" 
                                         :on-success="uploadSuccess"
+                                        :on-progress="uploadProgress"
+                                        :on-remove="uploadRemove"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -130,31 +132,36 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="cancelAdd()">取消</Button>
-                    <Button type="primary"   @click="submitScript('addValidate')">确认</Button>
+                    <Button type="primary"   @click="submitScript('addValidate')" :disabled="isdisabledFn">确认</Button>
                 </div>
             </Modal>
-            <!--新建脚本时弹出的对话框 end-->
+            <!--编辑脚本时弹出的对话框 end-->
             <!--script edit editeditediteditediteditbegin-->
             <Modal v-model="showSetScript" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>编辑脚本</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
-                    <!-- <FormItem label="脚本ID:" prop="script_id" >                      
-                        <Input v-model="setValidate.script_id"></Input>
-                    </FormItem> -->
                     <FormItem label="脚本名称:" prop="script_name">                      
-                        <Input v-model="setValidate.script_name"></Input>
+                        <Input v-model="setValidate.script_name" ></Input>
+                        <!-- <span v-if="scriptFlag" class="ivu-form-item-error-tip" >脚本名称不能重复！</span>                         -->
                     </FormItem>
                     <FormItem label="物理子系统:" prop="app_name">                      
-                        <Input v-model="setValidate.app_name" readonly="readonly"></Input>
+                        <!-- <Input v-model="setValidate.app_name" readonly="readonly"></Input> -->
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.app_name}}</div>
                     </FormItem>
                     <FormItem label="脚本说明:" prop="memo">                      
                         <Input v-model="setValidate.memo"></Input>
                     </FormItem>
-                    <FormItem label="创建时间:" prop="create_time">                      
-                        <Input v-model="setValidate.create_time" readonly="readonly"></Input>
+                    <FormItem label="文件大小:" prop="script_filesize">                      
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_filesize}}</div>
                     </FormItem>
+                    <FormItem label="创建时间:" prop="create_time">                      
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
+                    </FormItem>
+                    <FormItem label="更新时间:" prop="create_time">                      
+                            <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
+                        </FormItem>
                     <i-col span="20">
                         <Form-item label="更新脚本：" prop="script_filename">
                             <i-input  v-model="setValidate.script_filename" placeholder="请选择上传文件(.zip格式)" aria-readonly="true"></i-input>
@@ -163,10 +170,11 @@
                     <i-col span=4 >
                         <Upload ref="upload"
                                 name="file"
-                                action="/myapi/scripts/upload" 
+                                action="/myapi/scripts/upload"
                                 :before-upload="handleUpload" 
                                 :format="['zip']" 
                                 :on-success="uploadSuccess"
+                                :on-progress="uploadProgress"
                                 :on-format-error="handleFormatError"
                                 v-model="setValidate.script_filename">
                             <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -178,15 +186,15 @@
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
                 </div>
             </Modal>
-            <!--script edit end-->
-            <!--script detail detail detail detail begin-->
+            <!--script edit end
+            script detail detail detail detail begin  now not use
             <Modal v-model="showDetail" width="800">
                 <p slot="header" style="color:#f60" >
                     <span>脚本详情</span>
                 </p>
                 <Form ref="setValidate" :model="setValidate" :rules="setRuleValidate" :label-width="120">
                     <FormItem label="脚本ID:"  >                     
-                        <!-- <Input v-model="setValidate.script_id"></Input> -->
+                        <Input v-model="setValidate.script_id"></Input>
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_id}} </div>
                     </FormItem>
                     <FormItem label="脚本名称:" prop="script_name">                      
@@ -211,12 +219,12 @@
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_manager_id}} </div>
                     </FormItem>
                 </Form>
-                <!-- <div slot="footer">
+                 <div slot="footer">
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
-                </div> -->
+                </div> 
             </Modal>
-            <!--script detail end-->
+            script detail end-->
         </Card>
     </div>
 </template>
@@ -226,15 +234,18 @@ export default {
 	name: 'TestCase',
     data () {
         const validateScriptName = function(rule, value, callback) {
-            // var flag = this.checkScriptName(value);
-            // if(flag){
-            //     callback(new Error('脚本名称重复!'));
-            // }else{
-            //     callback();
-            // }
-            callback();
+            var flag = this.checkScriptName();
+            console.log("flag",flag);
+            if(flag){
+                callback(new Error('脚本名称重复!'));
+            }else{
+                callback();
+            }
+            // callback();
         };
         return {
+            scriptFlag:true,
+            isdisabledFn:false,
             /* 窗口设置开关 */
             showParamStatus:false,
             showDialog:false,
@@ -270,34 +281,94 @@ export default {
             createUser:'',
             pageNo:'',
             columns: [
-                {
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 60
-                },
             	{
-                    type: 'selection',
-                    width: 50,
-                    align: 'center'
+                    title: '选择',
+                    align: 'center',
+                    width: 60,
+                    key:'checkBox',
+                    render:(h,params)=>{
+                        return h('div',[
+                            h('Checkbox',{  
+                                props:{
+                                    value:params.row.checkBox
+                                },
+                                on:{
+                                    'on-change':(e)=>{
+                                        console.log(e)
+                                        this.tableData.forEach((items)=>{
+                                            //先取消所有对象的勾选，checkBox设置为false
+                                            this.$set(items,'checkBox',false)
+                                        });
+                                        //再将勾选的对象的checkBox设置为true
+                                        this.tableData[params.index].checkBox =e
+                                    }
+                                }
+                            })
+                        ])
+                    }                    
                 },
                 {
                     title: '脚本名称',
                     key: 'script_name',
                     width: 220,
-                    sortable: true
-                    // ellipsis: true, 
-                    //tooltip: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_name
+                                }
+                            }, params.row.script_name)
+                        ]);
+                    }
                 },
                 {
                     title: '物理子系统',
                     width: 250,
-                    key: 'app_name'
+                    key: 'app_name',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.app_name
+                                }
+                            }, params.row.app_name)
+                        ]);
+                    }
                 },
                 {
                     title: '脚本文件',
                     key: 'script_filename',
                     width: 205,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.script_filename
+                                }
+                            }, params.row.script_filename)
+                        ]);
+                    }
                 },
                 {
                     title: '创建人',
@@ -305,7 +376,7 @@ export default {
                     width: 80,                    
                 },
                 {
-                    title: '创建时间',
+                    title: '更新时间',
                     key: 'created_time',
                     width: 160,
                     align: 'center',
@@ -314,7 +385,7 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:250,
+                    width:200,
                     render: (h, item) => {
                         return h('div', [
                             h('Button', {
@@ -327,8 +398,7 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showSetScript = true;
-                                        console.log(item.row);
+                                        //console.log(item.row);
                                         let _this = this;
                                         // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/checkEdit',{
@@ -337,16 +407,23 @@ export default {
                                             }
                                         }).then(function(response){
                                             console.log("script编辑接口",response.data);
-                                            _this.setValidate.script_name= response.data.resultList[0].script_name;
-                                            _this.setValidate.script_id= response.data.resultList[0].script_id;
-                                            _this.setValidate.app_name= response.data.resultList[0].app_name;
-                                            _this.setValidate.memo= response.data.resultList[0].memo;
-                                            _this.setValidate.create_time= response.data.resultList[0].created_time;
-                                            _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                            _this.filesize=response.data.resultList[0].filesize,
-                                            _this.script_filepath=response.data.resultList[0].script_filepath,
-                                            _this.script_id=response.data.resultList[0].script_id,
-                                            _this.rowid=response.data.resultList[0].id
+                                            if(response.data.err_desc ==="脚本关联场景正在运行，不可以修改"){
+                                                _this.showSetScript = false;
+                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍后再试！")
+                                                return;
+                                            }else{
+                                                _this.showSetScript = true;
+                                                _this.setValidate.script_name= response.data.resultList[0].script_name;
+                                                _this.setValidate.script_id= response.data.resultList[0].script_id;
+                                                _this.setValidate.app_name= response.data.resultList[0].app_name;
+                                                _this.setValidate.memo= response.data.resultList[0].memo;
+                                                _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                                _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                                                _this.setValidate.script_filesize=response.data.resultList[0].script_filesize,
+                                                _this.script_filepath=response.data.resultList[0].script_filepath,
+                                                _this.script_id=response.data.resultList[0].script_id,
+                                                _this.rowid=response.data.resultList[0].id
+                                            }
                                         })
                                     }
                                 }
@@ -361,59 +438,67 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.showParamStatus = true;
                                         console.log(item.row);
                                         let _this = this;
+                                        _this.csvList=[];
                                         // this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/scripts/param',{
                                             data:{
                                                 id:item.row.id,
                                             }
                                         }).then(function(response){
-                                            console.log("script编辑接口response.data",response.data);
-                                            _this.rowid=response.data.executor_id;
-                                            _this.csvList = response.data.resultList;
-                                            console.log("_this.csvList======"+_this.csvList);
+                                            if(response.data.resultList.length ==0){
+                                                console.log("_=--=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=");
+                                                _this.$Message.error("当前脚本无参数化文件，无法进行配置，请确认后在重试！"); 
+                                                _this.showParamStatus = false;
+                                            }else{
+                                                _this.showParamStatus = true;
+                                                console.log("script编辑接口response.data",response.data.resultList);
+                                                _this.rowid=response.data.executor_id;
+                                                _this.csvList = response.data.resultList;
+                                                console.log("_this.csvList======",_this.csvList);
+                                            }
+                                            
                                         })
                                     }
                                 }
                             },'参数设置'),
-                            h('Button', {
-                                props: {
-                                    type: 'primary',
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
-                                on: {
-                                    click: () => {
-                                        let _this = this;
-                                        _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
-                                        // this.showDetail = true;
-                                        // console.log(item.row);
-                                        // let _this = this;
-                                        // this.$http.post('/myapi/scripts/view',{
-                                        //     data:{
-                                        //         id:item.row.id,
-                                        //     }
-                                        // }).then(function(response){
-                                        //     console.log("script编辑接口response.data",response.data);
-                                        //     _this.setValidate.script_name= response.data.resultList[0].script_name;
-                                        //     _this.setValidate.script_id= response.data.resultList[0].script_id;
-                                        //     _this.setValidate.app_name= response.data.resultList[0].app_name;
-                                        //     _this.setValidate.memo= response.data.resultList[0].memo;
-                                        //     _this.setValidate.create_time= response.data.resultList[0].created_time;
-                                        //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                                        //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
-                                        //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
-                                        //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
-                                        //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
+                            // h('Button', {
+                            //     props: {
+                            //         type: 'primary',
+                            //         size: 'small'
+                            //     },
+                            //     style: {
+                            //         marginRight: '5px'
+                            //     },
+                            //     on: {
+                            //         click: () => {
+                            //             let _this = this;
+                            //             _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
+                            //             // this.showDetail = true;
+                            //             // console.log(item.row);
+                            //             // let _this = this;
+                            //             // this.$http.post('/myapi/scripts/view',{
+                            //             //     data:{
+                            //             //         id:item.row.id,
+                            //             //     }
+                            //             // }).then(function(response){
+                            //             //     console.log("script编辑接口response.data",response.data);
+                            //             //     _this.setValidate.script_name= response.data.resultList[0].script_name;
+                            //             //     _this.setValidate.script_id= response.data.resultList[0].script_id;
+                            //             //     _this.setValidate.app_name= response.data.resultList[0].app_name;
+                            //             //     _this.setValidate.memo= response.data.resultList[0].memo;
+                            //             //     _this.setValidate.create_time= response.data.resultList[0].created_time;
+                            //             //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
+                            //             //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
+                            //             //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
+                            //             //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
+                            //             //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
                                             
-                                        // })
-                                    }
-                                }
-                            },'详情'),
+                            //             // })
+                            //         }
+                            //     }
+                            // },'详情'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -446,11 +531,11 @@ export default {
                 },
             ruleValidate: {
                 script_name: [
-                    {validator: validateScriptName, required: true,trigger: 'blur' }
+                    {required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                // app_name: [
-                //     { required: true, message: '此项为必填项', trigger: 'blur' }
-                // ],
+                app_name: [
+                    { required: true, message: '此项为必填项', trigger: 'blur' }
+                ],
                 // memo: [
                 //     { required: true, message: '此项为必填项', trigger: 'blur' }
                 // ],
@@ -470,12 +555,12 @@ export default {
                 filesize:''                                      
             },
             setRuleValidate:{
-                script_name:[
-                    {required:false,message:'',trigger:'blur'}
+                script_name: [
+                    {required: true, message: '此项为必填项', trigger: 'blur' }
                 ],
-                // app_name:[
-                //     {required:true,message:'',trigger:'blur'}
-                // ],
+                app_name:[
+                    {required:true,message:'这是必输字段',trigger:'blur'}
+                ],
                 // memo:[
                 //     {required:true,message:'这是必输字段',trigger:'blur'}
                 // ],
@@ -489,6 +574,7 @@ export default {
         this.listCase();
     },
     methods: {
+        //下载
         handleDownload:function(rowid,fileName){
             let _this = this;
             // this.$http.defaults.withCredentials = false;
@@ -502,7 +588,7 @@ export default {
                     _this.$Message.error(response.data.err_desc);
                     return;
                 }
-                //console.log("script编辑接口response.data",response.data);
+                console.log("script编辑接口response.data",response.data);
                // let fileName = item.row.script_filename // 文件地址
                 var blob = new Blob([response.data])
                 if (window.navigator.msSaveOrOpenBlob) {
@@ -516,14 +602,40 @@ export default {
                     link.setAttribute('download', fileName);
                     document.body.appendChild(link);
                     link.click();
+                    URL.revokeObjectURL(link.href)
                 }
             })
         },
+        uploadPro:function(file){
+            console.log("file",file.name);
+        },
+        //文件格式验证失败
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
+        //移除文件时
+        uploadRemove(){
+            this.$refs.upload.clearFiles();
+        },
+        //文件上传时方法
+        uploadProgress:function(res,file){
+            this.$Spin.show({
+                render: (h) => {
+                    return h('div', [
+                        h('Icon', {
+                            'class': 'demo-spin-icon-load',
+                            props: {
+                                type: 'ios-loading',
+                                size: 26
+                            }
+                        }),
+                        h('div', '脚本正在上传解析中，请稍后...')
+                    ])
+                }
+            });
+        },
         handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\-\u4e00-\u9fa5]","i");
+            var reg=new RegExp("[^a-zA-Z0-9-\_\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
             if(reg.test(fname)==true){
                 this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
@@ -531,26 +643,34 @@ export default {
             }
             let _this = this;
             _this.addValidate.script_filename=file.name;
+            _this.addValidate.id=file.id;
             _this.setValidate.script_filename=file.name;
         },
         uploadSuccess:function(res,file) {
-            console.log(res)
+            console.log("返回信息",file);
             if(res.result == "success"){
+                this.$Spin.hide();
+                this.$Message.info('解析成功');
                 this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
                 this.script_id = res.resultList[0].script_id;
+            }else if(res.result =="fail"){
+                this.$Spin.hide();
+                this.$Message.error("上传文件内部jmx不唯一！上传文件删除失败，请手动删除!"); 
             }
         },
         //the param set checkbox when onclick change the value to oppsite  
-        isChecked:function(){
+        isChecked:function(index){
             if(this.csvList[index].enable == true || this.csvList[index].enable == 'true'){
                 this.csvList[index].enable = false;
             }else{
                 this.csvList[index].enable=true;
             }
+            // console.log("this.csvList[index].enable:"+this.csvList[index].enable);
         },
         setMoreCmpParams: function(obj) {
+            console.log("obj".obj)
             this.addValidate.app_id = obj.value;
             this.addValidate.app_name = obj.label;
         }, 
@@ -599,15 +719,13 @@ export default {
                     this.srchCmploading = false;
                     let _this = this
                     // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/userSearch', 
+                    this.$http.post('/myapi/user/searchByUser', 
                     {
                         data: {
                             name: _this.creater,                            
                         },                        
                     }
                     ).then(function (response) {
-                        console.log('response:', response);
-                        console.log('response.data: ', response.data);
                         _this.list = response.data.resultList;
                         console.log('list-after: ', _this.list);
                         const list = _this.list.map(item => {
@@ -626,8 +744,8 @@ export default {
         },
         /*删除按钮功能*/
         deleteScript: function() {
-            console.log("删除多条按钮");
             let selectedData=this.selectedData;      //选中要删除的数据
+            console.log("删除按钮",selectedData);
             let resArr = [];                         
             let deleteId = [];                     //选中数据的id
             if(selectedData.length>0){               //如果有选中的数据
@@ -685,11 +803,11 @@ export default {
                     app_name:_this.app_name,
                     script_manager_id:_this.creater,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
-                    pageSize: 15                    
+                    pageSize: 10                    
                 }
             }).then(function (response) {
                 console.log('response:');
-                console.log(response);
+                //console.log(response);
                 console.log('response.data: ', response.data);
                 _this.tableData = response.data.resultList;
                 _this.tableDataTotal = response.data.pagination.totalCount;
@@ -699,7 +817,7 @@ export default {
         handlePage:function(val){
             let _this = this;
             _this.pageNo = val;
-            console.log(val);
+            //console.log(val);
             _this.listCase();
         },
 
@@ -747,46 +865,45 @@ export default {
                 }
             })           
         },
-        checkScriptName(value) {
+        checkScriptName() {
             let _this = this;
+            let val = _this.addValidate.script_name;
              //检查脚本名称是否重复
             console.log("开始验证脚本名称");
             // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/checkName',{
                 data:{
-                    script_name:value,
+                    script_name:val,
                 }
             }).then(function(response){
-                if(response.status == 500){
-                    _this.$Message.error('服务端错误!');
-                }else{
-                    console.log("检查脚本响应数据",response);
-                    var flag = response.data.result;
-                    console.log("检查脚本响应数据flag",flag);
-                    if("fail" == flag){
-                        console.log("检查脚本响应数据flag22",flag);
-                        //_this.$Message.error('脚本名称重复!');
-                        return true;
-                    }else{
-                        return false;
-                    }
-                }
+                    //console.log("检查脚本响应数据",response);
+                    // var flag = response.data.result;
+                    // console.log("检查脚本响应数据flag",flag);
+                    _this.scriptFlag = response.data.result=="fail";
+                    console.log(" _this.scriptFlag",_this.scriptFlag);
+                    // if("fail" == flag){
+                    //     scriptFlag = false;
+                    //     console.log("检查脚本响应数据flag22",flag);
+                    // }
+                
                
             })
         },
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            console.log(data)
+            //console.log(data)
         },
-
-        onRowDblClick: function(row) {
-            this.$router.push({path:'/script_detail',query:{script_id:row.id}});
-        },
+        //双击方法
+        // onRowDblClick: function(row) {
+        //     this.$router.push({path:'/script_detail',query:{script_id:row.id}});
+        // },
 
         
         /**添加新数据弹出模态框 */
         addScript:function(){
+            //初始化表单
+            this.addValidate={};
             this.showDialog = true;
             console.log("显示模态框");
         },
@@ -807,6 +924,7 @@ export default {
         handleParamSubmit (name) {
             this.$refs[name].validate((valid) => {
                 let _this = this;
+                console.log("4a5454as54da5sdasd",name);
                 if (valid) {
                     // this.$http.defaults.withCredentials = false;
                     this.$http.post("/myapi/scripts/doParam",{
@@ -823,7 +941,6 @@ export default {
                             }else{
                                 this.$Message.error("设置失败!");
                             }
-                            _this.showParamStatus = false;
                         }
                     })
                 } else {
@@ -832,16 +949,21 @@ export default {
                 console.log(_this);                 //方法接口写好时再清空之前输入的
                  //this.$refs[name].resetFields();
             });
+            this.showParamStatus = false;
         },
         /***模态框弹出时确定事件: 验证表单提交 */
-        submitScript (name) {
+        submitScript (name,scriptFlag) {
             let _this = this;
-            console.log(this.addValidate);
+            _this.scriptFlag =this.scriptFlag;
+            //scriptFlag
+            // console.log(this.addValidate);
+            // console.log("name11111111111111111111111111111",scriptFlag);
+            _this.isdisabledFn = true;
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
-                    console.log("开始添加");
-                    console.log("app_name0000000"+_this.addValidate.app_name);
+                    console.log("开始添加",valid);
+                    console.log("app_name0000000",_this.addValidate.app_name);
                     // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/scripts/add',{
                         data:{
@@ -850,24 +972,28 @@ export default {
                             app_id:_this.addValidate.app_id,
                             memo:_this.addValidate.memo,
                             script_filename:_this.addValidate.script_filename,
-                            filesize:_this.filesize,
+                            script_filesize:_this.filesize,
                             script_filepath:_this.script_filepath,
                             script_id:_this.script_id,
                         }
                     }).then(function(response){
-                        console.log("响应回来的数据",response);
+                        console.log("响应回来的数据1111111",response);
                         if("success" == response.data.result){
                             _this.$Message.success('添加成功！');
+                            _this.listCase();
                         }else{
-                            _this.$Message.error('添加失败'+response.data.err_desc);
+                            _this.$Message.error(response.data.err_desc);
                         }
+                        _this.isdisabledFn = false;
                         _this.showDialog = false;
                         _this.$refs[name].resetFields();
                     }).catch(function(error){
+                        _this.isdisabledFn = false;
                         console.log("error:"+error);
                         _this.$Message.error('服务端错误!');
                     })
                 } else {
+                    _this.isdisabledFn = false;
                     _this.$Message.error('表单验证失败!');
                 }
             });
@@ -889,7 +1015,7 @@ export default {
                             app_name:_this.setValidate.app_name,
                             memo:_this.setValidate.memo,
                             script_filename:_this.setValidate.script_filename,
-                            filesize:_this.filesize,
+                            script_filesize:_this.filesize,
                             script_filepath:_this.script_filepath,
                             script_id:_this.script_id,
                         }
@@ -898,12 +1024,14 @@ export default {
                             _this.$Message.error('服务端错误!');
                         }else{
                             if("fail" == response.data.result){
-                                _this.$Message.error('修改失败!');
+                                console.log('修改失败,'+response.data.err_desc);
+                                _this.$Message.error('修改失败,'+response.data.err_desc);
                                 return;
                             }else{
                                 _this.$Message.success('修改成功!');
                                 _this.showSetScript = false;
                                 console.log("修改成功");
+                                _this.listCase();
                                 _this.$refs[name].resetFields();   
                             }
                         }
@@ -929,13 +1057,16 @@ export default {
             this.showDetail = false;
         },
         /**清除搜索条件 */
-        handleReset (name) {
+        handleReset () {
             let _this = this;
+            _this.$refs.cre.clearSingleSelect();
             _this.app_name='';
             _this.script_name='';
             _this.creater='';
+            console.log("11111");
+            
             // console.log(this.$refs[name])
-            // this.$refs[name].resetFields()
+            //this.$refs[name].resetFields();
             //this.$emit('on-reset')
             //this.script_name='';
         } 
@@ -976,6 +1107,9 @@ export default {
 .pageContent{
     margin:-16px;
 }
+.demo-spin-icon-load{
+        animation: ani-demo-spin 1s linear infinite;
+    }
 .rowbox{
     width:100%;
     margin: 0px auto;
@@ -1093,7 +1227,10 @@ export default {
     text-align: right;
     font-size: 12px;
 }
-
+.editStaticDiv {
+    font-size: 12px;
+    padding-top: 6px;
+}
 /* add by xin */
 /*三个操作按钮样式*/
 .btnOpera{

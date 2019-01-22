@@ -1,4 +1,4 @@
-import Vue from 'vue';
+﻿import Vue from 'vue';
 import Router from 'vue-router';
 Vue.use(Router);
 
@@ -8,16 +8,17 @@ import LeftMainmenu from '@/components/LeftMainmenu.vue'
 // import EnvironmentManage from '@/views/EnvironmentManagement/EnvironmentManageIndex/EnvironmentManage'
 // import AddGlobalConfig from '@/views/AddGlobalConfig/AddGlobalConfig'
 
-import Monitoring from '@/views/ExeQueue/Monitoring/Monitoring'
+import AddGlobalConfig from '@/views/AddGlobalConfig/AddGlobalConfig'
+import Monitoring from '@/views/ExeQueue/Monitoring/Monitoring'  
 import PerfTask from '@/views/PerfTask/PerfTask.vue'
 import Script from '@/views/Script/Script.vue'
 import ScriptDetail from '@/views/Script/ScriptDetail.vue'
 import Senario from '@/views/Senario/SenarioManager.vue'
 import ExeQueue from '@/views/ExeQueue/ExeQueue.vue'
 import ExeResult from '@/views/ExeResult/ExeResult.vue'
+import Merge from '@/views/ExeResult/Report/GetMerge.vue'
 import Details from   '@/views/ExeResult/Details.vue'
-import Load from   '@/views/ExeResult/Report/Load.vue'
-import Base from   '@/views/ExeResult/Report/Mix.vue'
+import Load from   '@/views/ExeResult/Report/Mix.vue'
 import Machine from '@/views/Machine/Machine.vue'
 import SysPluginMgr from '@/views/SysPluginMgr/SysPluginMgr.vue'
 import UserPluginMgr from '@/views/UserPluginMgr/UserPluginMgr.vue'
@@ -79,9 +80,9 @@ export const constantRouterMap = [
         component: Load
       },
       {
-        path: '/base',
-        name: 'Base',
-        component: Base
+        path: '/merge',
+        name: 'Merge',
+        component: Merge
       },
       {
         path: '/syspluginmgr',

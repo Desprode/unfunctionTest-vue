@@ -18,8 +18,24 @@ Vue.prototype.$Message.config({
   top : 150,
   duration : 3
 })
-
+// Vue.http.interceptors.push((request,next)=>{
+//   let timeout;
+//   if(request._timeout){
+//     timeout = setTimeout(()=>{
+//       //自定义响应体 408：请求超时  并返回下边的next
+//       next(request.respondWith(request.body,{
+//         status:408,
+//         statusText:'请求超时'
+//       }))
+//     },request._timeout)
+//   }
+//   next((response)=>{
+//     console.log(response.status)//如果超时输出408
+//     return response;
+//   })
+// })
 import global from './Global.vue';
+import { connect } from 'echarts/lib/echarts';
 Vue.prototype.$Global = global;
 
 Vue.prototype.$axios = axios;

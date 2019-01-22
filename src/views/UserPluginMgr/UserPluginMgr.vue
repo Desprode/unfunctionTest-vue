@@ -1,16 +1,15 @@
 ﻿<template>
 	<div class="pageContent">
-        <Card>
             <div class="caseBox">
                 <h3 class="Title">
-                    <span>用户插件列表</span>
+                    <span>用户插件管理</span>
                 </h3>
                 <div class="tableBox">
                     <div class="tableBtnBox">
-                        <Button type="primary" @click="addScript" >上传插件</Button>
+                        <Button type="primary" @click="addScript">上传插件</Button>
                         <Button @click="deleteCase" type="error">删除</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -30,19 +29,19 @@
                     <i-form ref="addValidate" :model="addValidate" :rules="ruleValidate" :label-width="100" label-position="left">
                         <Row>
                             <i-col span="20">
-                                <Form-item label="上传文件：" prop="script_filename">
-                                    <i-input  v-model="addValidate.script_filename" placeholder="请选择上传文件(.jar格式)"></i-input>
+                                <Form-item label="上传文件：" prop="plugin_name">
+                                    <i-input  v-model="addValidate.plugin_name" placeholder="请选择上传文件(.jar格式)"></i-input>
                                 </Form-item>                                
                             </i-col>        
                             <i-col span=4 >
                                 <Upload ref="upload"
                                         name="file"
-                                        action="/myapi/scripts/upload" 
-                                        :before-upload="handleUpload" 
+                                        action="/myapi/userPluginMgr/add" 
+                                        :before-upload="handleUpload"
                                         :format="['jar']" 
                                         :on-success="uploadSuccess"
                                         :on-format-error="handleFormatError"
-                                        v-model="addValidate.script_filename">
+                                        v-model="addValidate.plugin_name">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
                                 </Upload>
                             </i-col>                  
@@ -50,11 +49,10 @@
                     </i-form>
                 </div>
                 <div slot="footer">
-                    <Button color="#1c2438" @click="submitScript('addValidate')">确认</Button>
+                    <Button color="#1c2438" @click="submitScript()">确认</Button>
                     <Button type="primary" @click="cancel()">取消</Button>
                 </div>
             </Modal>
-        </Card>
     </div>
 </template>
 
@@ -73,7 +71,7 @@ export default {
             plugin_size:'',
             uploader:'',
             upload_time:'',
-            script_filename:'',
+            is_sys:'',
 
             columns: [
             	{
@@ -114,25 +112,28 @@ export default {
                     render: (h, item) => {
                         return h('div', [
                         h('Button', {
-                                        props: {
-                                            type:"primary",
-                                            size: 'small'
-                                        },
-                                        on: {
-                                            click: () => {
-                                                this.handleDownload(item.executor_id);
-                                            }
-                                        }
-                                    }, '下载')
+                            props: {
+                                type: 'default',
+                                size: 'small'
+                            },
+                            on: {
+                                click: () => {
+                                    this.handleDownload(item.row.id,item.row.plugin_name);
+                                }
+                            }
+                        }, '下载')
                         ])
                                             
                     }
                 }
             ],
             tableData: [],
-            totalcount:0,                         //共多少条数据
-            pageno:1,                            //当前页
-            pagesize:10,                           //每页显示多少条数据
+            tableDAtaTatol:0,
+            tableDAtaPageLine:3,
+            totalCount:0,                         //共多少条数据
+            pageNo:1,                            //当前页
+            pageSize:10,                           //每页显示多少条数据
+            totalPage:0,                           //共多少页
 
             /* add by xin */
             /**===================================模态框表单验证数据 =========================*/
@@ -141,10 +142,10 @@ export default {
 
             },
             addValidate: {
-                script_filename: ''
+                plugin_name: ''
                 },
             ruleValidate: {
-                script_filename: [
+                plugin_name: [
                 { required: true, message: '此项为必填项', trigger: 'blur' }
             ]
             },
@@ -157,29 +158,77 @@ export default {
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传jar格式的文件!');
         },
-        handleUpload:function(file){
-            var reg=new RegExp("[^a-zA-Z0-9\_\u4e00-\u9fa5]","i");
-            var fname = file.name.substr(0,file.name.indexOf('.'))
-            if(reg.test(fname)==true){
-                this.$Message.error(file.name+"包含特殊字符,请检查后在上传!"); 
-                return false;
-            }
-            let _this = this;
-            _this.addValidate.script_filename=file.name;
-            _this.setValidate.script_filename=file.name;
-        },
         uploadSuccess:function(res,file) {
             console.log(res)
             if(res.result == "success"){
                 this.filesize = res.resultList[0].filesize;
-                this.script_filename = res.resultList[0].script_filename;
+                this.plugin_name = res.resultList[0].plugin_name;
                 this.script_filepath = res.resultList[0].script_filepath;
-                this.script_id = res.resultList[0].script_id;
+                this.id = res.resultList[0].id;
+                this.is_sys = res.resultList[0].is_sys;
                 console.log(this.filesize)
-                console.log(this.script_filename)
+                console.log(this.plugin_name)
                 console.log(this.script_filepath)
-                console.log(this.script_id)
+                console.log(this.id)
             }
+        },
+        deleteCase: function () {
+            //console.log("删除多条按钮");
+            let selectedData = this.selectedData;      //选中要删除的数据
+            let resArr = [];
+            let deleteId = [];                       //选中数据的id
+            if (selectedData.length > 0) {               //如果有选中的数据
+                for (let i in selectedData) {         //进行遍历
+                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
+                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
+                }
+                console.log("删除多条的id",deleteId);
+            } else {
+                this.$Message.error("请选择要删除的数据")
+            }
+        }, 
+        deleteData:function(deleArr) {                //调用方法将原有数据中对应的id删除
+            console.log("删除多台哦数据内容",deleArr)
+            let _this = this;
+            let tableData = _this.tableData;          //原有的数据
+            tableData.forEach((item, index) => {      //对原有的数据进行遍历
+                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+                    _this.$Modal.confirm({
+                        title:'确认',
+                        content: '是否停止该数据',
+                        onOk: () => {
+                            this.$http.defaults.withCredentials = false;
+                            this.$http.post("/myapi/userPluginMgr/del",{
+                                header:{},
+                                data:{
+                                    ids:deleArr,
+                                }
+                            }).then(function(){
+                                tableData.splice(index, 1);        //即删除该数据上
+                                _this.$Message.info('删除成功');
+                            })
+                        },
+                        onCancel: () => {
+                            _this.$Message.info('删除失败');
+                        }
+                    }); 
+                   
+                }
+            });
+        },
+            /**选中的数据发生改变 */
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            console.log("选中要删除的数据",this.selectedData)
+            //console.log(data)
+        },
+        onSelectionChanged: function(data) {
+            this.selectedData = data;
+            console.log(data)
+        },
+        handleUpload:function(file){
+            let _this = this;
+            _this.addValidate.plugin_name=file.name;
         },
 
         /**加载表格中的数据 */
@@ -195,66 +244,67 @@ export default {
             }).then(function (response) {
                 console.log("列表请求回来的分页数据",response.headers);
                 console.log("请求回来的模糊查询数据",response.data);
-                _this.totalcount = response.headers.totalcount               //将总的数据条数赋值后渲染
+                _this.tableData = response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
                 _this.tableData = response.data.resultList;
             })
         },
-        /**分页查询功能----切换每页大小 */
-        pageSizeChange:function(pagesize){
-            //console.log("页码大小切换",pagesize);
-            this.pagesize = pagesize;                     //改变当前页大小后
-            this.listCase();                                 //重新请求数据
+        /**切换页码 */
+       pageChange:function(pageNo){
+        console.log(pageNo);
+        this.pageNo = pageNo;
+        this.listCase();
+    },
+    /**切换页面大小 */
+    pageSizeChange:function(pageSize){
+        console.log(pageSize);
+        this.pageSize = pageSize;
+        this.listCase();
+    },
+        /**添加新数据弹出模态框 */   
+        handleDownload:function(rowid,fileName){
+            console.log("这个是什么",fileName);
+            let _this = this;
+            // this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/userPluginMgr/download',{
+                data:{
+                    id:rowid,
+                }
+            }).then(function(response){
+                //服务端文件不存在的情况判断
+                if("fail" == response.data.result){
+                    _this.$Message.error(response.data.err_desc);
+                    return;
+                }
+                //console.log("script编辑接口response.data",response.data);
+               // let fileName = item.row.script_filename // 文件地址
+                var blob = new Blob([response.data])
+                if (window.navigator.msSaveOrOpenBlob) {
+                    // 兼容IE10
+                    navigator.msSaveBlob(blob, fileName)
+                } else {
+                    let url = window.URL.createObjectURL(blob);
+                    let link = document.createElement('a');
+                    link.style.display = 'none';
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                }
+            })
         },
-        /**分页查询功能----切换当前页 */
-        pageChange:function(pageno){
-            //console.log("页码切换",pageno);
-            this.pageno = pageno; 
-            this.listCase();
-        },
-        /**添加新数据弹出模态框 */
         addScript:function(){
             this.showDialog = true;
             console.log("显示模态框");
         },
-        /***==========模态框弹出时确定事件: 验证表单提交 ===================*/
-        submitScript (name) {
-            let _this = this;
-            console.log(this.addValidate);
-            //提交添加请求
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    console.log("开始添加");
-                    console.log("app_name0000000"+_this.addValidate.app_name);
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/scripts/add',{
-                        data:{
-                            script_filename:_this.addValidate.script_filename,
-                            filesize:_this.filesize,
-                            script_filepath:_this.script_filepath,
-                            script_id:_this.script_id,
-                        }
-                    }).then(function(response){
-                        console.log("响应回来的数据",response);
-                        if(response.status == 500){
-                            _this.$Message.error('服务端错误!');
-                        }else{
-                            if("ok" == response.data.result){
-                                _this.$Message.success('添加成功！');
-                            }else{
-                                _this.$Message.error('添加失败'+response.data.err_desc);
-                            }
-                            _this.showDialog = false;
-                            _this.$refs[name].resetFields();
-                        }
-                    })
-                } else {
-                    _this.$Message.error('表单验证失败!');
-                }
-            });
-        },     
         /**模态框弹出取消事件 */
         cancel () {
             this.$Message.info('点击了取消');
+            this.showDialog = false;
+        },
+        submitScript () {
+            this.$Message.info('新增成功');
             this.showDialog = false;
         },
     }

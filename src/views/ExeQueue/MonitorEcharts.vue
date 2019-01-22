@@ -1,23 +1,23 @@
 <template>
     <div>
         <Card>
-            <Form :label-width="50" laabe-position="right">
+            <Form :label-width="60" v-model="serverInfo" label-position="left">
                 <Row>
-                    <Col span="12">
-                        <FormItem label="服务器">
-                            <Select v-model="model" @on-change="funsChange">
-                                <Option v-for="(item,index) in subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
+                    <Col span="6">
+                        <FormItem label="部署单元">
+                            <Select v-model="model" @on-open-change="funsChange">
+                                <Option v-for="(item,index) in serverInfo.subsys" :key="index" :value="item.funDesc">{{item.funDesc}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
                     <Col span="24" v-if="prodIPRow">
                         <FormItem label="服务器地址"  :label-width="80">
-                            <Select v-model="prodIPList" multiple @on-change="prodIPChange">
+                            <Select v-model="prodIPList" multiple @on-change="prodIPChange">  
                                 <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="12" v-else>
+                    <Col span="18" v-else>
                         <FormItem label="服务器地址"  :label-width="80">
                             <Select v-model="prodIPList" multiple @on-change="prodIPChange">
                                 <Option v-for="item in prodIP" :value="item" :key="item">{{item}}</Option>
@@ -35,22 +35,22 @@
                     </FormItem>
                 </Row> -->
                 <Row>
-                    <Col span="11">
+                    <Col span="10">
                         <FormItem label="CPU">
-                            <Select multiple>
+                            <Select multiple v-model="CPUList">
                                 <Option placeholder="Select CPU Mode" v-for="item in CPU" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="11">
+                    <Col span="10">
                         <FormItem label="内存">
-                            <Select multiple>
+                            <Select multiple v-model="MemoryList">
                                 <Option placeholder="Select Memory Mode" v-for="item in Memory" :value="item.label" :key="item.value">{{item.label}}</Option>
                             </Select>
                         </FormItem>
                     </Col>
-                    <Col span="2">
-                         <Button @click="confirm" type="primary">确定</Button>
+                    <Col span="4">
+                         <Button @click="selectUpdate" type="primary">确定</Button>
                     </Col>
                 </Row> 
             </Form>
@@ -79,10 +79,12 @@
                 model:'',
                 prodIPList:[],
                 prodIPListSend:[],
+                CPUList:["user","sys","wait","Used"],
+                MemoryList:["buffer","cache","free","used"],
                 CPU:[
                     {
-                        value:'users',
-                        label:'users'
+                        value:'user',
+                        label:'user'
                     },
                     {
                         value:'sys',
@@ -92,6 +94,10 @@
                         value:'wait',
                         label:'wait'
                     },
+                    {
+                        value:'Used',
+                        label:'Used'
+                    }
                 ],
                 Memory:[
                     {
@@ -101,25 +107,22 @@
                     {
                         value:'cache',
                         label:'cache'
+                    },
+                    {
+                        value:'free',
+                        label:'free'
+                    },
+                    {
+                        value:'used',
+                        label:'used'
                     }
                 ],
-                "start":1545025050,
-				"selected":"128.196.52.135",
-                funDescID:0,
-                subsys:[
-						{
-						"funDesc":"分类一",
-						"ip":["128.196.52.134","128.196.52.135","128.196.52.136"]
-						},
-						{
-						"funDesc":"分类二",
-						"ip":["128.196.53.145","128.196.53.146","128.196.53.147"]
-						},
-						{
-						"funDesc":"分类三",
-						"ip":["128.196.53.148","128.196.52.124","128.196.52.132","128.196.52.133"]
-						}
-                    ],
+                serverInfo:{
+                    "start":"",
+                    "selected":"",
+                    "funDescID":"",
+                    "subsys":[]
+                },
                 prodIP:[],
                 prodIPRow:'',
                 funDesc:[],
@@ -157,14 +160,14 @@
                 legend_net: [],
 
                 //当前选用的IP和模式
-                cpumode: ["user", "system", "Used", "iowait"],
-                memmode: ["buffer", "cache", "free", "used"],
+                cpumode: [],   //cpu
+                memmode: [],    
                 iomode: ["IOPS", "read", "write"],
-                ipmode: ["128.196.52.134","128.196.52.135"],//选择后的结果
+                ipmode: [],//选择后的结果
 
 
                  //需前一界面传入
-                iplist: ["128.196.52.134","128.196.52.135"],
+                iplist: [],
                 //host: "128.195.0.12:8080",
                 funDesc: [],
                 startTime: 0,
@@ -182,19 +185,14 @@
             }
         },
          beforeDestroy(){
-            if(!this.chart){
-                return;
-            }
-            this.chart.dispose();
-            this.chart=null;
-            this.initCpu.dispose();
-            this.initCpu = null;
-            this.initMem.dispose();
-            this.initMem = null;
-            this.initIo.dispose();
-            this.initIo = null;
-            this.initNet.dispose();
-            this.initNet = null;
+            this.myChart_cpu.dispose();
+            this.myChart_cpu = null;
+            this.myChart_mem.dispose();
+            this.myChart_mem = null;
+            this.myChart_io.dispose();
+            this.myChart_io = null;
+            this.myChart_net.dispose();
+            this.myChart_net = null;
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
         },
@@ -202,7 +200,6 @@
          mounted(){
             // this.updatedisk();
             this.initAll();
-
             this.initCpu();
             this.updateChart_cpu(this.BeginTime,'1545121419');
 
@@ -218,56 +215,72 @@
             this.intervalFunc = setInterval(this.realTimeCl, 5000);
         },
         created () {
-            
+            this.getServerInfo();
         },
         methods: {
             returnBack:function(){
                 this.$router.back(-1);
             },
+            /** 获取服务器数据*/
+            getServerInfo:function(){
+                let _this = this;
+                _this.serverInfo = this.$route.query.serverInfo;
+                _this.model = this.$route.query.row.funDesc;
+                _this.prodIPList.push(this.$route.query.row.prodIp);
+                _this.prodIP.push(this.$route.query.row.prodIp);
+            },
             /**服务器改变时，服务器地址随之改变 */
             funsChange:function(){
-                console.log("选项改变了");
-                console.log(this.model);
                 let _this = this;
-                _this.subsys.map(item=>{
-                    console.log(item.funDesc);
+                _this.serverInfo.subsys.map(item=>{
                     if(item.funDesc == _this.model){
                         _this.prodIP = item.ip;
                     }
                 })
-                _this.prodIPListSend.push(_this.prodIPList);
-                _this.prodIPList = [];
-                console.log(_this.prodIPListSend);
+                _this.subsys = this.$route.query.serverInfo;
             },
             prodIPChange:function(){
-                if(this.prodIPList.length > 2){
-                    this.prodIPRow = true;
-                    //console.log(this.prodIPRow);
+                let _this = this;
+                if(_this.prodIPList.length > 5){
+                    _this.prodIPRow = true;
+                    ////console.log(this.prodIPRow);
                 }else{
-                    this.prodIPRow = false;
-                    //console.log(this.prodIPRow);
+                    _this.prodIPRow = false;
+                    ////console.log(this.prodIPRow);
                 }
+                // for(var i=0;i<_this.prodIPList.length;i++){
+                //     console.log(_this.prodIPList[i]);
+                //     console.log(_this.ipmode);
+                //     if(_this.ipmode.includes(_this.prodIPList[i])){
+                //         console.log(true);
+                //     }else{
+                //         _this.ipmode.push(_this.prodIPList[i]);
+                //     }
+                // }
+                console.log(_this.prodIPList);
             },
+            //点击确认之后重新赋值
             confirm:function(){
-                for(var i=0;i<this.subsys.length;i++){
-                    console.log(this.subsys[i].funDesc);
-                    this.funDescID = i ;
-                    console.log(this.funDescID);
-                    for(var j=0;j<this.subsys[i].ip.length;j++){
-                        console.log(this.subsys[i].ip[j]);
-                    }
-                }
-                console.log(this.model);
-                console.log(this.prodIPList);
+                
+                this.selectUpdate();
             },
             initAll(){
-            this.BeginTime = "1545121119";
+                //iplist:所有ip的集合
+                for(var i=0;i<this.serverInfo.subsys.length;i++){
+                    for(var j=0;j<this.serverInfo.subsys[i].ip.length;j++){
+                        this.iplist.push(this.serverInfo.subsys[i].ip[j])
+                    }
+                }
+                this.BeginTime = this.serverInfo.start;
+                this.cpumode = this.CPUList;
+                this.memmode = this.MemoryList;
+                this.ipmode.push(this.$route.query.row.prodIp);
             },
 
             initCpu(){
                 this.myChart_cpu =this.$echarts.init(document.getElementById('container_cpu'),'infographic');
-                console.log("firstin");
-                console.log(this);
+                //console.log("firstin");
+                //console.log(this);
                 let _this = this;
                 this.myChart_cpu.on('dataZoom', function (params) {
                     _this.flushFlag = false;
@@ -285,13 +298,13 @@
                     // 使用 legendToggleSelect Action 会重新触发 legendselectchanged Event，导致本函数重复运行
                     // 使得 无 selected 对象
                     if (selected != undefined) {
-                        console.log("abc");
-                        console.log(this);
-                        console.log(selected);
+                        //console.log("abc");
+                        //console.log(this);
+                        //console.log(selected);
                         //多选反选，但倒数第二个会全选中
                         if (_this.isFirstUnSelect(selected)) {
-                            console.log("isFirstUnSelect");
-                            console.log(selected);
+                            //console.log("isFirstUnSelect");
+                            //console.log(selected);
                             var legend = [];
                             for (name in selected) {
                                 if (selected.hasOwnProperty(name)) {
@@ -400,7 +413,7 @@
 
                 let _this = this;
                 this.myChart_mem.on('dataZoom', function (params) {
-                    console.log("aaaad");
+                    //console.log("aaaad");
                     _this.flushFlag = false;
                 });
 
@@ -416,13 +429,13 @@
                     // 使用 legendToggleSelect Action 会重新触发 legendselectchanged Event，导致本函数重复运行
                     // 使得 无 selected 对象
                     if (selected != undefined) {
-                        console.log("abc");
-                        console.log(this);
-                        console.log(selected);
+                        //console.log("abc");
+                        //console.log(this);
+                        //console.log(selected);
                         //多选反选，但倒数第二个会全选中
                         if (_this.isFirstUnSelect(selected)) {
-                            console.log("isFirstUnSelect");
-                            console.log(selected);
+                            //console.log("isFirstUnSelect");
+                            //console.log(selected);
                             var legend = [];
                             for (name in selected) {
                                 if (selected.hasOwnProperty(name)) {
@@ -537,13 +550,13 @@
                     // 使用 legendToggleSelect Action 会重新触发 legendselectchanged Event，导致本函数重复运行
                     // 使得 无 selected 对象
                     if (selected != undefined) {
-                        console.log("abc");
-                        console.log(this);
-                        console.log(selected);
+                        //console.log("abc");
+                        //console.log(this);
+                        //console.log(selected);
                         //多选反选，但倒数第二个会全选中
                         if (_this.isFirstUnSelect(selected)) {
-                            console.log("isFirstUnSelect");
-                            console.log(selected);
+                            //console.log("isFirstUnSelect");
+                            //console.log(selected);
                             var legend = [];
                             for (name in selected) {
                                 if (selected.hasOwnProperty(name)) {
@@ -780,12 +793,12 @@
 
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 let url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                console.log(url);
+                //console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
                 }).then(function(response){
-                    console.log(response);
+                    //console.log(response);
                     let result = response.data;
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
@@ -796,7 +809,7 @@
                     _this.datapos_cpu.splice(0, _this.datapos_cpu.length);
                     _this.legendvar_cpu.splice(0, _this.legendvar_cpu.length);
 
-                    let metric = result.data.result;console.log(metric);
+                    let metric = result.data.result;//console.log(metric);
                     for (let i = 0, len = metric.length; i < len; i++) {
                         let data1 = [];
 
@@ -865,27 +878,27 @@
                         _this.legend_cpu.push(text.name);
 
                     }
-                    console.log(_this.chartdata_cpu);
-                    console.log(_this.legend_cpu);
+                    //console.log(_this.chartdata_cpu);
+                    //console.log(_this.legend_cpu);
                     _this.myChart_cpu.setOption(_this.option_cpu);
                 }); //http 结束
             },
 
             updateChart_mem(fromTime, toTime) {
-                    console.log("shuaxin");
-                    console.log(this.cpumode);
-                    console.log(this.ipmode);
-                    console.log(fromTime);
-                    console.log(toTime);
+                    //console.log("shuaxin");
+                    //console.log(this.cpumode);
+                    //console.log(this.ipmode);
+                    //console.log(fromTime);
+                    //console.log(toTime);
 
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 let url =  '/myapi/monitor/realtime?type=mem&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                console.log(url);
+                //console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
                 }).then(function(response){
-                    console.log(response);
+                    //console.log(response);
                     let result = response.data;
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
@@ -896,7 +909,7 @@
                     _this.datapos_mem.splice(0, _this.datapos_mem.length);
                     _this.legendvar_mem.splice(0, _this.legendvar_mem.length);
 
-                    let metric = result.data.result;console.log(metric);
+                    let metric = result.data.result;//console.log(metric);
                     for (let i = 0, len = metric.length; i < len; i++) {
                         let data1 = [];
 
@@ -955,15 +968,15 @@
             },
 
             updateChart_io(fromTime, toTime) {
-                    console.log("shuaxin");
-                    console.log(this.cpumode);
-                    console.log(this.ipmode);
-                    console.log(fromTime);
-                    console.log(toTime);
+                    //console.log("shuaxin");
+                    //console.log(this.cpumode);
+                    //console.log(this.ipmode);
+                    //console.log(fromTime);
+                    //console.log(toTime);
 
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 let url = '/myapi/monitor/realtime?type=io&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                console.log(url);
+                //console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
@@ -979,7 +992,7 @@
                     _this.datapos_io.splice(0, _this.datapos_io.length);
                     _this.legendvar_io.splice(0, _this.legendvar_io.length);
 
-                    let metric = result.data.result;console.log(metric);
+                    let metric = result.data.result;//console.log(metric);
                     for (let i = 0, len = metric.length; i < len; i++) {
                         let data1 = [];
                         let axisflag = false;
@@ -1057,19 +1070,19 @@
             },
 
             updateChart_net(fromTime, toTime) {
-                    console.log("shuaxin");
-                    console.log(this.ipmode);
-                    console.log(fromTime);
-                    console.log(toTime);
+                    //console.log("shuaxin");
+                    //console.log(this.ipmode);
+                    //console.log(fromTime);
+                    //console.log(toTime);
 
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 let url = '/myapi/monitor/realtime?type=net&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                console.log(url);
+                //console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
                 }).then(function(response){
-                    console.log(response);
+                    //console.log(response);
                     let result = response.data;
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
@@ -1134,9 +1147,9 @@
 
             isFirstUnSelect(selected){
                 var unSelectedCount = 0;
-                console.log("isfirst");
-                console.log(this);
-                console.log(selected);
+                //console.log("isfirst");
+                //console.log(this);
+                //console.log(selected);
                 for (name in selected) {
                     if (!selected.hasOwnProperty(name)) {
                         continue;
@@ -1198,7 +1211,7 @@
                 }
                 var tmp = this.getFlushInterval(this.BeginTime, to);
 
-                console.log(this.timeSectionFlag); console.log(this.flushFlag); console.log(tmp); console.log(this.interval);
+                //console.log(this.timeSectionFlag); //console.log(this.flushFlag); //console.log(tmp); //console.log(this.interval);
                 if (this.interval != tmp) {
                     this.interval = tmp;
                     if (this.interval < 5)
@@ -1218,9 +1231,16 @@
 
             selectUpdate(){
             //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
-
+                console.log("this.MemoryList",this.MemoryList);
+                this.cpumode = this.CPUList;
+                this.memmode = this.MemoryList;
+                this.ipmode = this.prodIPList;
+                console.log("_this.cpumode",this.cpumode);
+                console.log("_this.memmode",this.memmode);
+                console.log("_this.MemoryList",this.MemoryList);
+                console.log("_this.ipmode",this.ipmode);
             //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
-            flushFlag = false;
+            this.flushFlag = false;
 
             for (var i = 0; i < this.datapos_cpu.length; i++) {
                 var flag = false;
@@ -1257,7 +1277,6 @@
 
             this.chartdata_mem.splice(0, this.chartdata_mem.length);
             this.legend_mem.splice(0, this.legend_mem.length);
-            this.memmode.splice(0, this.memmode.length);
 
             for (var i = 0; i < this.datapos_mem.length; i++) {
                 var flag = false;
@@ -1356,9 +1375,8 @@
             }
             this.myChart_net.clear();
             this.myChart_net.setOption(this.option_net);
-
             //恢复定时刷新
-            flushFlag = true;
+            this.flushFlag = true;
 
             },
                 

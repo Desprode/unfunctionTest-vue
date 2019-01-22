@@ -7,15 +7,15 @@
             <Form class="formValidate">
                 <div class="rowbox">
                     <Row :gutter="16">
-                        <Col span="2" class="searchLable">任务名称</Col>
+                        <Col span="2" class="searchLable">任务名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="task_name" placeholder="输入任务名称"></Input>
+                            <Input clearable v-model="task_name" placeholder="请输入任务名称"></Input>
                         </Col>
-                        <Col span="2" class="searchLable">场景名称</Col>
+                        <Col span="2" class="searchLable">场景名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="senario_name" placeholder="输入场景名称"></Input>
+                            <Input clearable v-model="senario_name" placeholder="请输入场景名称"></Input>
                         </Col>
-                        <Col span="2" class="searchLable">场景类型</Col>
+                        <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
                             <Select v-model="type_name" >
                                 <Option value="混合交易" >混合交易</Option>
@@ -23,45 +23,34 @@
                                 <Option value="单交易负载" >单交易负载</Option>
                             </Select>
                         </Col>
-                        <Col span="3">
+                        <Col span="6">
                             <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
                             <Button @click="handleReset">重置</Button>
                         </Col>
                     </Row>
                     <Row :gutter="16" v-show="isShowMoreShow">
-                        <Col span="2" class="searchLable">执行状态</Col>
+                        <Col span="2" class="searchLable">执行状态:</Col>
                         <Col span="4">
                             <Select v-model="exe_status" >
                                 <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </Col>
-                        <Col span="2" class="searchLable">执行人</Col>
+                        <Col span="2" class="searchLable">执行人:</Col>
                         <Col span="4">
-                            <Input clearable v-model="execution_name" placeholder="输入执行人"></Input>
+                            <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input>
                         </Col>
                     </Row>
-                    <Row :gutter="17" v-show="isShowMoreShow">
-                        <Col span="2" class="searchLable">开始日期</Col>
+                    <Row :gutter="16" v-show="isShowMoreShow">
+                        <Col span="2" class="searchLable">开始日期:</Col>
                         <Col span="4">
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="start_time"></DatePicker>
+                            <Col span="50">
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time" style="width:267px"></DatePicker>
                             </Col>
-                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="start_time"></DatePicker>
                             </Col>
-                            <Col span="1"></Col>
-                        </Col>
-                        <Col span="2" class="searchLable">结束日期</Col>
+                        <Col span="2" class="searchLable">结束日期:</Col>
                         <Col span="4">
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询起始日期" v-model="end_time"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time" style="width:267px" ></DatePicker>
                             </Col>
-                            <Col span="1" style="text-align: center; padding: 14px 0px">-</Col>
-                            <Col span="11">
-                                <DatePicker type="date" placeholder="选择查询截止日期" v-model="end_time"></DatePicker>
-                            </Col>
-                        </Col>
                         <Col span="2"></Col>
                     </Row>
                 </div>
@@ -73,11 +62,10 @@
             <div align="left">
                 <Button @click="aggregCase" type="success"  >聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
-                <!-- <Button @click="loadCase" type="error">负载测试</Button>
-                <Button @click="baseCase" type="error">基准测试</Button> -->
+                <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
-                <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
@@ -100,8 +88,10 @@
                 <div v-for="(Item,index) in setValidates" :key="index" style="display:inline-block">
                     <Form ref="setValidate" :model="setValidate" >
                         <div style="float:left;width:150px">
-                            <Button color="#1c2438"  @click="">上移</Button>
-                            <Button color="#1c2438"  @click="">下移</Button>
+                            <Button color="#1c2438"  @click="moveUp(index)">上移</Button>
+                            <Button color="#1c2438"  @click="moveDown(index)">下移</Button>
+                            <!-- <input type="button" value="上移" onclick="mm(this, -1)">
+                            <input type="button" value="下移" onclick="mm(this,  1)"> -->
                         </div>
                         <div style="float:left;width:900px" >
                             <FormItem label="场景名称：" align="left" >
@@ -143,8 +133,8 @@
                         </div>
                     </Form>
                 </div>
-                <div style="display:inline-block;margin-left:10px">
-                    <Table border  ref="index" :columns="aggregColumns" :data="aggregTableData" class="myTable"></Table>
+                <div class="tableBox">
+                    <Table border  ref="selection" :columns="aggregColumns" :data="aggregTableData" class="myTable" ></Table>
                 </div>
             </div>
             <div slot="footer" >
@@ -169,18 +159,21 @@ export default {
                 data_sgeet:'1',                      //显示性能数据表
                 diagram:'1',                         //显示性能曲线图
                 control_chart:'1',                   //显示资源监控图
-                analysis_things:'1'                  //显示失败事务分析
+                analysis_things:'1',                  //显示失败事务分析
+                id:'',
             },
             setValidates:[],
             isShowMore:false,                   //聚合报告弹框
             /**-----------聚合报告信息展示-----------*/
             metrics_desc:'',                    //测试需求描述
+            create_time:'',
+            metrics_type:'',
             aggregColumns:[
                 {
-                    title: '序号',
-                    type: 'index2',
+                    title: '#',
+                    type: 'index',
                     align: 'center',
-                    width: 80
+                    width: 50,
                 },
                 {
                     title: '测试需求描述',
@@ -189,12 +182,12 @@ export default {
                 },
                 {
                     title: '是否满足需求',
-                    key: 'type',
+                    key: 'metrics_type',
                     align: 'center',
                 },
                 {
                     title: '备注描述',
-                    key: 'age',
+                    key: 'create_time',
                     align: 'center',
                     ellipsis: true
                 },
@@ -217,12 +210,6 @@ export default {
             //执行结果信息展示
             columns: [
             	{
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 50,
-                },
-                {
                     type: 'selection',
                     width: 50,
                     align: 'center',
@@ -237,32 +224,77 @@ export default {
                 {
                     title: '物理子系统',
                     key: 'component_name',
-                    ellipsis: true, 
+                    // ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.component_name
+                                }
+                            }, params.row.component_name)
+                        ]);
+                    }
                 },
                 {
                     title: '关联任务',
                     key: 'task_name',
-                    ellipsis: true, 
+                    // ellipsis: true,  
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.task_name
+                                }
+                            }, params.row.task_name)
+                        ]);
+                    }
                 },
                 {
                     title: '场景名称',
                     key: 'senario_name',
-                    ellipsis: true, 
+                    // ellipsis: true,  
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.senario_name
+                                }
+                            }, params.row.senario_name)
+                        ]);
+                    }
                 },
                 {
                     title:'场景类型',
                     key:'type_name',
-                    width:100,
                 },
                 {
                     title: '执行人',
                     key: 'execution_name',
-                    width:90,
                 },
                 {
                     title: '执行状态',
                     key: 'exe_status',
-                    width:100,
                     render:(h,params) =>{
                         let _this = this;
                         return h('span',_this.$Global.exeStatusMap[params.row.exe_status])
@@ -271,12 +303,10 @@ export default {
                 {
                     title: '开始日期',
                     key: 'start_time',
-                    width:150,
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
-                    width:150,
                 },
                 {
                     title: '操作',
@@ -366,9 +396,26 @@ export default {
                 }
             });
         },
+        //上移
+        moveUp:function(index){
+            if(index ===0){
+                this.$Message.info('到顶了！');
+            }else{
+                this.setValidates.push(this.setValidates.shift())
+            }
+        },
+        //下移
+        moveDown:function(index){
+            if(index === (this.setValidates.length -1)){
+                this.$Message.info('到底了！');
+            }else{
+                this.setValidates.unshift(this.setValidates.pop())
+            }
+        },
         //页面展示
         listCase: function() {
             let _this = this;
+            _this.isLoading=true;
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
                 data: {
@@ -386,12 +433,13 @@ export default {
             }).then(function (response) {
                 let result =  response.data.result;
                 console.log("result: ", result);
-                if (result == "ok"){
-                    console.log("******** result ok *********");
-                }
+                // if (result == "ok"){
+                //     console.log("******** result ok *********");
+                // }
                 _this.tableData =  response.data.resultList;
                 _this.totalCount = response.headers.totalcount;
                 _this.totalPage = response.headers.totalpage;
+                _this.isLoading=false;
             })
         },
         //聚合报告
@@ -401,7 +449,7 @@ export default {
             let selectedDataList = this.selectedData;       //选中要聚合的数据
             //定义数组和集合
             let resArr = [];
-            let deleteId = [];                              
+            let id = [];                              
             let senario_name = [];
             let task_name = [];
             let result_is_pass = [];
@@ -410,7 +458,7 @@ export default {
             if (this.selectedData.length > 0) {                  //如果有选中的数据
                 for (let i in selectedDataList) {               //进行遍历
                     //放入数组
-                    deleteId.push(_this.selectedData[i].id);    
+                    id.push(_this.selectedData[i].id);    
                     executor_id.push(_this.selectedData[i].executor_id);
                     senario_name.push(_this.selectedData[i].senario_name);
                     task_name.push(_this.selectedData[i].task_name);
@@ -423,10 +471,11 @@ export default {
                     aggregData.senario_name  = _this.selectedData[i].senario_name;
                     aggregData.executor_id = _this.selectedData[i].executor_id;
                     _this.setValidate.task_name = _this.selectedData[i].task_name;
+                    _this.setValidate.id = _this.selectedData[i].id;
                     _this.setValidates.push(aggregData);
                 }
                 //判断集合中的最大值和最小值，是否有不同的任务id
-                if(Math.max.apply(null,deleteId) === Math.min.apply(null,deleteId) ){   
+                if(Math.max.apply(null,id) === Math.min.apply(null,id) ){   
                     this.showAddModal=true;
                     this.$http.post('/myapi/metrics/list', {
                     header: {},
@@ -434,7 +483,7 @@ export default {
                         perftask_id: selectedDataList[0].id, 
                     }
                     }).then(function (response) {
-                        let result =  response.data.result;
+                        _this.aggregTableData =  response.data.resultList;
                     })
                 }else{
                     this.$Message.error("请选择相同的任务进行聚合！")
@@ -446,28 +495,29 @@ export default {
         /**生成聚合报告*/
         saveResult:function () {
             let _this = this;
-            let setValidates = this.setValidates;
+            let setValidates = _this.setValidates;                  //获取页面数据
+            console.log("****************",setValidates);
             this.$http.post('/myapi/testresult/merge', {
                 data:_this.setValidates
             }).then(function (response) {
                 _this.result = response.data.result;
-                console.log("result: ", _this.result);
+                console.log("result: ",response.data.result);
                 if(_this.result == "ok"){
-                    console.log("******** result ok *********");
-                    console.log(_this.id);
-                    this.$http.post('/myapi/testresult/getMergeReport', {
-                        data:_this.id
-                    }).then(function (response) {
-                        _this.aggregTableData = response.data.resultList;
-                        this.$router.push({
-                            path:'/details',
-                            query:{html:tableDatas.html}
-                        });
-                    })
+                    _this.mergeCase();
                 }else{
                     _this.$Message.info('生成失败');
                 }
             })
+        },
+        /**聚合报告页面跳转 */
+        mergeCase:function(){
+            let _this = this;
+            let selectedDataList = this.selectedData;       //选中要聚合的数据
+            console.log("setValidates123456",selectedDataList[0].id);
+            this.$router.push({
+                path:'/merge',
+                query:{perftask_id:selectedDataList[0].id}
+            });
         },
         /**切换页码 */
         pageChange:function(pageNo){
@@ -503,6 +553,12 @@ export default {
                 query:{executor_id:tableData[index].executor_id}
             });
         },
+        aggregCasess:function(){
+            this.$router.push({
+                path:'/load',
+                query:{}
+            });
+        },
         /**模态框弹出取消事件 */
         cancel:function () {
             this.showAddModal = false;
@@ -517,6 +573,7 @@ export default {
             _this.type_name = '',
             _this.start_time = '', 
             _this.end_time = '' 
+            _this.listCase();
         }
     }
 }
