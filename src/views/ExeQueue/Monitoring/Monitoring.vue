@@ -121,7 +121,19 @@
                         },
                         {
                             title: '硬件配置',
-                            key: 'cpuNum'
+                            key: 'cpuNum',
+                            render: (h, params) => {
+                                let texts='';
+                                if(params.row.cpuNum == null){
+                                    texts = '--';
+                                }else{
+                                    texts = params.row.cpuNum + 'C' + Math.round(parseInt(params.row.memSize)/1024) + 'G';
+                                }
+                                return h('div',{
+                                    props:{
+                                    },
+                                },texts);
+                            }
                         },
                         {
                             title: '操作系统',
@@ -193,11 +205,11 @@
                             render: (h, params) => {
                                 console.log(params);
                                 let texts = params.index + (this.pageNo - 1) * this.pageSize + 1;
+                                console.log(texts);
                                 return h('div',{
                                     props:{
-                                        },
+                                    },
                                 },texts);
-                            //    return h('span', params.index + (this.pageNo - 1) * this.pageSize + 1);
                             }
                         },
                         {
@@ -418,16 +430,17 @@
                     serverInfo: {},
                     pressureAgentInfo: {},
                     intervalFunc:null,
-                    intervalFuncc:null,
+
                     stopes:null,
+                    JmeterSummaryUrl:'http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45',
+                    JmeterUrl:'http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1',
                 }
             },
         beforeDestroy(){
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
-
-            clearInterval(this.intervalFuncc);
-            this.intervalFuncc = null;
+            clearInterval(this.intervalJmeter);
+            this.intervalJmeter = null;
             clearInterval(this.stopes);
             this.stopes = null;
         },
@@ -536,23 +549,25 @@
                 }else if(_cutting =='0'){   // 判断是不是开头是0的数据
                     var status = e.data
                     var cuttingl = status.substr(1)   //截取0的数据
-                    this.statuszt = eval('('+cuttingl+')')
+                    this.statuszt = eval('('+cuttingl+')');
                     if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
                         start_time = this.statuszt.exe_time;
                     }
-                    if(this.statuszt.exe_description === '测试开始执行'){ //测试准备中
+                    if(this.describe.indexOf('执行监控进程结束') != -1){ //监控起来后就显示资源
+                        console.log("test1");
+                        this.updateResource();
+                        this.intervalFunc = setInterval(this.updateResource, 10000);
+                    }
+                    if(this.statuszt.exe_description.indexOf('测试开始执行') != -1){ //测试准备中
                         this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
-                        this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                        this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                        this.listCase();
-                        this.pressCase();
-                        this.intervalFunc = setInterval(this.listCase, 10000);
-                        this.intervalFuncc = setInterval(this.pressCase, 10000);
-                    }if(this.statuszt.exe_description === '计算压力机资源控进程开始'){
-                        this.statuszt.exe_description = '测试准备中'
-                        start_time = null
-                    }if(this.statuszt.exe_description === '测试执行结束'){
-                        setTimeout(this.StopTimer(), 300);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
+                        this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                        this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
+                        this.intervalJmeter= setInterval(this.flushJmeter,60*1000);
+                    }if(this.statuszt.exe_description.indexOf('计算压力机资源控进程开始') != -1){
+                        this.statuszt.exe_description = '测试准备中';
+                        start_time = null;
+                    }if(this.statuszt.exe_description.indexOf('测试执行结束') != -1){
+                        setTimeout(this.StopTimer(), 300000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
                     //    this.StopTimer();
                     }
                 }
@@ -587,7 +602,11 @@
                    
                 }
         },
-                
+
+        updateResource: function(){
+            this.listCase();
+            this.pressCase();
+        },        
                  //服务器资源
                 listCase: function() {
                     let _this = this;
@@ -630,11 +649,10 @@
                 /**停止外呼操作，场景结束，主动停止时调用，页面关闭在destory里 */
                 StopTimer:function(){
                     clearInterval(this.intervalFunc);
-                    clearInterval(this.intervalFuncc);
                     clearInterval(this.stopes);
-
-                    this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
-                    this.iframeUrll = "http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
+                    clearInterval(this.intervalJmeter);
+                    this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
+                    this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
                 },
 
                 pressCase: function() {
@@ -651,6 +669,23 @@
                         console.log('请求回来的表格数据555: ', response.data);
                         _this.tableDatal = response.data.result;  
                     })
+                },
+
+                flushJmeter: function(){
+                    if(this.timedate == null)
+                        return;
+
+                    let nowTime = (new Date()).getTime();
+                    let tmp = nowTime - this.timedate;
+                    //大于1小时
+                    if(tmp > 3600 * 1000){
+//                        this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=60s&kiosk";
+                        this.iframeUrll = JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=60s&kiosk"; 
+                        clearInterval(this.intervalJmeter);
+                    }else if(tmp > 600 * 1000){
+                        this.iframeUrll = JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=10s&kiosk";
+                    }
+                    
                 },
                 //压力机资源跳转
                 pressonRowDblClick: function(row) {
