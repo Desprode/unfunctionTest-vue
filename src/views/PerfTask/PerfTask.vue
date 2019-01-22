@@ -499,7 +499,6 @@ export default {
             nfunTestMngrs: [],
             // targetKeys2: this.getTargetKeys(), 
             selectedTestMngrs: [], 
-            // pftaskRelUsrsTitle: ['可选人员列表', '选定的非功能测试人员'],
 
             /**==================== 任务编辑弹出框数据 ====================*/
             editPTaskModal: false, 
@@ -735,44 +734,18 @@ export default {
                 cookie_.setCookie('nickname', parmdata.nickname, 'd30');
                 cookie_.setCookie('username', parmdata.username, 'd30');
 
-                // console.log("after set --- nickname: ", cookie_.getCookie('nickname'));
-                // console.log("after set --- username: ", cookie_.getCookie('username'));
+                /**获取任务列表 */
+                _this.listPTask();
 
-                /**获取用户权限信息 */
-                // let get_perms = _this.$Global.getUserPerms(parmdata.username);
-                // console.log("now after self login, perms is ", get_perms);
-
-                // if (get_perms && get_perms.result == "fail") {
-                //     _this.$Message.error("无法获取当前登录用户的权限信息");
-                // } else if (get_perms && get_perms.result == "ok") {
-                //     let perms = get_perms.perms;
-                //     console.log("perms: ", perms);
-                // }
-
-                // /**获取任务列表 */
-                // _this.listPTask();
-
-                /**获取用户权限信息并加载任务列表界面 */
-                _this.getUsrPermissions(parmdata.username);
+                // /**获取用户权限信息并加载任务列表界面 */
+                // _this.getUsrPermissions(parmdata.username);
             }).catch((error) => {})
         } else {
-            /**获取用户权限信息 */
-            // _this.$Global.getUserPerms(userName);
-            // let permissions = _this.$Global.userPermissions;
-            // console.log("now after ICDP login, permissions is ", permissions);
+            /**获取任务列表 */
+            _this.listPTask();
 
-            // if (permissions && get_perms.result == "fail") {
-            //     _this.$Message.error("无法获取当前登录用户的权限信息");
-            // } else if (get_perms && get_perms.result == "ok") {
-            //     let perms = get_perms.perms;
-            //     console.log("perms: ", perms);
-            // }
-
-            // /**获取任务列表 */
-            // _this.listPTask();
-
-            /**获取用户权限信息并加载任务列表界面 */
-            _this.getUsrPermissions(userName);
+            // /**获取用户权限信息并加载任务列表界面 */
+            // _this.getUsrPermissions(userName);
         }
     },
     methods: {
@@ -780,63 +753,30 @@ export default {
             alert(ev.keyCode)
         },
 
-        /**获取用户权限信息 */
-        getUsrPermissions(username) {
-            let _this = this;
-
-            axios.post('/myapi/user/getUserPermissions', {
-                userId: username,
-            }).then(function (response) {
-                if (response.data.result == "fail") {
-                } else if (response.data.result == "ok") {
-                    // console.log("get user permissions: ", response);
-                    let results = response.data.resultList;
-                    // console.log("results: ", results);
-
-                    _this.$Global.userPermissions = [];
-                    // console.log("userPermissions before: ", _this.userPermissions);
-                    for (let perm in results) {
-                        // console.log("perm: ", results[perm].name);
-                        _this.$Global.userPermissions.push(results[perm].name);
-                    }
-                    // console.log("***_this.$Global.userPermissions *** ", _this.$Global.userPermissions);
-                }
-
-                /**获取任务列表 */
-                _this.listPTask();
-            })
-        }, 
-
-        // /**==================== 获取用户权限列表 ====================*/
-        // getPermissions: function(username){}, 
-
-        // /**==================== 获取用户权限列表(未放global前) ====================*/
-        // getUserPerms: function(username){
+        // /**获取用户权限信息 */
+        // getUsrPermissions(username) {
         //     let _this = this;
 
-        //     this.$http.post('/myapi/user/getUserPermissions', {
+        //     axios.post('/myapi/user/getUserPermissions', {
         //         userId: username,
-        //         // header: {},
-        //         // data: {
-        //         //     userId: parmdata.username, 
-        //         // }
         //     }).then(function (response) {
         //         if (response.data.result == "fail") {
-        //             let errDesc = _this.handleErrCode(response);
-
-        //             _this.$Message.error(errDesc);
         //         } else if (response.data.result == "ok") {
-        //             console.log("get user permissions: ", response);
+        //             // console.log("get user permissions: ", response);
         //             let results = response.data.resultList;
         //             // console.log("results: ", results);
 
-        //             console.log("userPermissions: ", _this.$Global.userPermissions);
+        //             _this.$Global.userPermissions = [];
+        //             // console.log("userPermissions before: ", _this.userPermissions);
         //             for (let perm in results) {
         //                 // console.log("perm: ", results[perm].name);
         //                 _this.$Global.userPermissions.push(results[perm].name);
-        //             } 
-        //             console.log("userPermissions: ", _this.$Global.userPermissions);
+        //             }
+        //             // console.log("***_this.$Global.userPermissions *** ", _this.$Global.userPermissions);
         //         }
+
+        //         /**获取任务列表 */
+        //         _this.listPTask();
         //     })
         // }, 
 
@@ -878,7 +818,7 @@ export default {
                             }
                         }
                     })
-                    // 原物理子系统获取方式（调用鲁振兴查询本地component表），该交易目前仍存在，调用方式也为改变，只是任务管理不再调用，场景中的监控会调用
+                    // 原物理子系统获取方式（调用鲁振兴查询本地component表），该交易目前仍存在，调用方式也未改变，只是任务管理不再调用，场景中的监控会调用
                     // this.$http.post('/myapi/component/search',{
                     //     headers:{},
                     //     data:{
@@ -1043,15 +983,6 @@ export default {
             this.nfunTestMngrs = [];
             this.selectedTestMngrs = [];
 
-            // this.
-
-            // this.selectedTestMngrs.push({
-            //     key: cookie_.getCookie('nickname')  + '(' + cookie_.getCookie('username') + ')', 
-            //     label: cookie_.getCookie('nickname')  + '(' + cookie_.getCookie('username') + ')', 
-            //     disabled: true
-            // });
-            // console.log("--- selectedTestMngrs --- ", this.selectedTestMngrs);
-
             this.$http.post('/myapi/user/getRoleUsers', {
                 role: "apts_nfunTestMngr",      // 角色
                 user: "",                      // 用户的user_name或nick_name模糊搜索，本项未来可空
@@ -1091,23 +1022,6 @@ export default {
             //     return testMngrs;
             // }, 500);
         }, 
-        // getMockData () {
-        //     let mockData = [];
-        //     for (let i = 1; i <= 20; i++) {
-        //         mockData.push({
-        //             key: i.toString(),
-        //             label: 'Content ' + i,
-        //             description: 'The desc of content  ' + i,
-        //             disabled: Math.random() * 3 < 1
-        //         });
-        //     }
-        //     return mockData;
-        // },
-        // getTargetKeys () {
-        //     return this.getMockData()
-        //             .filter(() => Math.random() * 2 > 1)
-        //             .map(item => item.key);
-        // },
         handleChange2 (newTargetKeys) {
             // this.targetKeys2 = newTargetKeys;
             // console.log("newTargetKeys: ", newTargetKeys);
@@ -1115,48 +1029,6 @@ export default {
         },
         filterMethod (data, query) {
             return data.label.indexOf(query) > -1;
-            // console.log("^^^ filterMethod data ^^^ ", data);
-            // console.log("^^^ filterMethod query ^^^ ", query);
-
-            // let _this = this;
-
-            // if ( query == '' ) {
-            //     console.log("query is ''");
-            //     return data;
-            // } else {
-            //     console.log("query is ", query);
-
-            //     let optionalTestMngrs = [];
-
-            //     this.$http.post('/myapi/user/getRoleUsers', {
-            //         role: "apts_nfunTestMngr",      // 角色
-            //         user: query,                      // 用户的user_name或nick_name模糊搜索，本项未来可空
-            //         page: 1, 
-            //         limit: 100, 
-            //     }).then(function (response) {
-            //         if (response.data.result == "fail") {
-            //             let errDesc = _this.handleErrCode(response);
-
-            //             _this.$Message.error(errDesc);
-            //         } else if (response.data.result == "ok") {
-            //             console.log("--- response.data --- ", response.data.resultList);
-            //             let usersList = response.data.resultList;
-
-            //             for ( let index in usersList ) {
-            //                 optionalTestMngrs.push({
-            //                     key: usersList[index].nickname, 
-            //                     label: usersList[index].nickname + '(' + usersList[index].username + ')'
-            //                 });
-            //             }
-            //             console.log("--- optionalTestMngrs --- ", optionalTestMngrs);
-            //         }
-            //     })
-
-            //     setTimeout(() => {
-            //         console.log("=== setTimeout === ", optionalTestMngrs);
-            //         return optionalTestMngrs;
-            //     }, 500);
-            // }
         }, 
 
         /**==================== 编辑任务相关事件 ====================*/
@@ -1245,38 +1117,6 @@ export default {
                     })
                 }
             })
-
-            // this.$http.post('/myapi/user/getRoleUsers', {
-            //     role: "apts_nfunTestMngr",      // 角色
-            //     user: "",                      // 用户的user_name或nick_name模糊搜索，本项未来可空
-            //     page: 1, 
-            //     limit: 100, 
-            // }).then(function (response) {
-            //     if (response.data.result == "fail") {
-            //         let errDesc = _this.handleErrCode(response);
-
-            //         _this.$Message.error(errDesc);
-            //     } else if (response.data.result == "ok") {
-            //         let usersList = response.data.resultList;
-
-            //         // for ( let index in usersList ) {
-            //         //     if ( cookie_.getCookie('username') == usersList[index].username ) {
-            //         //         _this.nfunTestMngrs.push({
-            //         //             key: usersList[index].nickname + '(' + usersList[index].username + ')', 
-            //         //             label: usersList[index].nickname + '(' + usersList[index].username + ')', 
-            //         //             disabled: true
-            //         //         });
-            //         //         // _this.selectedTestMngrs.push(usersList[index].nickname + '(' + usersList[index].username + ')');
-            //         //     } else {
-            //         //         _this.nfunTestMngrs.push({
-            //         //             key: usersList[index].nickname + '(' + usersList[index].username + ')', 
-            //         //             label: usersList[index].nickname + '(' + usersList[index].username + ')'
-            //         //         });
-            //         //     }
-            //         // }
-            //         // console.log("--- selectedTestMngrs --- ", _this.selectedTestMngrs);
-            //     }
-            // })
         }, 
         handleEditPTaskSubmit (editPTaskData) {
             let _this = this;
