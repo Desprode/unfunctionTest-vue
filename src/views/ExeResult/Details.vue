@@ -3,7 +3,7 @@
         <div align="left" >
             <font size="5" color="#01babc">执行结果详细信息</font>
         </div></br>
-    <Tabs type="line">
+    <Tabs type="line" v-model="currentTab" @on-click="currentTabChanged">
         <Tab-pane label="测试报告" >
             <div align="left">
                 <Button @click="downloadCase()" type="primary">下载报告</Button>
@@ -12,7 +12,7 @@
             <div v-html='content'>{{content}}</div>
         </Tab-pane>
         <!---------------------分割线-------------------------->
-        <Tab-pane label="压力机日志">
+        <Tab-pane label="压力机日志" >
             <Table border  ref="selection" :columns="columns"  :data="tableData" class="myTable"></Table>
         </Tab-pane>
         <!---------------------分割线-------------------------->
@@ -206,6 +206,7 @@
                 showSetType:'',
                 content:'',
                 file_path:'',
+                currentTab:'',
                 showDialog:false,
                 executor_id:'',
                 result_is_pass:'',  //执行结果是否通过：
@@ -215,12 +216,21 @@
         
         created(){
             this.listCase();
-            this.pressCase();
-            this.platfCase();
-            this.resulCase();
         },
         
         methods:{
+            currentTabChanged:function(name){
+                console.log("11212",this.currentTab,"name",name);
+                if(this.currentTab==0){
+                    this.listCase();
+                }else if(this.currentTab==1){
+                    this.pressCase();
+                }else if(this.currentTab==2){
+                    this.platfCase();
+                }else if(this.currentTab==3){
+                    this.resulCase();
+                }
+            },
             //加载测试报告
             listCase: function() {
                 let _this = this;
@@ -235,9 +245,10 @@
                     _this.content   =  response.data.resultList[0].content;
                 })
                 console.log("测试报告");
+                _this.pressCase();
             },
             //加载压力机日志
-             pressCase: function(){
+            pressCase: function(){
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;        //获取上个页面传的id值
                 console.log("第二个页面接收的ID",executor_id);
@@ -251,6 +262,7 @@
                     
                 })
                 console.log("压力机日志");
+                // _this.platfCase();
             },
             //加载平台日志
             platfCase: function() {
@@ -265,6 +277,7 @@
                     _this.platfCaseDatas =  response.data.resultList;
                 })
                 console.log("平台日志");
+                _this.resulCase();
             },
             //加载执行结果
             resulCase: function() {

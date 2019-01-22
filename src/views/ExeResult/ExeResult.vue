@@ -141,6 +141,7 @@
                     <Button color="#1c2438"  @click="cancel">取消</Button>
                     <Button type="primary" @click="saveResult">生成报告</Button>
             </div>
+            <Spin size="large" fix v-if="spinShow">正在生成报告，请稍等...</Spin>
         </Modal>
     </div>
 </template>
@@ -163,6 +164,7 @@ export default {
                 id:'',
             },
             setValidates:[],
+            spinShow:false,
             isShowMore:false,                   //聚合报告弹框
             /**-----------聚合报告信息展示-----------*/
             metrics_desc:'',                    //测试需求描述
@@ -477,6 +479,7 @@ export default {
                 //判断集合中的最大值和最小值，是否有不同的任务id
                 if(Math.max.apply(null,id) === Math.min.apply(null,id) ){   
                     this.showAddModal=true;
+                    this.spinShow=true;
                     this.$http.post('/myapi/metrics/list', {
                     header: {},
                     data: {
@@ -495,6 +498,7 @@ export default {
         /**生成聚合报告*/
         saveResult:function () {
             let _this = this;
+            _this.spinShow=true;
             let setValidates = _this.setValidates;                  //获取页面数据
             console.log("****************",setValidates);
             this.$http.post('/myapi/testresult/merge', {
@@ -504,10 +508,12 @@ export default {
                 console.log("result: ",response.data.result);
                 if(_this.result == "ok"){
                     _this.mergeCase();
+                    _this.spinShow=false;
                 }else{
                     _this.$Message.info('生成失败');
                 }
             })
+            
         },
         /**聚合报告页面跳转 */
         mergeCase:function(){

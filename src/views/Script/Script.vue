@@ -35,7 +35,7 @@
                         <Button @click="addScript"  type="primary">新增</Button>
                         <Button @click="deleteScript" type="error">删除</Button>
                     </div>
-                    <Table border ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectionChanged" show-header></Table>
+                    <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-click="onSelectionChanged" show-header></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="tableDataTotal/tableDataPageLine > 1 ? (tableDataTotal%tableDataPageLine ? parseInt(tableDataTotal/tableDataPageLine)+1 : tableDataTotal/tableDataPageLine)*10 : 1" @on-change="handlePage"  show-elevator ></Page>
                         <p>总共{{tableDataTotal}}条记录</p>
@@ -121,7 +121,6 @@
                                         :format="['zip']" 
                                         :on-success="uploadSuccess"
                                         :on-progress="uploadProgress"
-                                        :on-remove="uploadRemove"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -156,11 +155,11 @@
                     <FormItem label="文件大小:" prop="script_filesize">                      
                         <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.script_filesize}}</div>
                     </FormItem>
-                    <FormItem label="创建时间:" prop="create_time">                      
-                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
+                    <FormItem label="创建时间:" prop="created_time">                      
+                        <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.created_time}}</div>
                     </FormItem>
-                    <FormItem label="更新时间:" prop="create_time">                      
-                            <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.create_time}}</div>
+                    <FormItem label="更新时间:" prop="modified_time">                      
+                            <div class="ivu-input-wrapper ivu-input-type editStaticDiv">{{setValidate.modified_time}}</div>
                         </FormItem>
                     <i-col span="20">
                         <Form-item label="更新脚本：" prop="script_filename">
@@ -225,6 +224,17 @@
                 </div> 
             </Modal>
             script detail end-->
+            <!-- 删除提示 -->
+            <Modal v-model="doDeleteas" width="600">
+                <p slot="header" style="color:#f60" >
+                    <span>该脚本有以下场景关联，是否删除该数据？</span>
+                </p>
+                <Table border ref="selection" :columns="setValiColumns" :data="setValidates" class="myTable" show-header></Table>
+                <div slot="footer">
+                    <Button color="#1c2438" @click="setCancel()">取消</Button>
+                    <Button type="primary" @click="doDelete()">确认</Button>
+                </div>
+            </Modal>
         </Card>
     </div>
 </template>
@@ -251,8 +261,23 @@ export default {
             showDialog:false,
             showDetail:false,
             showSetScript:false,
-
+            doDeleteas:false,
             srchCmploading: false,
+            // 删除校验弹框
+            setValiColumns:[
+                {
+                    title: '序号',
+                    width: 60,
+                    type:'index',
+                    align: 'center',
+                },
+                {
+                    title: '场景名称',
+                    key:'senario_name',
+                    align: 'center',
+                }
+            ],
+            setValidates:[],
             cmpOpts: [],
             appNameOpts: [],
             list: [], 
@@ -261,7 +286,7 @@ export default {
             interfaceId:'',
             sTaskName:'',
             script_name:'',
-
+            id:'',
             ITM_id:'',
             cloud_id:'',
             //脚本信息
@@ -272,7 +297,6 @@ export default {
             rowid:'',
             csvinfo:{},
             csvList:[],
-
             app_name:'',
             creater:'',
             param:'',
@@ -294,7 +318,8 @@ export default {
                                 },
                                 on:{
                                     'on-change':(e)=>{
-                                        console.log(e)
+                                        console.log("状态：",e,"id:",params.row.id,"index",params.index)
+                                        this.id=params.row.id;
                                         this.tableData.forEach((items)=>{
                                             //先取消所有对象的勾选，checkBox设置为false
                                             this.$set(items,'checkBox',false)
@@ -377,7 +402,7 @@ export default {
                 },
                 {
                     title: '更新时间',
-                    key: 'created_time',
+                    key: 'modified_time',
                     width: 160,
                     align: 'center',
                     sortable: true
@@ -417,7 +442,8 @@ export default {
                                                 _this.setValidate.script_id= response.data.resultList[0].script_id;
                                                 _this.setValidate.app_name= response.data.resultList[0].app_name;
                                                 _this.setValidate.memo= response.data.resultList[0].memo;
-                                                _this.setValidate.create_time= response.data.resultList[0].created_time;
+                                                _this.setValidate.created_time= response.data.resultList[0].created_time;
+                                                _this.setValidate.modified_time= response.data.resultList[0].modified_time;
                                                 _this.setValidate.script_filename= response.data.resultList[0].script_filename;
                                                 _this.setValidate.script_filesize=response.data.resultList[0].script_filesize,
                                                 _this.script_filepath=response.data.resultList[0].script_filepath,
@@ -548,7 +574,7 @@ export default {
                 script_name:'',
                 app_name:'',
                 memo:'',                                
-                create_time:'',                                       
+                created_time:'',                                       
                 script_filename:'',
                 update_time:'',
                 script_manager_id:'' ,
@@ -613,10 +639,10 @@ export default {
         handleFormatError:function(file){
             this.$Message.error(file.name + '文件格式不正确,请上传zip格式的文件!');
         },
-        //移除文件时
-        uploadRemove(){
-            this.$refs.upload.clearFiles();
-        },
+        // //移除文件时
+        // uploadRemove(){
+        //     this.$refs.upload.clearFiles();
+        // },
         //文件上传时方法
         uploadProgress:function(res,file){
             this.$Spin.show({
@@ -634,6 +660,7 @@ export default {
                 }
             });
         },
+        //上传前方法
         handleUpload:function(file){
             var reg=new RegExp("[^a-zA-Z0-9-\_\u4e00-\u9fa5]","i");
             var fname = file.name.substr(0,file.name.indexOf('.'))
@@ -742,58 +769,58 @@ export default {
                 this.cmpOpts = [];
             }
         },
-        /*删除按钮功能*/
+        /*删除校验*/
         deleteScript: function() {
-            let selectedData=this.selectedData;      //选中要删除的数据
-            console.log("删除按钮",selectedData);
-            let resArr = [];                         
-            let deleteId = [];                     //选中数据的id
-            if(selectedData.length>0){               //如果有选中的数据
-                for(let i in selectedData){         //进行遍历
-                    //idstr = selectedData[i].id +",";
-                    deleteId.push(selectedData[i].id);  //将选中的而数据的id放入要删除的集合中
-                    console.log(deleteId);
-                    this.deleteData(deleteId);            //调用删除数据的方法，将tableData中的数据删除
-                } 
-            }else{
-                    this.$Message.error("请选择要删除的数据")
-            }
-        }, 
-        deleteData(deleArr){                //调用方法将原有数据中对应的id删除
-            console.log("删除后台数据内容",deleArr)
             let _this = this;
-            let tableData = _this.tableData;          //原有的数据
-            tableData.forEach((item, index) => {      //对原有的数据进行遍历
-                if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
+            console.log(_this.id);
+            this.$http.post("/myapi/scripts/delete",{
+                data:{
+                    id:_this.id
+                }
+            }).then(function(response){
+                console.log("response.data.result",response.data);
+                if(response.data.result == "success1"){
+                    _this.doDeleteas=true;
+                    _this.setValidates=response.data.resultList;
+                }else if(response.data.result == "success0"){
                     _this.$Modal.confirm({
                         title:'确认',
                         content: '是否删除该数据',
                         onOk: () => {
-                            // this.$http.defaults.withCredentials = false;
-                            this.$http.post("/myapi/scripts/delete",{
-                                data:{
-                                   // ids:deleArr,
-                                    id:deleArr[0],
-                                }
-                            }).then(function(response){
-                                if(response.status == 500){
-                                    _this.$Message.error('服务端错误!');
-                                }else{
-                                    tableData.splice(index, 1);        //即删除该数据上
-                                    _this.$Message.info('删除成功');
-                                }
-                            })
+                            _this.doDelete();
                         },
                         onCancel: () => {
                             _this.$Message.info('删除失败');
                         }
                     }); 
-                   
+                }else{
+                    _this.$Message.info("该脚本正在运行，不可删除!");
                 }
-            });
+            })
+        }, 
+        //删除方法
+        doDelete:function(){
+            let _this = this;
+            console.log("_this.id",_this.id);
+            this.$http.post("/myapi/scripts/dodelete",{
+                header:{},
+                data:{
+                    id:_this.id
+                }
+            }).then(function(response){
+                if(response.data.result == "success"){
+                    _this.$Message.info('删除成功');
+                    _this.doDeleteas=false;
+                }else{
+                    _this.$Message.info('删除失败');
+                    _this.doDeleteas=false;
+                }
+                _this.listCase(); 
+            })
         },
         listCase: function() {
             let _this = this;
+            _this.isLoading=true;
             // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/list', {
                 header: {
@@ -812,6 +839,7 @@ export default {
                 _this.tableData = response.data.resultList;
                 _this.tableDataTotal = response.data.pagination.totalCount;
                 _this.tableDataPageLine = response.data.pagination.pageSize
+                _this.isLoading=false;
             })
         },
         handlePage:function(val){
@@ -892,7 +920,7 @@ export default {
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            //console.log(data)
+            console.log("11112132",this.selectedData)
         },
         //双击方法
         // onRowDblClick: function(row) {
@@ -904,6 +932,9 @@ export default {
         addScript:function(){
             //初始化表单
             this.addValidate={};
+            // this.$refs.resetFields();
+            let _this = this;
+            _this.$refs.upload.clearFiles();
             this.showDialog = true;
             console.log("显示模态框");
         },
@@ -1055,6 +1086,7 @@ export default {
         setCancel:function(){
             this.showSetScript = false;
             this.showDetail = false;
+            this.doDeleteas = false;
         },
         /**清除搜索条件 */
         handleReset () {
