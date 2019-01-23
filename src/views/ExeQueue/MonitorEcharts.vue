@@ -903,7 +903,7 @@
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
                     }
-
+                    _this.chartdata_cpu.splice(0, _this.chartdata_cpu.length);
                     _this.chartdata_mem.splice(0, _this.chartdata_mem.length);//清空数据
                     _this.legend_mem.splice(0, _this.legend_mem.length);
                     _this.datapos_mem.splice(0, _this.datapos_mem.length);

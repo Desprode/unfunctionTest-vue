@@ -606,38 +606,37 @@
                     }); 
                    
                 }
-        },
+            },
 
-        updateResource: function(){
-            this.listCase();
-            this.pressCase();
-        },        
+            updateResource: function(){
+                this.listCase();
+                this.pressCase();
+            },        
                  //服务器资源
-                listCase: function() {
-                    let _this = this;
-                    var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
-                    var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值  this.$route.query.senario_type为1的话 不显示后两个列表
-                    var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
-                    var timestamp = timestampl - 300;
-                    this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/monitor/serverlist', {
-                        data: {
-                            scenarioId: senario_id,
-                            start:timestamp, 
-                            end: timestampl,
-                            pageNo:_this.pageNo,
-                            pageSize:_this.pageSize,
-                        }
-                    }).then(function (response) {
-                        console.log('请求回来的表格数据: ', response.data);
-                        _this.totalCount = response.headers.totalcount;
-                        _this.totalPage = response.headers.totalpage;
-                        console.log(response.headers.totalcount);
-                        console.log(_this.totalCount);
-                        _this.tableData = response.data.resultList;
-   
-                    })
-                },
+            listCase: function() {
+                let _this = this;
+                var executor_id = this.$route.query.executor_id;    //获取上个页面传的id值
+                var senario_id = this.$route.query.senario_id;    //获取上个页面传的场景id值  this.$route.query.senario_type为1的话 不显示后两个列表
+                var timestampl = Math.round(new Date().getTime()/1000);//10位时间戳
+                var timestamp = timestampl - 300;
+                this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/monitor/serverlist', {
+                    data: {
+                        scenarioId: senario_id,
+                        start:timestamp, 
+                        end: timestampl,
+                        pageNo:_this.pageNo,
+                        pageSize:_this.pageSize,
+                    }
+                }).then(function (response) {
+                    console.log('请求回来的表格数据: ', response.data);
+                    _this.totalCount = response.headers.totalcount;
+                    _this.totalPage = response.headers.totalpage;
+                    _this.tableData = response.data.resultList;
+                    console.log("_this.tableData",_this.tableData);
+
+                })
+            },
                 /**切换页码 */
                 pageChange:function(pageNo){
                     console.log(pageNo);
