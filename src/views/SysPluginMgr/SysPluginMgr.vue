@@ -1,5 +1,6 @@
 ﻿<template>
 	<div class="pageContent">
+        <Card>
             <div class="caseBox">
                 <h3 class="Title">
                     <span>系统插件列表</span>
@@ -49,10 +50,11 @@
                     </i-form>
                 </div>
                 <div slot="footer">
-                    <Button color="#1c2438" @click="submitScript()">确认</Button>
-                    <Button type="primary" @click="cancel()">取消</Button>
+                    <Button color="#1c2438" @click="cancel()">取消</Button>
+                    <Button type="primary" @click="submitScript()">确认</Button>
                 </div>
             </Modal>
+        </Card>
     </div>
 </template>
 
@@ -68,7 +70,7 @@ export default {
             taskStatusList: this.$Global.taskStatusList,
             id:'',
             plugin_name:'',
-            plugin_size:'',
+            p_size:'',
             uploader:'',
             upload_time:'',
             is_sys:'',
@@ -83,31 +85,33 @@ export default {
                     title: 'id',
                     key: 'id',
                     width: 60,
+                    align:'center',
                 },
                 {
                     title: '插件名称',
                     key: 'plugin_name',
-                    width: 220,
                     tooltip: true, 
+                    align:'center',
                 },
                 {
                     title: '文件大小',
-                    width: 220,
-                    key: 'plugin_size'
+                    key: 'p_size',
+                    align:'center',
                 },
                 {
                     title: '上传用户',
                     key: 'uploader',
-                    width: 100,
+                    align:'center',
                 },
                 {
                     title: '上传时间',
                     key: 'upload_time',
-                    width: 110,
+                    align:'center',
                 },
                 {
                     title: '操作',
                     key: 'opration',
+                    align:'center',
                     width: 80,
                     render: (h, item) => {
                         return h('div', [
