@@ -38,18 +38,23 @@
                         <Col span="2" class="searchLable">执行人:</Col>
                         <Col span="4">
                             <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input>
+                            <!--输入查询==》支持远程搜索-->
+                            <!-- <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input> -->
+                            <!-- <Select v-model="execution_name" placeholder="请输入执行人" clearable filterable remote :remote-method="senarioCreatorRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
+                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}({{opts.username}})</Option>
+                            </Select> -->
                         </Col>
                     </Row>
                     <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">开始日期:</Col>
                         <Col span="4">
                             <Col span="50">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time" style="width:267px"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time"></DatePicker>
                             </Col>
                             </Col>
                         <Col span="2" class="searchLable">结束日期:</Col>
                         <Col span="4">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time" style="width:267px" ></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time"></DatePicker>
                             </Col>
                         <Col span="2"></Col>
                     </Row>
@@ -199,6 +204,8 @@ export default {
             isShowMoreShow:false,               //是否显示更多查询条件
             exeStatusList: this.$Global.exeStatusList,  //执行状态
             id:'',                              //任务id
+            perftaskNameLoading:false,
+            searchCreatorOpts:[],
             showAddModal:false,                 //聚合窗口
             executor_id:'',                     //执行编号
             component_name:'',                  //物理子系统
@@ -444,6 +451,25 @@ export default {
                 _this.isLoading=false;
             })
         },
+        /**执行人人远程查询 */
+        senarioCreatorRemote:function(query){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:query
+                }
+            }).then(function(response){
+                console.log("远程查询执行人",response);
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
         //聚合报告
         aggregCase:function(){
             let _this = this;
@@ -479,7 +505,6 @@ export default {
                 //判断集合中的最大值和最小值，是否有不同的任务id
                 if(Math.max.apply(null,id) === Math.min.apply(null,id) ){   
                     this.showAddModal=true;
-                    this.spinShow=true;
                     this.$http.post('/myapi/metrics/list', {
                     header: {},
                     data: {
