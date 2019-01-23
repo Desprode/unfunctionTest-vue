@@ -48,7 +48,9 @@
     let timestampl = null;
     export default {
         beforeMount(){
-            this.stopes= setInterval(getflush,1000)
+            console.log("monitor beforeMount");
+            if(this.stopes == null)
+            this.stopes = setInterval(getflush,1000)
             let timdate = this
             function getflush(){
                 let curDate = new Date();
@@ -199,7 +201,7 @@
                     columns1: [
                         {
                             title: '序号',
-                            type: 'index',
+                            type: 'index2',
                             align: 'center',
                             width: 60,
                             render: (h, params) => {
@@ -437,6 +439,7 @@
                 }
             },
         beforeDestroy(){
+            console.log("monitor beforeDestroy");
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
             clearInterval(this.intervalJmeter);
@@ -448,6 +451,7 @@
                 
         },
         created(){
+                console.log("monitor created");
                 //this.pressCase();
                 //this.listCase();
                 this.initWs();
@@ -556,18 +560,20 @@
                     if(this.describe.indexOf('执行监控进程结束') != -1){ //监控起来后就显示资源
                         console.log("test1");
                         this.updateResource();
-                        this.intervalFunc = setInterval(this.updateResource, 10000);
+                        if(this.intervalFunc == null)
+                            this.intervalFunc = setInterval(this.updateResource, 10000);
                     }
                     if(this.statuszt.exe_description.indexOf('测试开始执行') != -1){ //测试准备中
                         this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
                         this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                         this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                        this.intervalJmeter= setInterval(this.flushJmeter,60*1000);
+                        if(this.intervalJmeter == null)    
+                            this.intervalJmeter= setInterval(this.flushJmeter,60*1000);
                     }if(this.statuszt.exe_description.indexOf('计算压力机资源控进程开始') != -1){
                         this.statuszt.exe_description = '测试准备中';
                         start_time = null;
                     }if(this.statuszt.exe_description.indexOf('测试执行结束') != -1){
-                        setTimeout(this.StopTimer(), 300000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
+                        setTimeout(this.StopTimer(), 1000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
                     //    this.StopTimer();
                     }
                 }
@@ -592,7 +598,6 @@
                             }).then(function(){
                                 _this.$Message.info('停止成功');
                                 _this.$router.push({path:'/ExeQueue',query:{}});
-                                _this.StopTimer();
                             })
                         },
                         onCancel: () => {
@@ -649,8 +654,11 @@
                 /**停止外呼操作，场景结束，主动停止时调用，页面关闭在destory里 */
                 StopTimer:function(){
                     clearInterval(this.intervalFunc);
+                    this.intervalFunc = null;
                     clearInterval(this.stopes);
+                    this.stopes = null;
                     clearInterval(this.intervalJmeter);
+                    this.intervalJmeter = null;
                     this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
                     this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
                 },
@@ -680,10 +688,11 @@
                     //大于1小时
                     if(tmp > 3600 * 1000){
 //                        this.iframeUrl ="http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=60s&kiosk";
-                        this.iframeUrll = JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=60s&kiosk"; 
+                        this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=60s&kiosk"; 
                         clearInterval(this.intervalJmeter);
+                        this.intervalJmeter = null;
                     }else if(tmp > 600 * 1000){
-                        this.iframeUrll = JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=10s&kiosk";
+                        this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=10s&kiosk";
                     }
                     
                 },
