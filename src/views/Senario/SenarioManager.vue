@@ -452,7 +452,7 @@ export default {
                 {
                     title: 'ID',
                     key: 'senario_id',
-                    sortable:'true',
+                    width: 60,
                 },
                 {
                     title: '关联任务',
@@ -528,12 +528,13 @@ export default {
                         let _this = this;
                         //console.log("场景类型",h,params);
                         return h('span',_this.$Global.senarioType[params.row.senario_type])
-                    }
+                    },
                 },
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
                     align: 'center',
+                    width: 70,
                     render:(h,params)=>{
                         let _this = this;
                         //console.log("持续时长",params,params.row.duration,params.row.thread_groups_num,(params.row.duration * params.row.thread_groups_num));
@@ -548,12 +549,28 @@ export default {
                     title: '线程组并发数',
                     key: 'threads_total',
                     align: 'center',
+                    width: 70,
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
                     align: 'center',
-                    sortable:'true'
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.update_time
+                                }
+                            }, params.row.update_time)
+                        ]);
+                    }
                 },
                 {
                     title:'操作',
