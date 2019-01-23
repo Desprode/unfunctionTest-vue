@@ -41,7 +41,7 @@
                             </Col>
                             <Col span="8">
                                 <FormItem label="关联任务:" prop="perf_task">
-                                    <Select v-model="formValidate.perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
+                                    <Select v-model="formValidate.perf_task" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perftaskNameRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase() @on-open-change="perftaskNameChange">
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.perfTaskID" :key="index">{{opts.perfTaskName}}</Option>
                                     </Select>
                                     <!-- <Input v-model="perftask_name" placeholder="输入关联任务"></Input> -->
@@ -49,7 +49,7 @@
                             </Col>
                             <Col span="8">
                                 <FormItem label="关联脚本:" prop="script">
-                                    <Select v-model="formValidate.script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
+                                    <Select v-model="formValidate.script" placeholder="至少输入一个字段查询" clearable filterable remote :remote-method="perfScriptRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase() @on-open-change="scriptNameChange">
                                         <Option v-for="(opts,index) in searchOpts"  :value="opts.scriptID" :key="index">{{opts.scriptName}}</Option>
                                     </Select>
                                 </FormItem>
@@ -452,7 +452,7 @@ export default {
                 {
                     title: 'ID',
                     key: 'senario_id',
-                    sortable:'true',
+                    width: 60,
                 },
                 {
                     title: '关联任务',
@@ -528,12 +528,13 @@ export default {
                         let _this = this;
                         //console.log("场景类型",h,params);
                         return h('span',_this.$Global.senarioType[params.row.senario_type])
-                    }
+                    },
                 },
                 {
                     title: '持续时长(分钟)',
                     key: 'duration',
                     align: 'center',
+                    width: 70,
                     render:(h,params)=>{
                         let _this = this;
                         //console.log("持续时长",params,params.row.duration,params.row.thread_groups_num,(params.row.duration * params.row.thread_groups_num));
@@ -548,12 +549,28 @@ export default {
                     title: '线程组并发数',
                     key: 'threads_total',
                     align: 'center',
+                    width: 70,
                 },
                 {
                     title: '更新时间',
                     key: 'update_time',
                     align: 'center',
-                    sortable:'true'
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.update_time
+                                }
+                            }, params.row.update_time)
+                        ]);
+                    }
                 },
                 {
                     title:'操作',
@@ -891,6 +908,7 @@ export default {
       },
     created(){
         this.listCase();
+        this.getOpts();
         
     },
     computed: {
@@ -904,7 +922,6 @@ export default {
         listCase: function() {
             let _this = this;
             _this.isLoadingList = true;
-            console.log("键盘按下")
             // console.log( "表单数据",_this.senario_type,_this.senario_name,_this.senario_creator,_this.is_deleted,_this.perftask_name,_this.script_name);
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/senario/list', {
@@ -918,6 +935,7 @@ export default {
                     pagesize:_this.pageSize,
                 }
             }).then(function (response) {
+                console.log("请求参数",_this.formValidate.senario_type,_this.formValidate.senario_name,_this.formValidate.senario_creator,_this.formValidate.perf_task,_this.formValidate.script);
                 console.log(response);
                 console.log('请求回来的表格数据: ', response.data.resultList);
                 _this.tableData = response.data.resultList;
@@ -1036,7 +1054,37 @@ export default {
                         scriptName:item.script_name,
                     }
                 })
+                console.log("query",query);
+                console.log("searchOpts",_this.searchOpts);
             })
+        },
+        getOpts:function(){
+            let _this = this;
+            this.$http.post('/myapi/senario/list', {
+                data: {
+                    senario_type: _this.formValidate.senario_type, 
+                    senario_name:_this.formValidate.senario_name,
+                    senario_creator:_this.formValidate.senario_creator,
+                    perf_task:_this.formValidate.perf_task,
+                    script:_this.formValidate.script,
+                }
+            }).then(function (response) {
+                _this.searchOpts = response.data.resultList.map(item=>{
+                    return {
+                        perfTaskID:item.perf_task,
+                        perfTaskName:item.perftask_name,
+                        scriptID:item.script,
+                        scriptName:item.script_name,
+                    }
+                })
+                console.log("搜索提示选项",_this.searchOpts)
+            })
+        },
+        perftaskNameChange:function(){
+            this.getOpts();
+        },
+        scriptNameChange:function(){
+            this.getOpts();
         },
         /**============================删除多条数据========================= */
         deleteCase: function () {
@@ -1814,6 +1862,7 @@ export default {
                             osVersion:_this.monitorAddValidate.osVersion,                     //操作系统类型
                             userName:_this.monitorAddValidate.userName,                     //用户名
                             password:_this.monitorAddValidate.password,                      //密码
+                            senarioid:_this.monitor_senario_id,
                         }
                     }).then(function(response){
                         console.log("添加成功");     
