@@ -581,7 +581,7 @@
              //停止
         deleteData: function() {                //调用方法将原有数据中对应的id停止
             let _this = this;
-            let deaa =[];
+            let deaa =[]; 
                 if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
