@@ -350,14 +350,14 @@
                             </FormItem>
                         </Col>
                         <Col span="8" offset="3">
-                            <Button type="success" @click='monitorAddSave("monitorAddValidate")'>保存</Button>
+                            <Button type="success" @click='monitorAddSave("monitorAddValidate")'>添加</Button>
                             <Button type="warning" @click='monitorDissmissAdd'>取消添加 </Button>
                             <Button @click='monitorAddReset("monitorAddValidate")'>重置</Button>
                         </Col>
                     </Row>
                 </Form>
                 <div align="left">
-                    <Button @click="moniterSave" type="primary">保存并修改</Button>
+                    <Button @click="moniterSave" type="primary">保存</Button>
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox" v-if="showSearchTable">
@@ -1718,7 +1718,7 @@ export default {
                  console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
             if(_this.showSearchTable){
-                if(_this.moniterSelectedData.length > 0){
+                //if(_this.moniterSelectedData.length > 0){
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
                         _this.moniterSelectedData.push(_this.moniterTableData[i]);
@@ -1738,9 +1738,9 @@ export default {
                 }).then(function(response){
                     _this.moniterListCase();
                 });
-                }else{
-                    _this.$Message.error("至少选择一条数据");
-                }
+                // }else{
+                //     _this.$Message.error("至少选择一条数据");
+                // }
             }else{
                 for(var i=0;i<_this.moniterTableData.length;i++){
                     if(_this.moniterTableData[i]._checked == true){
