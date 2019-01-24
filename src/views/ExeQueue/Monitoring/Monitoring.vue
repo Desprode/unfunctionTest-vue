@@ -397,6 +397,7 @@
 
                     stopes: '',
                     start_time: '',
+                    timeout:'', //定时器
                     JmeterSummaryUrl:'http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45',
                     JmeterUrl:'http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1',
                 }
@@ -410,16 +411,21 @@
             this.intervalJmeter = null;
             clearInterval(this.stopes);
             this.stopes = null;
+
+            clearTimeout(this.timeout);
             this.start_time = null;
             this.ws.close();
             this.ws = null;
         },
         mounted(){
-            console.log("mounted");
+            console.log("mounted"); 
             console.log(this.start_time);
-            if(this.stopes == '')
-                this.stopes = setInterval(getflush,1000);
+
             let timdate = this;
+            if(this.stopes == ''){
+                getflush();
+                this.stopes = setInterval(getflush,1000);
+            }
             function getflush(){
                 let curDate = new Date();
                 //let cuDate = new Date();
@@ -447,7 +453,7 @@
                     timdate.result = ""+parseInt(theTime2)+"小时"+timdate.result
                    }
                 } 
-            }else if(timdate.start_time == '') {
+                }else if(timdate.start_time == '') {
                     timdate.result = '0秒'
                 }
             }     
@@ -586,8 +592,10 @@
                         this.statuszt.exe_description = '测试准备中';
                         this.start_time = '';
                     }if(this.statuszt.exe_description.indexOf('测试执行结束') != -1){
-                        setTimeout(this.StopTimer(), 1000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
-                    //    this.StopTimer();
+                        console.log("stop",new Date());
+                        clearInterval(this.stopes);
+
+                        this.timeout = setTimeout(this.StopTimer, 60000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
                     }
                 }
             },
@@ -598,7 +606,7 @@
                 if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
-                        content: '是否停止该数据',
+                        content: '是否停止该测试',
                         onOk: () => {
                             let deaa = [];
                             deaa.push(this.$route.query.executor_id)
@@ -614,7 +622,7 @@
                             })
                         },
                         onCancel: () => {
-                            _this.$Message.info('停止失败');
+                            _this.$Message.info('已取消停止');
                         }
                     }); 
                    
@@ -666,10 +674,10 @@
                 /**停止外呼操作，场景结束，主动停止时调用，页面关闭在destory里 */
                 StopTimer:function(){
                     console.log("this.intervalFunc",this.intervalFunc);
+                    console.log("stoped",new Date());
                     clearInterval(this.intervalFunc);
                     this.intervalFunc = null;
-                    clearInterval(this.stopes);
-                    this.stopes = null;
+
                     clearInterval(this.intervalJmeter);
                     this.intervalJmeter = null;
                     this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
