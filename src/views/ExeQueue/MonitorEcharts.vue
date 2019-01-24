@@ -360,6 +360,7 @@
                         data: this.legend_cpu,
                         formatter: function (name) {
                             let legendtext;
+                            console.log("name",name,chartdata_cpu);
                             for (let i = 0, len = _this.chartdata_cpu.length; i < len; i++) {
                                 let total = Number(0);
                                 if ((_this.chartdata_cpu[i].name) === name) {
@@ -903,7 +904,6 @@
                     if (result.status != "success" || result.data.result.length == 0) {
                         return;
                     }
-                    _this.chartdata_cpu.splice(0, _this.chartdata_cpu.length);
                     _this.chartdata_mem.splice(0, _this.chartdata_mem.length);//清空数据
                     _this.legend_mem.splice(0, _this.legend_mem.length);
                     _this.datapos_mem.splice(0, _this.datapos_mem.length);
@@ -1241,7 +1241,8 @@
                 console.log("_this.ipmode",this.ipmode);
             //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
             this.flushFlag = false;
-
+            this.chartdata_cpu.splice(0, this.chartdata_cpu.length);
+            this.legend_cpu.splice(0, this.legend_cpu.length);
             for (var i = 0; i < this.datapos_cpu.length; i++) {
                 var flag = false;
                 //匹配mode
