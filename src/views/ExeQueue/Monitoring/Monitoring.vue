@@ -42,46 +42,10 @@
     </div> 
 </template>
 <script> 
-    var websocket = null;
-    let start_time = null;
-    let timestamp = null;
-    let timestampl = null;
+  //  var websocket = null;
     export default {
         beforeMount(){
             console.log("monitor beforeMount");
-            if(this.stopes == null)
-            this.stopes = setInterval(getflush,1000)
-            let timdate = this
-            function getflush(){
-                let curDate = new Date();
-                //let cuDate = new Date();
-                if(start_time != null){
-                if(timdate.starttime != 'null'){
-                    let cuDate = new Date(start_time);
-                    timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
-                   var theTime = timdate.starttime
-                   var theTime1 = 0;
-                   var theTime2 = 0;
-                   if(theTime > 60){
-                    theTime1 = parseInt(theTime/60);
-                    theTime = parseInt(theTime%60);
-                    if(theTime1 > 60){
-                        theTime2 = parseInt(theTime1/60);
-                        theTime1 = parseInt(theTime1%60);
-                    }
-                   }
-                   timdate.result = ""+parseInt(theTime)+"秒"
-                   if(theTime1 > 0){
-                    timdate.result = ""+parseInt(theTime1)+"分"+timdate.result
-                   } 
-                   if(theTime2 > 0){
-                    timdate.result = ""+parseInt(theTime2)+"小时"+timdate.result
-                   }
-                } 
-            }else if(timdate.start_time == null) {
-                    timdate.result = '0.000'
-                }
-            }
         },
         data () {
                 return {
@@ -205,9 +169,7 @@
                             align: 'center',
                             width: 60,
                             render: (h, params) => {
-                                console.log(params);
                                 let texts = params.index + (this.pageNo - 1) * this.pageSize + 1;
-                                console.log(texts);
                                 return h('div',{
                                     props:{
                                     },
@@ -431,27 +393,68 @@
                     totalPage:0,                           //共多少页
                     serverInfo: {},
                     pressureAgentInfo: {},
-                    intervalFunc:null,
+                    intervalFunc: '',
 
-                    stopes:null,
+                    stopes: '',
+                    start_time: '',
                     JmeterSummaryUrl:'http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45',
                     JmeterUrl:'http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1',
                 }
             },
         beforeDestroy(){
             console.log("monitor beforeDestroy");
+
             clearInterval(this.intervalFunc);
             this.intervalFunc = null;
             clearInterval(this.intervalJmeter);
             this.intervalJmeter = null;
             clearInterval(this.stopes);
             this.stopes = null;
+            this.start_time = null;
+            this.ws.close();
+            this.ws = null;
         },
         mounted(){
-                
+            console.log("mounted");
+            console.log(this.start_time);
+            if(this.stopes == '')
+                this.stopes = setInterval(getflush,1000);
+            let timdate = this;
+            function getflush(){
+                let curDate = new Date();
+                //let cuDate = new Date();
+                console.log("start time",timdate.start_time);
+                if(timdate.start_time != ''){
+                if(timdate.starttime != 'null'){
+                    let cuDate = new Date(timdate.start_time);
+                    timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
+                   var theTime = timdate.starttime
+                   var theTime1 = 0;
+                   var theTime2 = 0;
+                   if(theTime > 60){
+                    theTime1 = parseInt(theTime/60);
+                    theTime = parseInt(theTime%60);
+                    if(theTime1 > 60){
+                        theTime2 = parseInt(theTime1/60);
+                        theTime1 = parseInt(theTime1%60);
+                    }
+                   }
+                   timdate.result = ""+parseInt(theTime)+"秒"
+                   if(theTime1 > 0){
+                    timdate.result = ""+parseInt(theTime1)+"分"+timdate.result
+                   } 
+                   if(theTime2 > 0){
+                    timdate.result = ""+parseInt(theTime2)+"小时"+timdate.result
+                   }
+                } 
+            }else if(timdate.start_time == '') {
+                    timdate.result = '0秒'
+                }
+            }     
         },
         created(){
                 console.log("monitor created");
+                console.log(this);
                 //this.pressCase();
                 //this.listCase();
                 this.initWs();
@@ -540,28 +543,38 @@
                     });
             },
             initWs() {
-               this.ws =new WebSocket(this.wsurl)
-               this.ws.onmessage = this.getmessage
+                console.log(this);
+                this.ws =new WebSocket(this.wsurl);
+                this.ws.onmessage = this.getmessage;
             },
+
+
             getmessage(e){
                 var res = e.data
                 console.log("这个里面是什么",res)
                 var _cutting = res.substr(0,1); //截取
                 if(_cutting =='1'){      // 判断是不是开头是1的数据
-                this.describe+=e.data.substr(1)
-                this.describe+='\r\n'    //换行
+                    this.describe+=e.data.substr(1)
+                    this.describe+='\r\n'    //换行
+                    if(e.data.indexOf('执行监控进程结束') != -1){ //监控起来后就显示资源
+                        console.log("test1");
+                        console.log(this);
+                        console.log(this.intervalFunc);
+                        this.updateResource();
+                        if(this.intervalFunc == ''){
+                            console.log("test2");
+                            this.intervalFunc = setInterval(this.updateResource, 10000);
+                            console.log("this.intervalFunc",this.intervalFunc);
+                        }
+                    }
                 }else if(_cutting =='0'){   // 判断是不是开头是0的数据
                     var status = e.data
                     var cuttingl = status.substr(1)   //截取0的数据
                     this.statuszt = eval('('+cuttingl+')');
-                    if(this.statuszt.exe_time != 'null'){  //不为null展示的this.statuszt.exe_time != 'null'
-                        start_time = this.statuszt.exe_time;
-                    }
-                    if(this.describe.indexOf('执行监控进程结束') != -1){ //监控起来后就显示资源
-                        console.log("test1");
-                        this.updateResource();
-                        if(this.intervalFunc == null)
-                            this.intervalFunc = setInterval(this.updateResource, 10000);
+                    console.log(this.statuszt);
+                    if(this.statuszt.exe_time != 'null' && this.start_time == ''){  //不为null展示的this.statuszt.exe_time != 'null'
+                        this.start_time = this.statuszt.exe_time;console.log(this.statuszt.exe_time);
+                        console.log(this.start_time);
                     }
                     if(this.statuszt.exe_description.indexOf('测试开始执行') != -1){ //测试准备中
                         this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
@@ -571,7 +584,7 @@
                             this.intervalJmeter= setInterval(this.flushJmeter,60*1000);
                     }if(this.statuszt.exe_description.indexOf('计算压力机资源控进程开始') != -1){
                         this.statuszt.exe_description = '测试准备中';
-                        start_time = null;
+                        this.start_time = '';
                     }if(this.statuszt.exe_description.indexOf('测试执行结束') != -1){
                         setTimeout(this.StopTimer(), 1000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
                     //    this.StopTimer();
@@ -652,6 +665,7 @@
 
                 /**停止外呼操作，场景结束，主动停止时调用，页面关闭在destory里 */
                 StopTimer:function(){
+                    console.log("this.intervalFunc",this.intervalFunc);
                     clearInterval(this.intervalFunc);
                     this.intervalFunc = null;
                     clearInterval(this.stopes);

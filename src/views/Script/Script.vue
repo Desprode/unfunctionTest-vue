@@ -131,7 +131,7 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="cancelAdd()">取消</Button>
-                    <Button type="primary"   @click="submitScript('addValidate')" :disabled="isdisabledFn">确认</Button>
+                    <Button type="primary"   @click="submitScript('addValidate')" >确认</Button>
                 </div>
             </Modal>
             <!--编辑脚本时弹出的对话框 end-->
@@ -904,17 +904,8 @@ export default {
                     script_name:val,
                 }
             }).then(function(response){
-                    //console.log("检查脚本响应数据",response);
-                    // var flag = response.data.result;
-                    // console.log("检查脚本响应数据flag",flag);
                     _this.scriptFlag = response.data.result=="fail";
                     console.log(" _this.scriptFlag",_this.scriptFlag);
-                    // if("fail" == flag){
-                    //     scriptFlag = false;
-                    //     console.log("检查脚本响应数据flag22",flag);
-                    // }
-                
-               
             })
         },
 
@@ -937,19 +928,6 @@ export default {
             _this.$refs.upload.clearFiles();
             this.showDialog = true;
             console.log("显示模态框");
-        },
-        /**点击保存之后的事件 */
-        handleSave(row){
-            console.log("这是保存",row)
-        },
-        /**点击编辑之后的事件 */
-        handleEdit(row){
-            console.log("这是编辑",row)
-        },
-        /**删除一条数据 */
-        remove(index){
-            this.tableData.splice(index,1);
-            console.log("这是删除一条数据",row);
         },
         //参数化设置提交
         handleParamSubmit (name) {
@@ -986,48 +964,43 @@ export default {
         submitScript (name,scriptFlag) {
             let _this = this;
             _this.scriptFlag =this.scriptFlag;
-            //scriptFlag
-            // console.log(this.addValidate);
-            // console.log("name11111111111111111111111111111",scriptFlag);
             _this.isdisabledFn = true;
             //提交添加请求
-            this.$refs[name].validate((valid) => {
-                if (valid) {
-                    console.log("开始添加",valid);
-                    console.log("app_name0000000",_this.addValidate.app_name);
-                    // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/scripts/add',{
-                        data:{
-                            script_name:_this.addValidate.script_name,
-                            app_name:_this.addValidate.app_name,
-                            app_id:_this.addValidate.app_id,
-                            memo:_this.addValidate.memo,
-                            script_filename:_this.addValidate.script_filename,
-                            script_filesize:_this.filesize,
-                            script_filepath:_this.script_filepath,
-                            script_id:_this.script_id,
-                        }
-                    }).then(function(response){
-                        console.log("响应回来的数据1111111",response);
-                        if("success" == response.data.result){
-                            _this.$Message.success('添加成功！');
-                            _this.listCase();
-                        }else{
-                            _this.$Message.error(response.data.err_desc);
-                        }
-                        _this.isdisabledFn = false;
-                        _this.showDialog = false;
-                        _this.$refs[name].resetFields();
-                    }).catch(function(error){
-                        _this.isdisabledFn = false;
-                        console.log("error:"+error);
-                        _this.$Message.error('服务端错误!');
-                    })
-                } else {
+            console.log("_this.scriptFlag",_this.scriptFlag);
+            if (_this.scriptFlag == true) {
+                _this.$Message.error('脚本名称重复，请修改!');
+            } else if( _this.scriptFlag != true){
+                this.$http.post('/myapi/scripts/add',{
+                    data:{
+                        script_name:_this.addValidate.script_name,
+                        app_name:_this.addValidate.app_name,
+                        app_id:_this.addValidate.app_id,
+                        memo:_this.addValidate.memo,
+                        script_filename:_this.addValidate.script_filename,
+                        script_filesize:_this.filesize,
+                        script_filepath:_this.script_filepath,
+                        script_id:_this.script_id,
+                    }
+                }).then(function(response){
+                    console.log("响应回来的数据1111111",response);
+                    if("success" == response.data.result){
+                        _this.$Message.success('添加成功！');
+                        _this.listCase();
+                    }else{
+                        _this.$Message.error(response.data.err_desc);
+                    }
                     _this.isdisabledFn = false;
-                    _this.$Message.error('表单验证失败!');
-                }
-            });
+                    _this.showDialog = false;
+                    _this.$refs[name].resetFields();
+                }).catch(function(error){
+                    _this.isdisabledFn = false;
+                    console.log("error:"+error);
+                    _this.$Message.error('服务端错误!');
+                })
+            }else{
+                _this.isdisabledFn = false;
+                _this.$Message.error('表单验证失败!');
+            }
         }, 
         //编辑提交
         editSubmitScript (name) {
@@ -1038,7 +1011,6 @@ export default {
                 if (valid) {
                     console.log("开始修改");
                     console.log("app_name0000000"+_this.setValidate.app_name);
-                    // this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/scripts/edit',{
                         data:{
                             id:_this.rowid,
@@ -1074,7 +1046,18 @@ export default {
         },         
         
         /**模态框弹出取消事件 */
-        cancelAdd () {
+        cancelAdd:function (file) {
+            let _this = this;
+            console.log("file",_this.script_id);
+            this.$http.post('/myapi/scripts/cancle', {
+                header: {
+                },
+                data: {
+                    script_id: _this.script_id
+                }
+            }).then(function (response) {
+                console.log('response.data: ', response.data);
+            })
             this.$Message.info('您取消了添加脚本!');
             this.showDialog = false;
         },
@@ -1088,6 +1071,7 @@ export default {
             this.showDetail = false;
             this.doDeleteas = false;
         },
+        
         /**清除搜索条件 */
         handleReset () {
             let _this = this;
