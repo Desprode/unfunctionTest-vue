@@ -360,11 +360,11 @@
                         data: this.legend_cpu,
                         formatter: function (name) {
                             let legendtext;
-                            console.log("name",name,chartdata_cpu);
+                            console.log("name",name,_this.chartdata_cpu);
                             for (let i = 0, len = _this.chartdata_cpu.length; i < len; i++) {
                                 let total = Number(0);
                                 if ((_this.chartdata_cpu[i].name) === name) {
-                                    let dataLen = _this.chartdata_cpu.length;
+                                    let dataLen = _this.chartdata_cpu[i].data.length;
                                     for (var j = 0; j < dataLen; j++) {
                                         total += parseFloat((_this.chartdata_cpu[i].data[j])[1]);
                                     }
