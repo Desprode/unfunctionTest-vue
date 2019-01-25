@@ -631,7 +631,18 @@ export default {
         },
         /**清除搜索条件 */
         handleReset:function (name) {
-            this.$refs[name].resetFields(); 
+            //this.$refs[name].resetFields(); 
+            let _this = this;
+            _this.formValidate.executor_id='',                     //执行编号
+            _this.formValidate.component_name='',                  //物理子系统
+            _this.formValidate.task_name='',                       //关联任务
+            _this.formValidate.senario_name='',                    //场景名称
+            _this.formValidate.type_name='',                       //场景类型
+            _this.formValidate.execution_name='',                  //执行人
+            _this.formValidate.member_name='',
+            _this.formValidate.exe_status='',                      //执行状态
+            _this.formValidate.start_time='',                      //开始日期
+            _this.formValidate.end_time='',                        //结束日期
             this.listCase();
         }
     }
