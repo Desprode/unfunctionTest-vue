@@ -361,9 +361,9 @@
                     <Button @click="moniterAdd" type="success">新增</Button>
                 </div>
                 <div class="tableBox" v-if="showSearchTable">
-                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
+                    <Table border :loading="isLoading"  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll" ></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
-                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange" :current="moniterPageNo"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
                         </div>
                 </div>
@@ -1717,7 +1717,9 @@ export default {
                 _this.monitorListPage = _this.moniterSelectedData.map(item=>{
                     return item.id;
                 })
-                
+                _this.monitorList = _this.moniterSelectedData.map(item=>{
+                    return item.servPartId;
+                })
             }
             _this.monitorListPage = [...new Set(_this.monitorListPage)];
             console.log("翻页数据",_this.monitorListPage);
@@ -1746,6 +1748,7 @@ export default {
             //本身数据表格
                  console.log("搜索后表格");
                 console.log('旧的系统名称',_this.subSysName_old,'新的系统名称',_this.subSysName_new);
+            _this.monitorListPage = [];
             if(_this.showSearchTable){
                 //if(_this.moniterSelectedData.length > 0){
                 for(var i=0;i<_this.moniterTableData.length;i++){
@@ -1765,6 +1768,7 @@ export default {
                         senarioid:_this.monitor_senario_id,
                     },
                 }).then(function(response){
+                    console.log("_this.monitorList",_this.monitorList);
                     _this.moniterListCase();
                 });
                 // }else{
