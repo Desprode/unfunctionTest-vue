@@ -4,20 +4,20 @@
             <h3 class="Title">
                 <span>执行结果</span>
             </h3>
-            <Form class="formValidate">
+            <Form  ref="formValidate" :model="formValidate" class="formValidate">
                 <div class="rowbox">
                     <Row :gutter="16">
                         <Col span="2" class="searchLable">任务名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="task_name" placeholder="请输入任务名称"></Input>
+                            <Input clearable v-model="formValidate.task_name" placeholder="请输入任务名称"></Input>
                         </Col>
                         <Col span="2" class="searchLable">场景名称:</Col>
                         <Col span="4">
-                            <Input clearable v-model="senario_name" placeholder="请输入场景名称"></Input>
+                            <Input clearable v-model="formValidate.senario_name" placeholder="请输入场景名称"></Input>
                         </Col>
                         <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
-                            <Select v-model="type_name" >
+                            <Select v-model="formValidate.type_name" >
                                 <Option value="混合交易" >混合交易</Option>
                                 <Option value="单交易基准" >单交易基准</Option>
                                 <Option value="单交易负载" >单交易负载</Option>
@@ -25,36 +25,43 @@
                         </Col>
                         <Col span="6">
                             <Button @click="listCase" type="primary" icon="ios-search">查询</Button>
-                            <Button @click="handleReset">重置</Button>
+                            <Button @click="handleReset('formValidate')">重置</Button>
                         </Col>
                     </Row>
                     <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">执行状态:</Col>
                         <Col span="4">
-                            <Select v-model="exe_status" >
+                            <Select v-model="formValidate.exe_status" >
                                 <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </Col>
                         <Col span="2" class="searchLable">执行人:</Col>
                         <Col span="4">
-                            <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input>
-                            <!--输入查询==》支持远程搜索-->
-                            <!-- <Input v-model="formValidate.senario_creator" placeholder="输入场景创建人" @keyup.enter.native= listCase()></Input> -->
-                            <!-- <Select v-model="execution_name" placeholder="请输入执行人" clearable filterable remote :remote-method="senarioCreatorRemote" :loading="perftaskNameLoading" @keyup.enter.native= listCase()>
-                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}({{opts.username}})</Option>
-                            </Select> -->
+                            <!-- <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input> -->
+                            <Select 
+                                v-model="formValidate.member_name"
+                                placeholder="请输入执行人" 
+                                clearable
+                                filterable
+                                remote
+                                :remote-method="searchByUser"
+                                :loading="execution"
+                                @on-open-change="executioName" 
+                                @keyup.enter.native= listCase()>
+                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.member_name" :key="index">{{opts.member_name}}</Option>
+                            </Select>
                         </Col>
                     </Row>
                     <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">开始日期:</Col>
                         <Col span="4">
                             <Col span="50">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="start_time"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="formValidate.start_time"></DatePicker>
                             </Col>
                             </Col>
                         <Col span="2" class="searchLable">结束日期:</Col>
                         <Col span="4">
-                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="end_time"></DatePicker>
+                                <DatePicker type="datetime" placeholder="请选择查询日期" v-model="formValidate.end_time"></DatePicker>
                             </Col>
                         <Col span="2"></Col>
                     </Row>
@@ -171,6 +178,7 @@ export default {
             setValidates:[],
             spinShow:false,
             isShowMore:false,                   //聚合报告弹框
+            execution:false,
             /**-----------聚合报告信息展示-----------*/
             metrics_desc:'',                    //测试需求描述
             create_time:'',
@@ -207,15 +215,19 @@ export default {
             perftaskNameLoading:false,
             searchCreatorOpts:[],
             showAddModal:false,                 //聚合窗口
-            executor_id:'',                     //执行编号
-            component_name:'',                  //物理子系统
-            task_name:'',                       //关联任务
-            senario_name:'',                    //场景名称
-            type_name:'',                       //场景类型
-            execution_name:'',                  //执行人
-            exe_status:'',                      //执行状态
-            start_time:'',                      //开始日期
-            end_time:'',                        //结束日期
+            formValidate:{
+                executor_id:'',                     //执行编号
+                component_name:'',                  //物理子系统
+                task_name:'',                       //关联任务
+                senario_name:'',                    //场景名称
+                type_name:'',                       //场景类型
+                execution_name:'',                  //执行人
+                member_name:'',
+                exe_status:'',                      //执行状态
+                start_time:'',                      //开始日期
+                end_time:'',                        //结束日期
+            },
+            
             //执行结果信息展示
             columns: [
             	{
@@ -312,10 +324,12 @@ export default {
                 {
                     title: '开始日期',
                     key: 'start_time',
+                    sortable: true
                 },
                 {
                     title: '结束日期',
                     key: 'end_time',
+                    sortable: true
                 },
                 {
                     title: '操作',
@@ -353,6 +367,44 @@ export default {
         this.listCase();
     },
     methods: {
+        /**创建人远程查询 */
+        searchByUser:function(query){
+            let _this = this;
+            console.log("query",query);
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:query
+                }
+            }).then(function(response){
+                console.log("远程查询创建人",response);
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
+        /**下拉选自动查询 */
+        executioName:function(){
+            let _this = this;
+            this.$http.post('/myapi/user/search',{
+                header:{},
+                data:{
+                    member_name:''
+                }
+            }).then(function(response){
+                _this.searchCreatorOpts = response.data.resultList.map(item=>{
+                    return {
+                        id:item.id,
+                        username:item.username,
+                        member_name:item.member_name,
+                    }
+                })
+            })
+        },
         /*删除按钮功能*/
         deleteCase: function () {
             //console.log("删除多条按钮");
@@ -425,23 +477,24 @@ export default {
         listCase: function() {
             let _this = this;
             _this.isLoading=true;
+            console.log("_this.execution_name,",_this.member_name);
             //this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/testresult/list', {
                 data: {
-                    task_name:_this.task_name,
-                    senario_name:_this.senario_name,
-                    execution_name:_this.execution_name,
-                    exe_status:_this.exe_status,
-                    type_name:_this.type_name,
-                    start_time:_this.start_time,
-                    end_time:_this.end_time,
+                    task_name:_this.formValidate.task_name,
+                    senario_name:_this.formValidate.senario_name,
+                    execution_name:_this.formValidate.member_name,
+                    exe_status:_this.formValidate.exe_status,
+                    type_name:_this.formValidate.type_name,
+                    start_time:_this.formValidate.start_time,
+                    end_time:_this.formValidate.end_time,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
                     
                 }
             }).then(function (response) {
                 let result =  response.data.result;
-                console.log("result: ", result);
+                console.log("result: ", response.data);
                 // if (result == "ok"){
                 //     console.log("******** result ok *********");
                 // }
@@ -451,25 +504,7 @@ export default {
                 _this.isLoading=false;
             })
         },
-        /**执行人人远程查询 */
-        senarioCreatorRemote:function(query){
-            let _this = this;
-            this.$http.post('/myapi/user/search',{
-                header:{},
-                data:{
-                    member_name:query
-                }
-            }).then(function(response){
-                console.log("远程查询执行人",response);
-                _this.searchCreatorOpts = response.data.resultList.map(item=>{
-                    return {
-                        id:item.id,
-                        username:item.username,
-                        member_name:item.member_name,
-                    }
-                })
-            })
-        },
+        
         //聚合报告
         aggregCase:function(){
             let _this = this;
@@ -595,16 +630,9 @@ export default {
             this.showAddModal = false;
         },
         /**清除搜索条件 */
-        handleReset:function () {
-            let _this = this;
-            _this.task_name = '',
-            _this.senario_name = '',
-            _this.execution_name = '',
-            _this.exe_status = '',
-            _this.type_name = '',
-            _this.start_time = '', 
-            _this.end_time = '' 
-            _this.listCase();
+        handleReset:function (name) {
+            this.$refs[name].resetFields(); 
+            this.listCase();
         }
     }
 }

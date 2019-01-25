@@ -611,6 +611,7 @@ export default {
                     pageSize: 15                    
                 }
             }).then(function (response) {
+                console.log("机器管理",response.data);
                 if(response.status == 500){
                     _this.$Message.error('服务端错误!');
                 }else{
