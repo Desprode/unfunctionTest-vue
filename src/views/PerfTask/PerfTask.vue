@@ -420,7 +420,8 @@ export default {
                 {
                     title: '操作',
                     key: 'opration',
-                    width:130,
+                    align: 'center',
+                    width:150,
                     render: (h, params) => {
                         return h('div', [
                             h('Button', {
