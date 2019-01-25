@@ -227,7 +227,7 @@
             <!-- 删除提示 -->
             <Modal v-model="doDeleteas" width="600">
                 <p slot="header" style="color:#f60" >
-                    <span>该脚本有以下场景关联，是否删除该数据？</span>
+                    <span>该脚本关联的场景如下，如删除脚本对应的场景将一并删除，请确认是否删除？</span>
                 </p>
                 <Table border ref="selection" :columns="setValiColumns" :data="setValidates" class="myTable" show-header></Table>
                 <div slot="footer">
@@ -794,7 +794,7 @@ export default {
                         }
                     }); 
                 }else{
-                    _this.$Message.info("该脚本正在运行，不可删除!");
+                    _this.$Message.info("该脚本关联的场景正在执行中，脚本不可删除，请稍后再试。");
                 }
             })
         }, 
