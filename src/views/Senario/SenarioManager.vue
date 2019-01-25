@@ -263,7 +263,7 @@
                         </Col>
                         <Col span="10">
                             <FormItem label="系统名称" prop="sComponent">
-                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
+                                <Select clearable v-model="moniterValidate.sComponent" placeholder="请选择系统" clearable filterable remote :remote-method="scomponentRemote" :loading="scomponentLoading" @on-open-change="openMonitorChange" @keyup.enter.native = moniterCase()  @on-clear="clearsComponentSearch">
                                 <Option v-for="(opts,index) in scomponentOpts" :value="opts.label" :key="index">{{opts.label}}</Option>          
                         </Select>
                             </FormItem>
@@ -276,7 +276,7 @@
                     <Row v-show="isShowMoniterMore">
                         <Col span="10">
                             <FormItem label="环境类型:" prop="inviro_type">
-                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()  @on-clear="clearMonitorSearch">
+                                <Select v-model="moniterValidate.inviro_type" placeholder="---请选择---" clearable @keyup.enter.native = moniterCase()  @on-clear="clearInvirotypeSearch">
                                     <Option value="组件组装非功能(CPT)_南湖">组件组装非功能(CPT)_南湖</Option>
                                     <Option value="组件组装非功能(CPT)_洋桥">组件组装非功能(CPT)_洋桥</Option>
                                     <Option value="应用组装非功能(PT1+PT2)_南湖">应用组装非功能(PT1+PT2)_南湖</Option> 
@@ -1578,6 +1578,8 @@ export default {
         /**查询条件清除 */
         moniterReset:function(name){
             this.$refs[name].resetFields();
+            this.moniterPageNo = 1;
+            this.moniterListCase();
         },
         /**系统名称下拉选自动加载 */
         openMonitorChange:function(openStatus){
@@ -1671,17 +1673,28 @@ export default {
         },
         onBlurMonitorSearch:function(){
             if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterPageNo = 1;
                 this.moniterListCase();
             }else{
                 console.log("未清空");
             }
         },
-        clearMonitorSearch:function(){
+        clearsComponentSearch:function(){
             console.log(this.moniterValidate.ip);
             console.log(this.moniterValidate.sComponent);
             console.log(this.moniterValidate.inviro_type);
             this.moniterValidate.sComponent = '';
             if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterPageNo = 1;
+                this.moniterListCase();
+            }else{
+                console.log("未清空");
+            }
+        },
+        clearInvirotypeSearch:function(){
+             this.moniterValidate.inviro_type = '';
+            if((this.moniterValidate.ip == '' || this.moniterValidate.ip == undefined) && (this.moniterValidate.sComponent == '' || this.moniterValidate.sComponent == undefined) && (this.moniterValidate.inviro_type == '' || this.moniterValidate.inviro_type == undefined)){
+                this.moniterPageNo = 1;
                 this.moniterListCase();
             }else{
                 console.log("未清空");
