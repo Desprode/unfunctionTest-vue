@@ -662,14 +662,19 @@
                         pageSize:_this.pageSize,
                     }
                 }).then(function (response) {
-                    setTimeout(()=>{
+                    if(response.data.resultList == null){
                         _this.serverInfoLoading = false;
-                        console.log('请求回来的表格数据: ', response.data);
-                        _this.totalCount = response.headers.totalcount;
-                        _this.totalPage = response.headers.totalpage;
-                        _this.serverInfotableData = response.data.resultList;
-                        console.log("_this.serverInfotableData",_this.serverInfotableData);
-                    },1500)
+                        _this.serverInfotableData = [];
+                    }else{
+                        setTimeout(()=>{
+                            _this.serverInfoLoading = false;
+                            console.log('请求回来的表格数据: ', response.data);
+                            _this.totalCount = response.headers.totalcount;
+                            _this.totalPage = response.headers.totalpage;
+                            _this.serverInfotableData = response.data.resultList;
+                            console.log("_this.serverInfotableData",_this.serverInfotableData);
+                        },1500)
+                    }
                 })
             },
                 /**切换页码 */
