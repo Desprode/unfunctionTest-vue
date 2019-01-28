@@ -371,7 +371,7 @@
                 <div class="tableBox" v-else>
                     <Table border  ref="selectionMonitor" :columns="moniterColumns" :data="moniterTableData" class="myTable"  @on-select="moniterOnSelection" @on-select-cancel="onMonitorSelectCancel" @on-select-all="moniterOnSelectionAll" @on-select-all-cancel="onMonitorSelectCancelAll"></Table>
                         <div class="pageBox" v-if="moniterTableData != undefined">
-                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange"></Page>
+                            <Page :total="parseInt(moniterTotalCount)" show-elevator show-total show-sizer @on-change="moniterPageChange" @on-page-size-change="moniterPageSizeChange" :current="moniterPageNo"></Page>
                             <p>总共{{moniterTotalPage}}页</p>
                         </div>
                 </div>
