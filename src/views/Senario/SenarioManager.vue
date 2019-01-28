@@ -144,7 +144,7 @@
                 </div>
                 <div slot="footer">
                     <Button color="#1c2438"  @click="Addcancel()">取消</Button>
-                    <Button type="primary" @click="handleSubmit('addValidate')">确认</Button>
+                    <Button type="primary" @click="handleSubmit('addValidate')" :disabled="controlCreate">确认</Button>
                 </div>
             </Modal>
 
@@ -411,6 +411,7 @@ export default {
             notDeleteList:[],
             /**============新增模态框数据=========== */
             showAddModal:false,                  //新建窗口
+            controlCreate:false,
             perftaskOpts:[],                     //关联任务下拉选项
             scriptOpts:[],                      //关联脚本下拉选项
             scriptList:[],
@@ -1222,6 +1223,7 @@ export default {
             let  _this = this;
             this.$refs[name].validate((valid) => {
                 if (valid) {
+                    _this.controlCreate = true;
                     console.log("开始添加");
                     //this.$http.defaults.withCredentials = false;
                     this.$http.post('/myapi/senario/add',{
@@ -1240,6 +1242,7 @@ export default {
                         _this.$refs[name].resetFields();
                         _this.isDisabled = true;
                         _this.listCase();
+                        _this.controlCreate = false;
                     })
                 } else {
                     _this.$Message.error('表单验证失败!');
