@@ -399,6 +399,7 @@
                     stopes: '',
                     intervalJmeter: '',
                     el_time: '', //已开始时间
+                    ws: '',
                     JmeterSummaryUrl:'http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45',
                     JmeterUrl:'http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1',
                 }
