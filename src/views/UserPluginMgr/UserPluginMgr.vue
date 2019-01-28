@@ -310,6 +310,7 @@ export default {
         submitScript () {
             this.$Message.info('新增成功');
             this.showDialog = false;
+            this.listCase();
         },
     }
 }
