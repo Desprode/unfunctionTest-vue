@@ -29,7 +29,7 @@
                 <Tab-pane label="服务器资源">
                     <Table border :loading="serverInfoLoading" ref="selection" :columns="columns1"  :data="serverInfotableData" class="myTable" @on-row-dblclick="onRowDblClick"></Table>
                     <div class="pageBox" v-if="serverInfotableData.length">
-                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
+                        <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer placement="top" @on-change="pageChange" @on-page-size-change="pageSizeChange" @submit.native.prevent></Page>
                         <p>总共{{totalPage}}页</p>
                     </div>
                 </Tab-pane>
@@ -54,9 +54,8 @@
                     senario_name:this.$route.query.senario_name,
                     describe: '',
                     statuszt:'',
-                    timedate: '',
-                    result:'0.000',
-                    starttime:'0.000',
+                    timedate: '',   //开始时间的13为时间戳
+                    result:'0秒',
                     wsurl:"ws://128.195.0.12:8080/message/"+this.$route.query.executor_id,         //
                     iframeUrl: '',//"http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1&from=123456789&to=now&var-testId=123&refresh=5s&kiosk",
                     iframeUrll: '',//"http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45&from=1546910542000&to=now&var-testId=123&refresh=5s&kiosk",
@@ -398,7 +397,8 @@
                     intervalFunc: '',
 
                     stopes: '',
-                    start_time: '',
+                    intervalJmeter: '',
+                    el_time: '', //已开始时间
                     JmeterSummaryUrl:'http://128.195.0.14:3000/d/87b2Yucmk/jmeter-dashboard-summary?orgId=1&panelId=45',
                     JmeterUrl:'http://128.195.0.14:3000/d/hNfQJhWiz/jmeter-dashboard?orgId=1',
                 }
@@ -412,47 +412,15 @@
             this.intervalJmeter = null;
             clearInterval(this.stopes);
             this.stopes = null;
-            this.start_time = null;
+            clearTimeout(this.timeout);
+            this.el_time = '';
             this.ws.close();
             this.ws = null;
         },
         mounted(){
             console.log("mounted");
-            console.log(this.start_time);
-            if(this.stopes == '')
-                this.stopes = setInterval(getflush,1000);
-            let timdate = this;
-            function getflush(){
-                let curDate = new Date();
-                //let cuDate = new Date();
-                console.log("start time",timdate.start_time);
-                if(timdate.start_time != ''){
-                if(timdate.starttime != 'null'){
-                    let cuDate = new Date(timdate.start_time);
-                    timdate.starttime = Math.ceil(((curDate.getTime() - cuDate.getTime())/1000)+48)
-                   var theTime = timdate.starttime
-                   var theTime1 = 0;
-                   var theTime2 = 0;
-                   if(theTime > 60){
-                    theTime1 = parseInt(theTime/60);
-                    theTime = parseInt(theTime%60);
-                    if(theTime1 > 60){
-                        theTime2 = parseInt(theTime1/60);
-                        theTime1 = parseInt(theTime1%60);
-                    }
-                   }
-                   timdate.result = ""+parseInt(theTime)+"秒"
-                   if(theTime1 > 0){
-                    timdate.result = ""+parseInt(theTime1)+"分"+timdate.result
-                   } 
-                   if(theTime2 > 0){
-                    timdate.result = ""+parseInt(theTime2)+"小时"+timdate.result
-                   }
-                } 
-            }else if(timdate.start_time == '') {
-                    timdate.result = '0秒'
-                }
-            }     
+            console.log(this.el_time);
+    
         },
         created(){
                 console.log("monitor created");
@@ -464,7 +432,36 @@
                 this.getServerInfo();
                 this.getPressureaAgentInfo();
         },
-        methods:{ 
+        methods:{
+            getflush: function(){
+                console.log("start time",this.el_time);
+                if(this.el_time !== ''){    // ==的话 ''与0一样
+                    
+                   var theTime = this.el_time;
+                   var theTime1 = 0;
+                   var theTime2 = 0;
+                   if(theTime > 60){
+                    theTime1 = parseInt(theTime/60);
+                    theTime = parseInt(theTime%60);
+                    if(theTime1 > 60){
+                        theTime2 = parseInt(theTime1/60);
+                        theTime1 = parseInt(theTime1%60);
+                    }
+                   }
+                   this.result = ""+parseInt(theTime)+"秒"
+                   if(theTime1 > 0){
+                        this.result = ""+parseInt(theTime1)+"分"+this.result
+                   } 
+                   if(theTime2 > 0){
+                        this.result = ""+parseInt(theTime2)+"小时"+this.result
+                   }
+                   this.el_time++;console.log("el time",this.el_time);
+                } 
+                else if(this.el_time === '') {
+                    this.result = '0秒'
+                    console.log("el time",this.el_time);
+                }
+            }, 
                 //服务器资源信息
             getServerInfo: function() {
                     console.log("服务器资源信息");
@@ -547,7 +544,7 @@
             initWs() {
                 console.log(this);
                 this.ws =new WebSocket(this.wsurl);
-                this.ws.onmessage = this.getmessage;
+                this.ws.onmessage = this.getmessage;console.log("ws",this.ws);
             },
 
 
@@ -573,25 +570,41 @@
                     var status = e.data
                     var cuttingl = status.substr(1)   //截取0的数据
                     this.statuszt = eval('('+cuttingl+')');
-                    console.log(this.statuszt);
-                    if(this.statuszt.exe_time != 'null' && this.start_time == ''){  //不为null展示的this.statuszt.exe_time != 'null'
+                    if(this.statuszt.el_time != undefined){
+                        this.el_time = this.statuszt.el_time;
+                        console.log(this.statuszt);
+                        console.log(this.el_time);
+                    }
+                    if(this.statuszt.exe_time != 'null'){
+                        this.timedate = Date.parse(this.statuszt.exe_time);   //13位的时间戳
+                    }
+                /*    if(this.statuszt.exe_time != 'null' && this.start_time == ''){  //不为null展示的this.statuszt.exe_time != 'null'
                         this.start_time = this.statuszt.exe_time;
                         console.log(this.statuszt.exe_time);
                         console.log(this.start_time);
-                    }
+                    } */
                     if(this.statuszt.exe_description.indexOf('测试开始执行') != -1){ //测试准备中
                         this.statuszt.exe_description = '场景正在执行';
-                        this.start_time = '';
-                        this.timedate = Date.parse(this.statuszt.exe_time);    //13位的时间戳
+                   
+                        if(this.stopes == '')
+                            this.stopes = setInterval(this.getflush,1000);
+
                         this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
                         this.iframeUrll = this.JmeterSummaryUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=5s&kiosk";
-                        if(this.intervalJmeter == null)    
+                        if(this.intervalJmeter == '')    
                             this.intervalJmeter= setInterval(this.flushJmeter,60*1000);
                     }if(this.statuszt.exe_description.indexOf('计算压力机资源控进程开始') != -1){
                         this.statuszt.exe_description = '测试准备中';
-                        this.start_time = '';
+                        
                     }if(this.statuszt.exe_description.indexOf('测试执行结束') != -1){
-                        setTimeout(this.StopTimer(), 1000);//为了防止应用返回较慢，设置5分钟后停止刷新，过期不候
+                        if(this.statuszt.el_time != undefined){
+                            this.el_time = this.statuszt.el_time;
+                        }
+                        this.getflush();
+                        clearInterval(this.stopes);
+                        this.stopes = '';
+                       
+                        setTimeout(this.StopTimer(), 60000);//为了防止应用返回较慢，设置1分钟后停止刷新，过期不候
                     //    this.StopTimer();
                     }
                 }
@@ -603,7 +616,7 @@
                 if (this.$route.query.executor_id.includes(this.$route.query.executor_id)) {       //当原有的数据与要停止的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
-                        content: '是否停止该数据',
+                        content: '是否停止该测试',
                         onOk: () => {
                             let deaa = [];
                             deaa.push(this.$route.query.executor_id)
@@ -619,7 +632,7 @@
                             })
                         },
                         onCancel: () => {
-                            _this.$Message.info('停止失败');
+                            _this.$Message.info('已取消停止');
                         }
                     }); 
                    
@@ -676,8 +689,7 @@
                     console.log("this.intervalFunc",this.intervalFunc);
                     clearInterval(this.intervalFunc);
                     this.intervalFunc = null;
-                    clearInterval(this.stopes);
-                    this.stopes = null;
+                    
                     clearInterval(this.intervalJmeter);
                     this.intervalJmeter = null;
                     this.iframeUrl = this.JmeterUrl + "&from="+this.timedate+"&to=now&var-testId="+this.$route.query.executor_id+"&refresh=3600s&kiosk";
@@ -723,16 +735,24 @@
                 //压力机资源跳转
                 pressonRowDblClick: function(row) {
                     var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
-                    this.pressureAgentInfo.start= start;
+                    if(this.timedate != ''){
+                        this.pressureAgentInfo.start= Math.round(parseInt(this.timedate)/1000).toString();
+                    }else{
+                        this.pressureAgentInfo.start= start;
+                    }
                     this.pressureAgentInfo.selected = row.prodIp;
                     this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo,row:row}});
                     console.log('这个是',this.pressureAgentInfo)
                 },
                 //服务器资源跳转
                 onRowDblClick: function(row) {
-                var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
                     console.log(row);
-                    this.serverInfo.start= start;
+                    if(this.timedate != ''){
+                        this.serverInfo.start= Math.round(parseInt(this.timedate)/1000).toString();
+                    }else{
+                        this.serverInfo.start= start;
+                    }
                     this.serverInfo.selected = row.prodIp;
                     this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.serverInfo,row:row}});
                     console.log('这个是',this.serverInfo)
