@@ -594,7 +594,6 @@ export default {
                                         let _this = this;
                                         _this.id = item.row.senario_id;
                                         _this.showExeType =  item.row.senario_type;
-                                        //this.$http.defaults.withCredentials = false;
                                         this.$http.post('/myapi/senario/execStatus',{
                                             header:{},
                                             data:{
