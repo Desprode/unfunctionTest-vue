@@ -335,6 +335,7 @@
                         <Col span="11">
                             <FormItem label="ip地址" prop="prodIp" >
                                 <Input v-model="monitorAddValidate.prodIp" placeholder="请输入内容" @keyup.enter.native = 'monitorAddSave("monitorAddValidate")'></Input>
+                                <span v-if="true" class="ivu-form-item-error-tip" >ip不能重复！</span>
                             </FormItem>
                         </Col>
                         <Col span="11">
