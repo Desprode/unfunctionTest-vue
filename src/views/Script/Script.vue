@@ -86,16 +86,18 @@
                             <i-col span="24">
                                 <Form-item label="物理子系统：" prop="app_name">
                                     <Select  
-                                        clearable 
                                         v-model="addValidate.app_name" 
                                         placeholder="请选择物理子系统" 
+                                        clearable
                                         filterable 
                                         remote 
+                                        
                                         :remote-method="searchAppname" 
                                         :loading="srchCmploading"
-                                        :transfer=false
+                                        @on-open-change="searchName" 
+                                        @keyup.enter.native= listCase()
                                         >
-                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" @click.native="setMoreCmpParams(option)">{{ option.label }}</Option>
+                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" >{{ option.label }}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -121,6 +123,7 @@
                                         :format="['zip']" 
                                         :on-success="uploadSuccess"
                                         :on-progress="uploadProgress"
+                                        :show-upload-list="false"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.script_filename">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
@@ -173,6 +176,7 @@
                                 :before-upload="handleUpload" 
                                 :format="['zip']" 
                                 :on-success="uploadSuccess"
+                                :show-upload-list="false"
                                 :on-progress="uploadProgress"
                                 :on-format-error="handleFormatError"
                                 v-model="setValidate.script_filename">
@@ -184,6 +188,7 @@
                     <Button color="#1c2438" @click="setCancel()">取消</Button>
                     <Button type="primary" @click="editSubmitScript('setValidate')">确认</Button>
                 </div>
+                <Spin size="large" fix v-if="spinShow"></Spin>
             </Modal>
             <!--script edit end
             script detail detail detail detail begin  now not use
@@ -263,6 +268,7 @@ export default {
             showSetScript:false,
             doDeleteas:false,
             srchCmploading: false,
+            spinShow:false,
             // 删除校验弹框
             setValiColumns:[
                 {
@@ -701,42 +707,40 @@ export default {
             this.addValidate.app_id = obj.value;
             this.addValidate.app_name = obj.label;
         }, 
+        searchName:function(){
+            let _this = this
+            this.$http.post('/myapi/component/searchFromITM', {
+                data: {
+                    kw: '',
+                    page: 1, 
+                    limit: 10, 
+                },                        
+            }).then(function (response) {
+                _this.appNameOpts  = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.com_name
+                    };
+                });
+            })
+        },
         searchAppname: function(query){
-            this.appNameOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-                    let _this = this
-                    // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/component/searchFromITM', 
-                    {
-                        data: {
-                            kw: query,
-                            page: 1, 
-                            limit: 10, 
-                        },                        
+            let _this = this
+            this.$http.post('/myapi/component/searchFromITM', {
+                data: {
+                    kw: query,
+                    page: 1, 
+                    limit: 10, 
+                },                        
+            }).then(function (response) {
+                console.log('list-after: ', _this.list);
+                _this.appNameOpts = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.com_name
                     }
-                    ).then(function (response) {
-                        console.log('response.data: ', response.data);
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                // value: item.id,
-                                // label: item.comp_name
-                                value: item.id,
-                                // cloud_id: item.cloud_id, 
-                                label: item.com_name
-                            };
-                        });
-                        _this.appNameOpts = list
-                        console.log('this.appNameOpts:', _this.appNameOpts);
-                    })
-                }, 200);
-            } else {
-                this.appNameOpts = [];
-            }
+                })
+            })
         },
         searchCreater: function(query) {
             this.cmpOpts = [];
@@ -1006,6 +1010,7 @@ export default {
         editSubmitScript (name) {
             let _this = this;
             console.log(this.setValidate);
+            _this.spinShow = true;
             //提交添加请求
             this.$refs[name].validate((valid) => {
                 if (valid) {
