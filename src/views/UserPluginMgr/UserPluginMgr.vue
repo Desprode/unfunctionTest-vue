@@ -95,7 +95,7 @@ export default {
                 },
                 {
                     title: '文件大小',
-                    key: 'plugin_size',
+                    key: 'p_size',
                     align: 'center',
                 },
                 {
