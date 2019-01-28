@@ -1902,10 +1902,15 @@ export default {
                             senarioid:_this.monitor_senario_id,
                         }
                     }).then(function(response){
-                        console.log("添加成功");     
-                        _this.monitorAddShow = false;
-                        _this.moniterListCase();
-                        _this.$refs[name].resetFields();
+                        console.log("添加成功");    
+                        console.log("response",response); 
+                        if(response.data.result == "ok"){
+                            _this.monitorAddShow = false;
+                            _this.moniterListCase();
+                            _this.$refs[name].resetFields();
+                        }else{
+                            _this.$Message.info("ip重复，添加失败")
+                        }
                     })
                 }else{
                     _this.$Message.info("提交失败")
