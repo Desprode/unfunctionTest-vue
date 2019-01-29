@@ -406,7 +406,7 @@
                     series: this.chartdata_cpu
                 };
                 this.myChart_cpu.setOption(this.option_cpu);
-                window.addEventListener("resize",this.myChart_cpu.resize);
+                // window.addEventListener("resize",this.myChart_cpu.resize);
             },
 
             initMem(){
@@ -650,12 +650,12 @@
                             //	max: 100,
                             name: 'IOPS',
                         },
-                        {
-                            //	gridIndex: 1,
-                            type: 'value',
-                            //	max: 100,
-                            name: 'MB',
-                        },
+                        // {
+                        //     //	gridIndex: 1,
+                        //     type: 'value',
+                        //     //	max: 100,
+                        //     name: 'MB',
+                        // },
                         /*	{
                                 gridIndex: 2,
                                 type: 'value',
@@ -791,10 +791,14 @@
                     console.log(this.ipmode);
                     console.log(fromTime);
                     console.log(toTime);
-
+                    let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
-                let url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                //console.log(url);
+                    if(this.iplist.length > 10){
+                         url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                    }else{
+                         url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                    }
+                console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
@@ -891,10 +895,14 @@
                     //console.log(this.ipmode);
                     //console.log(fromTime);
                     //console.log(toTime);
-
+                    let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
-                let url =  '/myapi/monitor/realtime?type=mem&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                //console.log(url);
+                if(this.iplist.length > 10){
+                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }else{
+                    url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }
+                console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
@@ -973,10 +981,14 @@
                     //console.log(this.ipmode);
                     //console.log(fromTime);
                     //console.log(toTime);
-
+                    let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
-                let url = '/myapi/monitor/realtime?type=io&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                //console.log(url);
+                if(this.iplist.length > 10){
+                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }else{
+                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }
+                console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
@@ -1074,10 +1086,14 @@
                     //console.log(this.ipmode);
                     //console.log(fromTime);
                     //console.log(toTime);
-
+                    let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
-                let url = '/myapi/monitor/realtime?type=net&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
-                //console.log(url);
+                if(this.iplist.length > 10){
+                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }else{
+                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                }
+                console.log(url);
                 let _this = this;
                 this.$http.defaults.withCredentials = false;
                 this.$http.get(url,{
@@ -1230,155 +1246,163 @@
             },
 
             selectUpdate(){
-            //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
-                console.log("this.MemoryList",this.MemoryList);
-                this.cpumode = this.CPUList;
-                this.memmode = this.MemoryList;
-                this.ipmode = this.prodIPList;
-                console.log("_this.cpumode",this.cpumode);
-                console.log("_this.memmode",this.memmode);
-                console.log("_this.MemoryList",this.MemoryList);
-                console.log("_this.ipmode",this.ipmode);
-            //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
-            this.flushFlag = false;
-            this.chartdata_cpu.splice(0, this.chartdata_cpu.length);
-            this.legend_cpu.splice(0, this.legend_cpu.length);
-            for (var i = 0; i < this.datapos_cpu.length; i++) {
-                var flag = false;
-                //匹配mode
-                for (var a = 0; a < this.cpumode.length; a++) {
-                    if (this.legendvar_cpu[i].indexOf(this.cpumode[a]) != -1) {
+                var time = new Date();
+                var to = parseInt(time.getTime / 1000);
+                if(this.iplist.length > 10){
+                   this.updateChart_cpu(this.BeginTime, to);
+                    this.updateChart_mem(this.BeginTime, to);
+                    this.updateChart_io(this.BeginTime, to);
+                    this.updateChart_net(this.BeginTime, to);
+                }else{
+                    //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
+                        console.log("this.MemoryList",this.MemoryList);
+                        this.cpumode = this.CPUList;
+                        this.memmode = this.MemoryList;
+                        this.ipmode = this.prodIPList;
+                        console.log("_this.cpumode",this.cpumode);
+                        console.log("_this.memmode",this.memmode);
+                        console.log("_this.MemoryList",this.MemoryList);
+                        console.log("_this.ipmode",this.ipmode);
+                    //为了避免选择刷新时和定时刷新冲突，暂停定时刷新
+                    this.flushFlag = false;
+                    this.chartdata_cpu.splice(0, this.chartdata_cpu.length);
+                    this.legend_cpu.splice(0, this.legend_cpu.length);
+                    for (var i = 0; i < this.datapos_cpu.length; i++) {
+                        var flag = false;
+                        //匹配mode
+                        for (var a = 0; a < this.cpumode.length; a++) {
+                            if (this.legendvar_cpu[i].indexOf(this.cpumode[a]) != -1) {
 
+                                for (var b = 0; b < this.ipmode.length; b++) {
+                                    if (this.legendvar_cpu[i].indexOf(this.ipmode[b]) != -1) {
+                                        flag = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (flag == false) {
+                            continue;
+                        }
+
+                        var text = {};
+                        text.data = this.datapos_cpu[i];
+                        text.name = this.legendvar_cpu[i];
+                        text.type = 'line';
+                        text.showSymbol = false;
+                        text.hoverAnimation = false;
+                        text.smooth = false;
+
+                        this.chartdata_cpu.push(text);
+                        this.legend_cpu.push(this.legendvar_cpu[i]);
+
+                    }
+
+                    this.myChart_cpu.clear();
+                    this.myChart_cpu.setOption(this.option_cpu);
+
+                    this.chartdata_mem.splice(0, this.chartdata_mem.length);
+                    this.legend_mem.splice(0, this.legend_mem.length);
+
+                    for (var i = 0; i < this.datapos_mem.length; i++) {
+                        var flag = false;
+                        //匹配mode
+                        for (var a = 0; a < this.memmode.length; a++) {
+                            if (this.legendvar_mem[i].indexOf(this.memmode[a]) != -1) {
+
+                                for (var b = 0; b < this.ipmode.length; b++) {
+                                    if (this.legendvar_mem[i].indexOf(this.ipmode[b]) != -1) {
+                                        flag = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (flag == false) {
+                            continue;
+                        }
+
+                        var text = {};
+                        text.data = this.datapos_mem[i];
+                        text.name = this.legendvar_mem[i];
+                        text.type = 'line';
+                        text.showSymbol = false;
+                        text.hoverAnimation = false;
+                        text.smooth = false;
+
+                        this.chartdata_mem.push(text);
+                        this.legend_mem.push(this.legendvar_mem[i]);
+
+                    }
+                    this.myChart_mem.clear();
+                    this.myChart_mem.setOption(this.option_mem);
+
+                    this.chartdata_io.splice(0, this.chartdata_io.length);
+                    this.legend_io.splice(0, this.legend_io.length);
+                    for (var i = 0; i < this.datapos_io.length; i++) {
+                        var flag = false;
+                        //匹配mode
+                        for (var a = 0; a < this.iomode.length; a++) {
+                            if (this.legendvar_io[i].indexOf(this.iomode[a]) != -1) {
+
+                                for (var b = 0; b < this.ipmode.length; b++) {
+                                    if (this.legendvar_io[i].indexOf(this.ipmode[b]) != -1) {
+                                        flag = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (flag == false) {
+                            continue;
+                        }
+
+                        var text = {};
+                        text.data = this.datapos_io[i];
+                        text.name = this.legendvar_io[i];
+                        text.type = 'line';
+                        text.showSymbol = false;
+                        text.hoverAnimation = false;
+                        text.smooth = false;
+                        if (text.name.indexOf("IOPS") != -1) {
+                            text.yAxisIndex = 0;
+                        } else {
+                            text.yAxisIndex = 1;
+                        }
+
+                        this.chartdata_io.push(text);
+                        this.legend_io.push(this.legendvar_io[i]);
+                    }
+                    this.myChart_io.clear();
+                    this.myChart_io.setOption(this.option_io);
+
+                    this.chartdata_net.splice(0, this.chartdata_net.length);
+                    this.legend_net.splice(0, this.legend_net.length);
+                    for (var i = 0; i < this.datapos_net.length; i++) {
+                        var flag = false;
+                        //匹配mode
                         for (var b = 0; b < this.ipmode.length; b++) {
-                            if (this.legendvar_cpu[i].indexOf(this.ipmode[b]) != -1) {
+                            if (this.legendvar_net[i].indexOf(this.ipmode[b]) != -1) {
                                 flag = true;
                             }
                         }
-                    }
-                }
-                if (flag == false) {
-                    continue;
-                }
-
-                var text = {};
-                text.data = this.datapos_cpu[i];
-                text.name = this.legendvar_cpu[i];
-                text.type = 'line';
-                text.showSymbol = false;
-                text.hoverAnimation = false;
-                text.smooth = false;
-
-                this.chartdata_cpu.push(text);
-                this.legend_cpu.push(this.legendvar_cpu[i]);
-
-            }
-
-            this.myChart_cpu.clear();
-            this.myChart_cpu.setOption(this.option_cpu);
-
-            this.chartdata_mem.splice(0, this.chartdata_mem.length);
-            this.legend_mem.splice(0, this.legend_mem.length);
-
-            for (var i = 0; i < this.datapos_mem.length; i++) {
-                var flag = false;
-                //匹配mode
-                for (var a = 0; a < this.memmode.length; a++) {
-                    if (this.legendvar_mem[i].indexOf(this.memmode[a]) != -1) {
-
-                        for (var b = 0; b < this.ipmode.length; b++) {
-                            if (this.legendvar_mem[i].indexOf(this.ipmode[b]) != -1) {
-                                flag = true;
-                            }
+                        if (flag == false) {
+                            continue;
                         }
+
+                        var text = {};
+                        text.data = this.datapos_net[i];
+                        text.name = this.legendvar_net[i];
+                        text.type = 'line';
+                        text.showSymbol = false;
+                        text.hoverAnimation = false;
+                        text.smooth = false;
+
+                        this.chartdata_net.push(text);
+                        this.legend_net.push(this.legendvar_net[i]);
                     }
+                    this.myChart_net.clear();
+                    this.myChart_net.setOption(this.option_net);
+                    //恢复定时刷新
+                    this.flushFlag = true;
                 }
-                if (flag == false) {
-                    continue;
-                }
-
-                var text = {};
-                text.data = this.datapos_mem[i];
-                text.name = this.legendvar_mem[i];
-                text.type = 'line';
-                text.showSymbol = false;
-                text.hoverAnimation = false;
-                text.smooth = false;
-
-                this.chartdata_mem.push(text);
-                this.legend_mem.push(this.legendvar_mem[i]);
-
-            }
-            this.myChart_mem.clear();
-            this.myChart_mem.setOption(this.option_mem);
-
-            this.chartdata_io.splice(0, this.chartdata_io.length);
-            this.legend_io.splice(0, this.legend_io.length);
-            for (var i = 0; i < this.datapos_io.length; i++) {
-                var flag = false;
-                //匹配mode
-                for (var a = 0; a < this.iomode.length; a++) {
-                    if (this.legendvar_io[i].indexOf(this.iomode[a]) != -1) {
-
-                        for (var b = 0; b < this.ipmode.length; b++) {
-                            if (this.legendvar_io[i].indexOf(this.ipmode[b]) != -1) {
-                                flag = true;
-                            }
-                        }
-                    }
-                }
-                if (flag == false) {
-                    continue;
-                }
-
-                var text = {};
-                text.data = this.datapos_io[i];
-                text.name = this.legendvar_io[i];
-                text.type = 'line';
-                text.showSymbol = false;
-                text.hoverAnimation = false;
-                text.smooth = false;
-                if (text.name.indexOf("IOPS") != -1) {
-                    text.yAxisIndex = 0;
-                } else {
-                    text.yAxisIndex = 1;
-                }
-
-                this.chartdata_io.push(text);
-                this.legend_io.push(this.legendvar_io[i]);
-            }
-            this.myChart_io.clear();
-            this.myChart_io.setOption(this.option_io);
-
-            this.chartdata_net.splice(0, this.chartdata_net.length);
-            this.legend_net.splice(0, this.legend_net.length);
-            for (var i = 0; i < this.datapos_net.length; i++) {
-                var flag = false;
-                //匹配mode
-                for (var b = 0; b < this.ipmode.length; b++) {
-                    if (this.legendvar_net[i].indexOf(this.ipmode[b]) != -1) {
-                        flag = true;
-                    }
-                }
-                if (flag == false) {
-                    continue;
-                }
-
-                var text = {};
-                text.data = this.datapos_net[i];
-                text.name = this.legendvar_net[i];
-                text.type = 'line';
-                text.showSymbol = false;
-                text.hoverAnimation = false;
-                text.smooth = false;
-
-                this.chartdata_net.push(text);
-                this.legend_net.push(this.legendvar_net[i]);
-            }
-            this.myChart_net.clear();
-            this.myChart_net.setOption(this.option_net);
-            //恢复定时刷新
-            this.flushFlag = true;
-
             },
                 
         }

@@ -27,7 +27,7 @@
                 </Tab-pane>
                 <!---------------------分割线-------------------------->
                 <Tab-pane label="服务器资源">
-                    <Table border :loading="serverInfoLoading" ref="selection" :columns="columns1"  :data="serverInfotableData" class="myTable" @on-row-dblclick="onRowDblClick"></Table>
+                    <Table border :loading="serverInfoLoading" ref="selection" :columns="columns1"  :data="serverInfotableData" class="myTable" @on-row-click="onRowDblClick"></Table>
                     <div class="pageBox" v-if="serverInfotableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer placement="top" @on-change="pageChange" @on-page-size-change="pageSizeChange" @submit.native.prevent></Page>
                         <p>总共{{totalPage}}页</p>
@@ -183,7 +183,14 @@
                         },
                         {
                             title: '部署单元',
-                            key: 'funDesc'
+                            key: 'funDesc',
+                            render:(h,params)=>{
+                            return h('div',[
+                                h('a',{
+                                    
+                                    },params.row.funDesc)
+                                ])
+                            },
                         },
                         {
                             title: '操作系统',

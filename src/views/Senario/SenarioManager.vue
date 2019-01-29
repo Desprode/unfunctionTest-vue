@@ -396,7 +396,7 @@ export default {
                 senario_name:'',                                      //场景名称             
                 senario_type:'',                                      //场景类型
                 senario_creator:'',                                  //创建人
-                perf_task:'',                                    //关联任务
+                perf_task:'',                                        //关联任务
                 script:'',                                      //脚本名称
             },
             perftaskNameLoading:false,
