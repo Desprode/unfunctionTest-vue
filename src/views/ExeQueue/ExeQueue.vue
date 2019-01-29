@@ -53,7 +53,7 @@
                         <Button @click="deleteCase" type="error">停止</Button>-->
                         <Button @click="deleteCase" type="error" class="actionBtn">停止</Button>
                     </div>
-                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                    <Table border  ref="selection" :columns="columns" :data="tableData" class="myTable" @on-row-click="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
                     <div class="pageBox" v-if="tableData.length">
                         <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                         <p>总共{{totalPage}}页</p>
@@ -97,7 +97,23 @@ export default {
             {
                 title: '关联任务',
                 width: 200,
-                key: 'task_name'//perftask_name
+                key: 'task_name',//perftask_name
+                render:(h,params)=>{
+                    return h('div',[
+                        h('a',{
+                            style: {
+                                display: 'inline-block',
+                                width: '100%', 
+                                overflow: 'hidden', 
+                                textOverflow: 'ellipsis', 
+                                whiteSpace: 'nowrap'
+                            }, 
+                            domProps: {
+                                title: params.row.task_name
+                            }
+                        },params.row.task_name)
+                    ])
+                },
             },
             {
                 title: '关联场景',
