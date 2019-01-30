@@ -17,7 +17,7 @@
                         </Col>
                         <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
-                            <Select v-model="formValidate.type_name" >
+                            <Select v-model="formValidate.type_name" clearable>
                                 <Option value="混合交易" >混合交易</Option>
                                 <Option value="单交易基准" >单交易基准</Option>
                                 <Option value="单交易负载" >单交易负载</Option>
@@ -31,7 +31,7 @@
                     <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">执行状态:</Col>
                         <Col span="4">
-                            <Select v-model="formValidate.exe_status" >
+                            <Select v-model="formValidate.exe_status" clearable>
                                 <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </Col>
@@ -39,7 +39,7 @@
                         <Col span="4">
                             <!-- <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input> -->
                             <Select 
-                                v-model="formValidate.member_name"
+                                v-model="formValidate.execution_name"
                                 placeholder="请输入执行人" 
                                 clearable
                                 filterable
@@ -48,7 +48,7 @@
                                 :loading="execution"
                                 @on-open-change="executioName" 
                                 @keyup.enter.native= listCase()>
-                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.member_name" :key="index">{{opts.member_name}}</Option>
+                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}</Option>
                             </Select>
                         </Col>
                     </Row>
@@ -72,7 +72,7 @@
                 </div>
             </Form>
             <div align="left">
-                <Button @click="aggregCase" type="success"  >聚合</Button>
+                <Button @click="aggregCase" type="success">聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
                 <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
@@ -185,60 +185,142 @@ export default {
             create_time:'',
             metrics_type:'',
             aggregColumns:[
-                {
-                    title: '#',
-                    type: 'index',
-                    align: 'center',
-                    width: 50,
-                },
-                {
-                    title: '需求类型',
-                    key: 'metrics_type',
-                    align: 'center',
-                },
-                {
-                    title: '测试需求描述',
-                    key: 'metrics_desc',
-                    align: 'center',
-                },
-                {
-                    title: '是否满足需求',
-                    key: 'metrics_type',
-                    align: 'center',
-                },
-                {
-                    title: '备注描述',
-                    key: 'create_time',
-                    align: 'center',
-                    ellipsis: true
-                },
-                {
-                    title: '操作',
-                    key: 'opration',
-                    width:80,
-                    render: (h, params) => {
+            {
+                type: 'index',
+                width: 60,
+                align: 'center', 
+            },
+            {
+                title: '需求类型',
+                key: 'metrics_type',
+                width: 150,
+                render : (h, params)=>{
+                    let _this = this;
+                    // console.log("^^^ params.row.metrics_type: ", params.row.metrics_type);
+                    let demandType = _this.$Global.demandTypeList;
+                    // console.log("^^^ demandType: ", demandType);
+                    if (params.row.is_add == true && params.row.$isEdit) {
                         return h('div', [
-                            h('Button', {
-                                props: {
-                                    type: params.row.$isEdit ? 'success' : 'primary', 
-                                    size: 'small'
-                                },
-                                style: {
-                                    marginRight: '5px'
-                                },
+                            h("Select", {
+                                props:{
+                                    value: '01'
+                                }, 
                                 on: {
-                                    click: () => {
-                                        if (params.row.$isEdit) {
-                                            this.demandEditSave(params.row);
-                                        } else {
-                                            this.handleDemandEdit(params.row);
-                                        }
+                                    'on-change': (event) => {
+                                        // console.log("^^^ event: ", event);
+                                        params.row.metrics_type = event;
                                     }
-                                }
-                            }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
+                                },
+                            },
+                            demandType.map(function(item) {
+                                // console.log("^^^ item: ", item);
+                                return [h(
+                                    "Option", 
+                                    {
+                                        props: {
+                                            value: item.value,
+                                            key: item.value
+                                        }
+                                    },
+                                    item.label
+                                )]
+                            }))
                         ])
+                    } else {
+                        return h('span', _this.$Global.demandTypeMap[params.row.metrics_type]);
                     }
                 }
+            },
+            {
+                title: '需求描述',
+                key: 'metrics_desc',
+                render:(h,params) => {
+                    if(params.row.$isEdit){
+                        return h('input',{
+                            style: {
+                                'text-align':'center',
+                                width: params.column._width+'px',
+                                height: '48px',
+                                border: '0',
+                                outline:'none',
+                                cursor: 'pointer',
+                                // 'background-color':'#f8f8f9'
+                            },
+                            domProps: {
+                                value: params.row.metrics_desc,
+                                autofocus: true
+                            },
+                            on: {
+                                input: function (event) {
+                                    params.row.metrics_desc = event.target.value
+                                }
+                            }
+                        });
+                    }else{
+                        return h('div',params.row.metrics_desc)
+                    }
+                    
+                } 
+            },
+            {
+                title: '备注描述',
+                key: 'metrics_desc',
+                render:(h,params) => {
+                    if(params.row.$isEdit){
+                        return h('input',{
+                            style: {
+                                'text-align':'center',
+                                width: params.column._width+'px',
+                                height: '48px',
+                                border: '0',
+                                outline:'none',
+                                cursor: 'pointer',
+                                // 'background-color':'#f8f8f9'
+                            },
+                            domProps: {
+                                value: params.row.metrics_desc,
+                                autofocus: true
+                            },
+                            on: {
+                                input: function (event) {
+                                    params.row.metrics_desc = event.target.value
+                                }
+                            }
+                        });
+                    }else{
+                        return h('div',params.row.metrics_desc)
+                    }
+                    
+                } 
+            },
+            {
+                title: '操作',
+                key: 'opration',
+                width:80,
+                render: (h, params) => {
+                    return h('div', [
+                        h('Button', {
+                            props: {
+                                // type: 'primary',
+                                type: params.row.$isEdit ? 'success' : 'primary', 
+                                size: 'small'
+                            },
+                            style: {
+                                marginRight: '5px'
+                            },
+                            on: {
+                                click: () => {
+                                    if (params.row.$isEdit) {
+                                        this.demandEditSave(params.row);
+                                    } else {
+                                        this.handleDemandEdit(params.row);
+                                    }
+                                }
+                            }
+                        }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
+                    ])
+                }
+            }
             ],
             aggregTableData:[],
             /**==============================执行结果====================================*/
@@ -356,7 +438,7 @@ export default {
                 },
                 {
                     title: '开始日期',
-                    key: 'start_time',
+                    key: 'exe_time',
                     sortable: true
                 },
                 {
@@ -411,10 +493,10 @@ export default {
                 data: {
                     task_name:_this.formValidate.task_name,
                     senario_name:_this.formValidate.senario_name,
-                    execution_name:_this.formValidate.member_name,
+                    user_id:_this.formValidate.execution_name,
                     exe_status:_this.formValidate.exe_status,
                     type_name:_this.formValidate.type_name,
-                    start_time:_this.formValidate.start_time,
+                    exe_time:_this.formValidate.start_time,
                     end_time:_this.formValidate.end_time,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
