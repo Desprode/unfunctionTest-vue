@@ -38,7 +38,7 @@
             //加载测试报告
             listCase: function() {
                 let _this = this;
-                var perftask_id = this.$route.query.perftask_id; 
+                var perftask_id = this.$route.query.id; 
                 console.log("perftask_id",perftask_id); 
                 this.$http.post('/myapi/testresult/getMergeReport', {
                     data: {
