@@ -42,7 +42,8 @@
                                         :format="['jar']" 
                                         :on-success="uploadSuccess"
                                         :on-format-error="handleFormatError"
-                                        v-model="addValidate.plugin_name">
+                                        v-model="addValidate.plugin_name"
+                                        :show-upload-list="false">
                                     <Button icon="ios-cloud-upload-outline">上传文件</Button>
                                 </Upload>
                             </i-col>                  

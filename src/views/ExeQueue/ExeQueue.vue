@@ -98,6 +98,11 @@ export default {
                 title: '关联任务',
                 width: 200,
                 key: 'task_name',//perftask_name
+            },
+            {
+                title: '关联场景',
+                key: 'senario_name',//online_date
+                width: 200,
                 render:(h,params)=>{
                     return h('div',[
                         h('a',{
@@ -109,16 +114,11 @@ export default {
                                 whiteSpace: 'nowrap'
                             }, 
                             domProps: {
-                                title: params.row.task_name
+                                title: params.row.senario_name
                             }
-                        },params.row.task_name)
+                        },params.row.senario_name)
                     ])
                 },
-            },
-            {
-                title: '关联场景',
-                key: 'senario_name',//online_date
-                width: 200,
             },
             {
                 title: '执行人',

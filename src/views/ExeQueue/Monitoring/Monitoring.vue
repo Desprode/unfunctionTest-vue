@@ -35,7 +35,7 @@
                 </Tab-pane>
                 <!---------------------分割线-------------------------->
                 <Tab-pane label="压力机资源">
-                    <Table border :loading="pressureLoading" ref="selection" :columns="columns"  :data="pressuretableData" class="myTable" @on-row-dblclick="pressonRowDblClick"></Table>
+                    <Table border :loading="pressureLoading" ref="selection" :columns="columns"  :data="pressuretableData" class="myTable" @on-row-click="pressonRowDblClick"></Table>
                 </Tab-pane>
             </Tabs>
         </div>
@@ -80,11 +80,43 @@
                         },
                         {
                             title: 'IP地址',
-                            key: 'prodIp'
+                            key: 'prodIp',
+                            render:(h,params)=>{
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.prodIp
+                                        }
+                                    },params.row.prodIp)
+                                ])
+                            },
                         },
                         {
                             title: '机器名',
-                            key: 'servPartName'
+                            key: 'servPartName',
+                            render:(h,params)=>{
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.servPartName
+                                        }
+                                    },params.row.servPartName)
+                                ])
+                            },
                         },
                         {
                             title: '硬件配置',
@@ -96,15 +128,41 @@
                                 }else{
                                     texts = params.row.cpuNum + 'C' + Math.round(parseInt(params.row.memSize)/1024) + 'G';
                                 }
-                                return h('div',{
-                                    props:{
-                                    },
-                                },texts);
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.cpuNum
+                                        }
+                                    },params.row.cpuNum)
+                                ])
                             }
                         },
                         {
                             title: '操作系统',
-                            key: 'osVersion'
+                            key: 'osVersion',
+                            render:(h,params)=>{
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.osVersion
+                                        }
+                                    },params.row.osVersion)
+                                ])
+                            },
                         },
                         {
                             title: 'CPU%',
@@ -117,10 +175,20 @@
                                     let tmp = parseFloat(params.row.cpuUsedPercent) * 100;
                                     texts = tmp.toFixed(2);
                                 }
-                                return h('div',{
-                                    props:{
-                                    },
-                                },texts);
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.cpuUsedPercent
+                                        }
+                                    },params.row.cpuUsedPercent)
+                                ])
                             }
                         },
                         {
@@ -134,10 +202,20 @@
                                     let tmp = parseFloat(params.row.memoryUsedPercent) * 100;
                                     texts = tmp.toFixed(2);
                                 }
-                                return h('div',{
-                                    props:{
-                                    },
-                                },texts);
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: params.row.memoryUsedPercent
+                                        }
+                                    },params.row.memoryUsedPercent)
+                                ])
                             }
                         },
                         {
@@ -154,10 +232,20 @@
                                 }else{
                                     texts = params.row.iops.toFixed(2);
                                 }
-                                return h('div',{
-                                    props:{
-                                    },
-                                },texts);
+                                return h('div',[
+                                    h('a',{
+                                        style: {
+                                            display: 'inline-block',
+                                            width: '100%', 
+                                            overflow: 'hidden', 
+                                            textOverflow: 'ellipsis', 
+                                            whiteSpace: 'nowrap'
+                                        }, 
+                                        domProps: {
+                                            title: texts
+                                        }
+                                    },texts)
+                                ])
                             }                            
                         }
                     ],
