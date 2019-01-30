@@ -683,14 +683,14 @@ export default {
             console.log("返回信息",file);
             if(res.result == "success"){
                 this.$Spin.hide();
-                this.$Message.info('解析成功');
+                this.$Message.info(file.response.err_desc);
                 this.filesize = res.resultList[0].script_filesize;
                 this.script_filename = res.resultList[0].script_filename;
                 this.script_filepath = res.resultList[0].script_filepath;
                 this.script_id = res.resultList[0].script_id;
             }else if(res.result =="fail"){
                 this.$Spin.hide();
-                this.$Message.error("上传文件内部jmx不唯一！上传文件删除失败，请手动删除!"); 
+                this.$Message.error(file.response.err_desc); 
             }
         },
         //the param set checkbox when onclick change the value to oppsite  

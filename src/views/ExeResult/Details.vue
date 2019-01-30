@@ -4,7 +4,7 @@
             <font size="5" color="#01babc">执行结果详细信息</font>
         </div></br>
     <Tabs type="line" v-model="currentTab" @on-click="currentTabChanged">
-        <Tab-pane label="测试报告" >
+        <Tab-pane label="场景报告" >
             <div align="left">
                 <Button @click="downloadCase()" type="primary">下载报告</Button>
             </div>
@@ -37,6 +37,7 @@
             </Form-item>
         </Tab-pane>
     </Tabs>
+    <!-- 聚合报告 -->
     <Modal v-model="showDialog" width="800" >
         <p slot="header" style="text-align:left" >
             <Icon type="ios-information-circle"></Icon>
@@ -251,11 +252,13 @@
             pressCase: function(){
                 let _this = this;
                 var executor_id = this.$route.query.executor_id;        //获取上个页面传的id值
-                console.log("第二个页面接收的ID",executor_id);
+                var info_id = this.$route.query.info_id;
+                console.log("第二个页面接收的executor_id",executor_id,"第二个页面接收的info_id",info_id);
                 //this.$http.defaults.withCredentials = false;
                 this.$http.post('/myapi/testresult/agentLog', {
                     data: {
                         executor_id:executor_id,
+                        info_id:info_id
                     }
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;

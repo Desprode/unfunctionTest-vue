@@ -72,12 +72,13 @@
                 </div>
             </Form>
             <div align="left">
-                <Button @click="aggregCase" type="success"  >聚合报告</Button>
+                <Button @click="aggregCase" type="success"  >聚合</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
                 <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
-                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable"  @on-row-dblclick="onRowDblClick" @on-selection-change="onSelectionChanged"></Table>
+                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" 
+                @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
@@ -169,10 +170,10 @@ export default {
                 senario_name:'',                    //场景名称
                 result_is_pass:'',                  //是否通过
                 result_desc:'',                     //结果描述 
-                data_sgeet:'1',                      //显示性能数据表
-                diagram:'1',                         //显示性能曲线图
-                control_chart:'1',                   //显示资源监控图
-                analysis_things:'1',                  //显示失败事务分析
+                data_sgeet:'',                      //显示性能数据表
+                diagram:'',                         //显示性能曲线图
+                control_chart:'',                   //显示资源监控图
+                analysis_things:'',                  //显示失败事务分析
                 id:'',
             },
             setValidates:[],
@@ -191,6 +192,11 @@ export default {
                     width: 50,
                 },
                 {
+                    title: '需求类型',
+                    key: 'metrics_type',
+                    align: 'center',
+                },
+                {
                     title: '测试需求描述',
                     key: 'metrics_desc',
                     align: 'center',
@@ -206,6 +212,33 @@ export default {
                     align: 'center',
                     ellipsis: true
                 },
+                {
+                    title: '操作',
+                    key: 'opration',
+                    width:80,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('Button', {
+                                props: {
+                                    type: params.row.$isEdit ? 'success' : 'primary', 
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        if (params.row.$isEdit) {
+                                            this.demandEditSave(params.row);
+                                        } else {
+                                            this.handleDemandEdit(params.row);
+                                        }
+                                    }
+                                }
+                            }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
+                        ])
+                    }
+                }
             ],
             aggregTableData:[],
             /**==============================执行结果====================================*/
@@ -354,6 +387,7 @@ export default {
                 }
             ],
             tableData: [],
+            exeresListPage:[],                   //翻页保留数据
             tableDAtaTatol:0,
             tableDAtaPageLine:3,
             selectedData:[],                    //选中的项的数组
@@ -367,6 +401,34 @@ export default {
         this.listCase();
     },
     methods: {
+        
+        //页面展示
+        listCase: function() {
+            let _this = this;
+            _this.isLoading=true;
+            console.log("_this.monitorListPage,",_this.monitorListPage);
+            this.$http.post('/myapi/testresult/list', {
+                data: {
+                    task_name:_this.formValidate.task_name,
+                    senario_name:_this.formValidate.senario_name,
+                    execution_name:_this.formValidate.member_name,
+                    exe_status:_this.formValidate.exe_status,
+                    type_name:_this.formValidate.type_name,
+                    start_time:_this.formValidate.start_time,
+                    end_time:_this.formValidate.end_time,
+                    pageno:_this.pageNo,
+                    pagesize:_this.pageSize,
+                    pageChecked:_this.monitorListPage,
+                }
+            }).then(function (response) {
+                let result =  response.data.result;
+                console.log("result: ", response.data);
+                _this.tableData =  response.data.resultList;
+                _this.totalCount = response.headers.totalcount;
+                _this.totalPage = response.headers.totalpage;
+                _this.isLoading=false;
+            })
+        },
         /**创建人远程查询 */
         searchByUser:function(query){
             let _this = this;
@@ -473,43 +535,13 @@ export default {
                 this.setValidates.unshift(this.setValidates.pop())
             }
         },
-        //页面展示
-        listCase: function() {
-            let _this = this;
-            _this.isLoading=true;
-            console.log("_this.execution_name,",_this.member_name);
-            //this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/testresult/list', {
-                data: {
-                    task_name:_this.formValidate.task_name,
-                    senario_name:_this.formValidate.senario_name,
-                    execution_name:_this.formValidate.member_name,
-                    exe_status:_this.formValidate.exe_status,
-                    type_name:_this.formValidate.type_name,
-                    start_time:_this.formValidate.start_time,
-                    end_time:_this.formValidate.end_time,
-                    pageno:_this.pageNo,
-                    pagesize:_this.pageSize,
-                    
-                }
-            }).then(function (response) {
-                let result =  response.data.result;
-                console.log("result: ", response.data);
-                // if (result == "ok"){
-                //     console.log("******** result ok *********");
-                // }
-                _this.tableData =  response.data.resultList;
-                _this.totalCount = response.headers.totalcount;
-                _this.totalPage = response.headers.totalpage;
-                _this.isLoading=false;
-            })
-        },
-        
         //聚合报告
         aggregCase:function(){
             let _this = this;
             this.setValidates = [];                         //初始化Form表单
             let selectedDataList = this.selectedData;       //选中要聚合的数据
+            
+            console.log("selectedDataList",selectedDataList);
             //定义数组和集合
             let resArr = [];
             let id = [];                              
@@ -525,17 +557,24 @@ export default {
                     executor_id.push(_this.selectedData[i].executor_id);
                     senario_name.push(_this.selectedData[i].senario_name);
                     task_name.push(_this.selectedData[i].task_name);
-                    result_is_pass.push(_this.selectedData[i].result_is_pass);
+                    result_is_pass.push(_this.selectedData[i].result_is_pass.toString());
                     result_desc.push(_this.selectedData[i].result_desc);
                     //放入集合中
                     let aggregData ={};  
                     aggregData.result_desc = _this.selectedData[i].result_desc;
-                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass;
+                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass.toString();
                     aggregData.senario_name  = _this.selectedData[i].senario_name;
                     aggregData.executor_id = _this.selectedData[i].executor_id;
+                    aggregData.data_sgeet = _this.setValidate.data_sgeet = "1";
+                    aggregData.diagram = _this.setValidate.diagram = "1";
+                    aggregData.control_chart = _this.setValidate.control_chart = "1";
+                    aggregData.analysis_things = _this.setValidate.analysis_things = "1";
+
                     _this.setValidate.task_name = _this.selectedData[i].task_name;
                     _this.setValidate.id = _this.selectedData[i].id;
                     _this.setValidates.push(aggregData);
+                    
+                    console.log("aggregData",aggregData);
                 }
                 //判断集合中的最大值和最小值，是否有不同的任务id
                 if(Math.max.apply(null,id) === Math.min.apply(null,id) ){   
@@ -547,6 +586,7 @@ export default {
                     }
                     }).then(function (response) {
                         _this.aggregTableData =  response.data.resultList;
+                        console.log("_this.aggregTableData",_this.aggregTableData);
                     })
                 }else{
                     this.$Message.error("请选择相同的任务进行聚合！")
@@ -587,9 +627,10 @@ export default {
         },
         /**切换页码 */
         pageChange:function(pageNo){
-            console.log(pageNo);
-            this.pageNo = pageNo;
-            this.listCase();
+            let _this = this;
+            console.log(pageNo,"qwqwqw");
+            _this.pageNo = pageNo;
+            _this.listCase();
         },
         /**切换页面大小 */
         pageSizeChange:function(pageSize){
@@ -597,18 +638,21 @@ export default {
             this.pageSize = pageSize;
             this.listCase();
         },
-        
-        /**选中的数据发生改变 */
-        onSelectionChanged: function(data) {
-            this.selectedData = data;
-            //console.log(data)
+         /**选中的数据发生改变 */
+        onSelect: function(row,selection) {
+            this.selectedData.push(selection);
+            console.log("选中要删除的数据",row,selection)
         },
-
-        onRowDblClick: function(data) {
-            console.log(data.executor_id);
-            this.$router.push({path:'/details',query:{executor_id:data.executor_id}});
+         /**选中的数据发生改变 */
+        onSelectCancel:function(row,selection){
+            let _this = this;
+            for(var i=0;i<_this.selectedData.length;i++){
+                if(_this.selectedData[i].senario_id == selection.senario_id){
+                    _this.selectedData.splice(i,1);
+                }
+            }
+            console.log("取消选中要删除的数据",row,selection)
         },
-
         /**详情信息展示跳转 */
         detailCase:function(index){
             let _this = this;
@@ -616,7 +660,10 @@ export default {
             console.log("第一个页面传递的ID",tableData[index].executor_id);
             this.$router.push({
                 path:'/details',
-                query:{executor_id:tableData[index].executor_id}
+                query:{
+                    executor_id:tableData[index].executor_id,
+                    info_id:tableData[index].info_id
+                }
             });
         },
         aggregCasess:function(){
