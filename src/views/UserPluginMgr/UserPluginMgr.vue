@@ -199,7 +199,7 @@ export default {
                 if (deleArr.includes(item.id)) {       //当原有的数据与要删除的数据中有相同的数据时，
                     _this.$Modal.confirm({
                         title:'确认',
-                        content: '是否停止该数据',
+                        content: '是否删除该数据',
                         onOk: () => {
                             this.$http.defaults.withCredentials = false;
                             this.$http.post("/myapi/userPluginMgr/del",{
@@ -213,7 +213,7 @@ export default {
                             })
                         },
                         onCancel: () => {
-                            _this.$Message.info('删除失败');
+                            _this.$Message.info('取消删除');
                         }
                     }); 
                    
