@@ -8,18 +8,37 @@
                 <Form ref="formValidate"   class="formValidate" >
                     <div class="rowbox">
                         <Row :gutter="16">
+                            <Col span="2" class="searchLable">物理子系统:</Col>
+                            <Col span="4">
+                                <!-- <Input clearable v-model="app_name" placeholder="请输入物理子系统"></Input> -->
+                                <Select
+                                    v-model="app_name"
+                                    placeholder="输入物理子系统中文名称或英文简称"
+                                    clearable
+                                    filterable
+                                    remote
+                                    :remote-method="srchComponent"
+                                    :loading="srchCmploading"
+                                    @on-open-change="srchName" 
+                                    @keyup.enter.native= listCase()>
+                                    <Option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index">{{option.com_name}}</Option>
+                                </Select>
+                            </Col>
                             <Col span="2" class="searchLable">脚本名称:</Col>
                             <Col span="4">
                                 <Input clearable v-model="script_name" placeholder="请输入脚本名称"></Input>                                
                             </Col>
-                            <Col span="2" class="searchLable">物理子系统:</Col>
-                            <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入物理子系统"></Input>
-                            </Col>
                             <Col span="2" class="searchLable">创建人:</Col>
                             <Col span="4">
-                                <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading" ref="cre">
+                                <Select
+                                    v-model="creater" 
+                                    placeholder="请输入创建人" 
+                                    clearable 
+                                    filterable remote 
+                                    :remote-method="searchCreater" 
+                                    :loading="srchCmploading" 
+                                    @on-open-change="executioName" 
+                                    @keyup.enter.native= listCase()>
                                     <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
                                 </Select>
                             </Col>
@@ -91,7 +110,6 @@
                                         clearable
                                         filterable 
                                         remote 
-                                        
                                         :remote-method="searchAppname" 
                                         :loading="srchCmploading"
                                         @on-open-change="searchName" 
@@ -440,7 +458,7 @@ export default {
                                             console.log("script编辑接口",response.data);
                                             if(response.data.err_desc ==="脚本关联场景正在运行，不可以修改"){
                                                 _this.showSetScript = false;
-                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍后再试！")
+                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍侯再试！")
                                                 return;
                                             }else{
                                                 _this.showSetScript = true;
@@ -495,42 +513,6 @@ export default {
                                     }
                                 }
                             },'参数设置'),
-                            // h('Button', {
-                            //     props: {
-                            //         type: 'primary',
-                            //         size: 'small'
-                            //     },
-                            //     style: {
-                            //         marginRight: '5px'
-                            //     },
-                            //     on: {
-                            //         click: () => {
-                            //             let _this = this;
-                            //             _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
-                            //             // this.showDetail = true;
-                            //             // console.log(item.row);
-                            //             // let _this = this;
-                            //             // this.$http.post('/myapi/scripts/view',{
-                            //             //     data:{
-                            //             //         id:item.row.id,
-                            //             //     }
-                            //             // }).then(function(response){
-                            //             //     console.log("script编辑接口response.data",response.data);
-                            //             //     _this.setValidate.script_name= response.data.resultList[0].script_name;
-                            //             //     _this.setValidate.script_id= response.data.resultList[0].script_id;
-                            //             //     _this.setValidate.app_name= response.data.resultList[0].app_name;
-                            //             //     _this.setValidate.memo= response.data.resultList[0].memo;
-                            //             //     _this.setValidate.create_time= response.data.resultList[0].created_time;
-                            //             //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                            //             //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
-                            //             //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
-                            //             //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
-                            //             //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
-                                            
-                            //             // })
-                            //         }
-                            //     }
-                            // },'详情'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -538,8 +520,10 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.handleDownload(item.row.id,item.row.script_filename);
+                                        // this.handleDownload(item.row.id,item.row.script_filename);
+                                        window.location.href(item.row.script_filepath)
                                     }
+                                    // href:item.row.script_filepath
                                 }
                             }, '下载')
                         ])  
@@ -606,10 +590,34 @@ export default {
         this.listCase();
     },
     methods: {
+        
+        listCase: function() {
+            let _this = this;
+            _this.isLoading=true;
+            // this.$http.defaults.withCredentials = false;
+            this.$http.post('/myapi/scripts/list', {
+                header: {
+                },
+                data: {
+                    script_name: _this.script_name,
+                    app_name:_this.com_name,
+                    script_manager_id:_this.creater,
+                    pageNo: _this.pageNo==''?1:_this.pageNo,
+                    pageSize: 10                    
+                }
+            }).then(function (response) {
+                console.log('response:');
+                //console.log(response);
+                console.log('response.data: ', response.data);
+                _this.tableData = response.data.resultList;
+                _this.tableDataTotal = response.data.pagination.totalCount;
+                _this.tableDataPageLine = response.data.pagination.pageSize
+                _this.isLoading=false;
+            })
+        },
         //下载
         handleDownload:function(rowid,fileName){
             let _this = this;
-            // this.$http.defaults.withCredentials = false;
             this.$http.post('/myapi/scripts/download',{
                 data:{
                     id:rowid,
@@ -621,7 +629,6 @@ export default {
                     return;
                 }
                 console.log("script编辑接口response.data",response.data);
-               // let fileName = item.row.script_filename // 文件地址
                 var blob = new Blob([response.data])
                 if (window.navigator.msSaveOrOpenBlob) {
                     // 兼容IE10
@@ -661,7 +668,7 @@ export default {
                                 size: 26
                             }
                         }),
-                        h('div', '脚本正在上传解析中，请稍后...')
+                        h('div', '脚本正在上传解析中，请稍侯...')
                     ])
                 }
             });
@@ -742,36 +749,84 @@ export default {
                 })
             })
         },
-        searchCreater: function(query) {
-            this.cmpOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-                    let _this = this
-                    // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/searchByUser', 
-                    {
-                        data: {
-                            name: _this.creater,                            
-                        },                        
+        //物理子系统查询
+        srchComponent:function(query){
+            let _this = this;
+            this.$http.post('/myapi/component/searchFromITM',{
+                headers:{},
+                data:{
+                    kw: query,
+                    page: 1, 
+                    limit: 10, 
+                },
+            }).then(function(response){
+                console.log("response.data.resultList1",response.data.resultList);
+                _this.cmpOpts = response.data.resultList.map(item =>{
+                    return {
+                        id: item.id,
+                        cloud_id: item.cloud_id, 
+                        com_name: item.com_name
                     }
-                    ).then(function (response) {
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                value: item.id,
-                                label: item.member_name
-                            };
-                        });
-                        _this.cmpOpts = list
-                        console.log('this.cmpOpts:', _this.cmpOpts);
-                    })
-                }, 200);
-            } else {
-                this.cmpOpts = [];
+                });
+            })
+        },
+        //物理子系统下拉查询
+        srchName:function(){
+            let _this = this;
+            this.$http.post('/myapi/component/searchFromITM',{
+                headers:{},
+                data:{
+                    kw: '',
+                    page: 1, 
+                    limit: 10, 
+                },
+            }).then(function(response){
+                console.log("response.data.resultList2",response.data.resultList);
+                _this.cmpOpts = response.data.resultList.map(item =>{
+                    return {
+                        id: item.id,
+                        cloud_id: item.cloud_id, 
+                        com_name: item.com_name
+                    }
+                });
+            })
+        },
+        //创建人查询
+        searchCreater: function(query) {
+            let _this = this;
+            this.$http.post('/myapi/user/search', {
+                header:{},
+                data: {
+                    member_name: query                            
+                },                        
             }
+            ).then(function (response) {
+                console.log("response",response.data);
+                _this.cmpOpts = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.member_name
+                    };
+                });
+            })
+        },
+        //创建人下拉查询
+        executioName:function(){
+            let _this = this;
+            this.$http.post('/myapi/user/search', {
+                header:{},
+                data: {
+                    member_name: ''                            
+                },                        
+            }
+            ).then(function (response) {
+                _this.cmpOpts = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.member_name
+                    };
+                });
+            })
         },
         /*删除校验*/
         deleteScript: function() {
@@ -794,11 +849,10 @@ export default {
                             _this.doDelete();
                         },
                         onCancel: () => {
-                            _this.$Message.info('删除失败');
                         }
                     }); 
                 }else{
-                    _this.$Message.info("该脚本关联的场景正在执行中，脚本不可删除，请稍后再试。");
+                    _this.$Message.info("该脚本关联的场景正在执行中，脚本不可删除，请稍侯再试。");
                 }
             })
         }, 
@@ -822,30 +876,7 @@ export default {
                 _this.listCase(); 
             })
         },
-        listCase: function() {
-            let _this = this;
-            _this.isLoading=true;
-            // this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/scripts/list', {
-                header: {
-                },
-                data: {
-                    script_name: _this.script_name,
-                    app_name:_this.app_name,
-                    script_manager_id:_this.creater,
-                    pageNo: _this.pageNo==''?1:_this.pageNo,
-                    pageSize: 10                    
-                }
-            }).then(function (response) {
-                console.log('response:');
-                //console.log(response);
-                console.log('response.data: ', response.data);
-                _this.tableData = response.data.resultList;
-                _this.tableDataTotal = response.data.pagination.totalCount;
-                _this.tableDataPageLine = response.data.pagination.pageSize
-                _this.isLoading=false;
-            })
-        },
+        
         handlePage:function(val){
             let _this = this;
             _this.pageNo = val;
