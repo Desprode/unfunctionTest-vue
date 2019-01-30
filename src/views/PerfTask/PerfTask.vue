@@ -913,22 +913,12 @@ export default {
         //     this.$router.push({path:'/addCase',query:{id:row.id}});
         // },
 
-        // /**删除一条数据 */
-        // remove(index){
-        //     this.tableData.splice(index,1);
-        //     //console.log("这是删除一条数据",row);
-        // },
-
         /**==================== 新建任务相关事件 ====================*/
         /**添加新数据弹出模态框 */
         addPTask:function(){
             this.addPTaskModal = true;
 
             this.getTestMngrsData();
-
-            // let testMngrs = this.getTestMngrsData();
-            // console.log('&&& testMngrs &&& ', testMngrs);
-            // this.nfunTestMngrs = testMngrs;
         },
         handleSubmit (name) {
             let _this = this;
