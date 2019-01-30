@@ -483,6 +483,9 @@
                         let funDescList = [];
                         let subsys = [];
 
+                        if(result == null){
+                            return;
+                        }
                         for(let i = 0, len = result.length; i < len; i++){       //遍历响应回的数据
                             let tmp = result[i].funDesc;                         //讲每个funDesc赋值给tmp
                             let flag = true;                                     //命名一个中间量
@@ -748,13 +751,19 @@
                 //压力机资源跳转
                 pressonRowDblClick: function(row) {
                     var start = Math.round(new Date().getTime()/1000).toString();//10位时间戳
+                    
                     if(this.timedate != ''){
                         this.pressureAgentInfo.start= Math.round(parseInt(this.timedate)/1000).toString();
                     }else{
                         this.pressureAgentInfo.start= start;
                     }
+                    console.log("pressonRowDblClick",this);
+                    console.log("timedate",this.timedate,this.pressureAgentInfo.start);
                     this.pressureAgentInfo.selected = row.prodIp;
-                    this.$router.push({path:'/MonitorEcharts',query:{pressureAgentInfo:this.pressureAgentInfo,row:row}});
+                    if(this.pressureAgentInfo.subsys == undefined){
+                        this.getPressureaAgentInfo();
+                    }
+                    this.$router.push({path:'/MonitorEcharts',query:{serverInfo:this.pressureAgentInfo,row:row}});
                     console.log('这个是',this.pressureAgentInfo)
                 },
                 //服务器资源跳转
