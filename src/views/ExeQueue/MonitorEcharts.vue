@@ -885,6 +885,9 @@
                     }
                     //console.log(_this.chartdata_cpu);
                     //console.log(_this.legend_cpu);
+                    if(_this.iplist.length > 10){
+                        _this.myChart_cpu.clear();
+                    };
                     _this.myChart_cpu.setOption(_this.option_cpu);
                 }); //http 结束
             },
@@ -1247,7 +1250,7 @@
 
             selectUpdate(){
                 var time = new Date();
-                var to = parseInt(time.getTime / 1000);
+                var to = parseInt(time.getTime() / 1000);
                 if(this.iplist.length > 10){
                    this.updateChart_cpu(this.BeginTime, to);
                     this.updateChart_mem(this.BeginTime, to);
@@ -1296,7 +1299,7 @@
                         this.legend_cpu.push(this.legendvar_cpu[i]);
 
                     }
-
+            
                     this.myChart_cpu.clear();
                     this.myChart_cpu.setOption(this.option_cpu);
 
