@@ -180,6 +180,7 @@
 
                 flushFlag: true,//全局定时刷新标志
                 timeSectionFlag: false,//日历时段选择，复用刷新函数，但是不能定时刷新
+                selectUpdateFlag: false,//在ip列表大于10情况下，选择模式刷新时，需要先clear
 
                 intervalFunc:null,
             }
@@ -885,9 +886,10 @@
                     }
                     //console.log(_this.chartdata_cpu);
                     //console.log(_this.legend_cpu);
-                    if(_this.iplist.length > 10){
+                    if(_this.selectUpdateFlag === true){
                         _this.myChart_cpu.clear();
-                    };
+                        console.log("clear cpu chart");
+                    }
                     _this.myChart_cpu.setOption(_this.option_cpu);
                 }); //http 结束
             },
@@ -901,9 +903,9 @@
                     let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 if(this.iplist.length > 10){
-                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                     url = '/myapi/monitor/realtime?type=mem&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }else{
-                    url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                    url = '/myapi/monitor/realtime?type=mem&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }
                 console.log(url);
                 let _this = this;
@@ -974,6 +976,10 @@
 
                     }
 
+                    if(_this.selectUpdateFlag === true){
+                        _this.myChart_mem.clear();
+                        console.log("clear mem chart");
+                    }
                     _this.myChart_mem.setOption(_this.option_mem);
                 }); //http 结束
             },
@@ -987,9 +993,9 @@
                     let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 if(this.iplist.length > 10){
-                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                     url = '/myapi/monitor/realtime?type=io&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }else{
-                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                     url = '/myapi/monitor/realtime?type=io&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }
                 console.log(url);
                 let _this = this;
@@ -1079,7 +1085,10 @@
                         _this.legend_io.push(text.name);
 
                     }
-
+                    if(_this.selectUpdateFlag === true){
+                        _this.myChart_io.clear();
+                        console.log("clear cpu chart");
+                    }
                     _this.myChart_io.setOption(_this.option_io);
                 }); //http 结束
             },
@@ -1092,9 +1101,9 @@
                     let url = '';
                     //	var url1 = 'http://128.195.0.34:9090/api/v1/query_range?query=avg%20by%20(instance%2Cmode)%20(irate(node_cpu%7Bmode%3D~%22system%7Cuser%7Cidle%7Ciowait%22%2C%20instance%3D~%22(128.196.52.134%7C128.196.52.135%7C128.196.52.136%7C128.196.53.145%7C128.196.53.146%7C128.196.53.147).*%22%2C%20systemName%3D%22(N-CPXS)%E7%A5%A8%E4%BA%A4%E6%89%80%E7%9B%B4%E8%BF%9E%E7%B3%BB%E7%BB%9F%22%7D%5B1m%5D))&start=' + lasttwohour + '&end=' + now + '&step=' + interval;
                 if(this.iplist.length > 10){
-                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                     url = '/myapi/monitor/realtime?type=net&ips=' + this.ipmode + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }else{
-                     url = '/myapi/monitor/realtime?type=cpu&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
+                     url = '/myapi/monitor/realtime?type=net&ips=' + this.iplist + '&startTime=' + fromTime + '&endTime=' + toTime + '&step=' + this.interval;
                 }
                 console.log(url);
                 let _this = this;
@@ -1159,7 +1168,10 @@
                         _this.chartdata_net.push(textdata);
                         _this.legend_net.push(textdata.name);
                     }
-
+                    if(_this.selectUpdateFlag === true){
+                        _this.myChart_net.clear();
+                        console.log("clear cpu chart");
+                    }
                     _this.myChart_net.setOption( _this.option_net );
                 }); //http 结束
             },
@@ -1252,10 +1264,17 @@
                 var time = new Date();
                 var to = parseInt(time.getTime() / 1000);
                 if(this.iplist.length > 10){
-                   this.updateChart_cpu(this.BeginTime, to);
+                    this.cpumode = this.CPUList;
+                    this.memmode = this.MemoryList;
+                    this.ipmode = this.prodIPList;
+                    this.selectUpdateFlag = true;
+                    this.flushFlag = false;
+                    this.updateChart_cpu(this.BeginTime, to);
                     this.updateChart_mem(this.BeginTime, to);
                     this.updateChart_io(this.BeginTime, to);
                     this.updateChart_net(this.BeginTime, to);
+                    this.flushFlag = true;
+                    this.selectUpdateFlag = false;
                 }else{
                     //判断是否有没选择的，把选择项传到ipmode、cpumode、memmode
                         console.log("this.MemoryList",this.MemoryList);
