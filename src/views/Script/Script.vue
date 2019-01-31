@@ -460,8 +460,9 @@ export default {
                                                 _this.showSetScript = false;
                                                 _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍侯再试！")
                                                 return;
-                                            }else{
+                                            }else {
                                                 _this.showSetScript = true;
+                                                _this.spinShow = false;
                                                 _this.setValidate.script_name= response.data.resultList[0].script_name;
                                                 _this.setValidate.script_id= response.data.resultList[0].script_id;
                                                 _this.setValidate.app_name= response.data.resultList[0].app_name;
