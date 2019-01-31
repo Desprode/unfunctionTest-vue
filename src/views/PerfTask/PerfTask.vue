@@ -18,7 +18,8 @@
                                     filterable
                                     remote
                                     :remote-method="srchComponent"
-                                    :loading="srchCmploading">
+                                    :loading="srchCmploading"
+                                    @on-open-change="srchCompNone">
                                     <Option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index">{{option.com_name}}</Option>
                                 </Select>
                             </Col>
@@ -121,6 +122,7 @@
                                 remote 
                                 :remote-method="srchComponent" 
                                 :loading="srchCmploading" 
+                                @on-open-change="srchCompNone"
                                 :transfer=false
                                 >
                                 <i-option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index" @click.native="getMoreCmpParams(option)">{{option.com_name}}</i-option>
@@ -783,6 +785,45 @@ export default {
         // }, 
 
         /**==================== 物理子系统检索 ====================*/
+        srchCompNone: function(){
+            this.cmpOpts = [];
+            this.srchCmploading = true;
+
+            setTimeout(()=>{
+                this.srchCmploading = false;
+                let _this = this;
+                // this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/searchFromITM',{
+                    headers:{},
+                    data:{
+                        kw: '',
+                        page: 1, 
+                        limit: 10, 
+                    },
+                }).then(function(response){
+                    if (response.data.result == "fail") {
+                        let errDesc = _this.handleErrCode(response);
+
+                        _this.$Message.error(errDesc);
+                    } else if (response.data.result == "ok") {
+                        //console.log('下拉框请求的响应',response);
+                        if (response.data['resultList']) {
+                            _this.list = response.data.resultList;
+                            _this.cmpOpts = _this.list.map(item =>{
+                                return {
+                                    id: item.id,
+                                    cloud_id: item.cloud_id, 
+                                    com_name: item.com_name
+                                }
+                            });
+                        } else {
+                            _this.$Message.error("返回结果无resultList");
+                        }
+                    }
+                })
+            },200)
+        }, 
+
         srchComponent: function(query){
             // console.log("now in srchComponent, this is ", this);
             this.cmpOpts = [];
@@ -949,7 +990,7 @@ export default {
 
                             _this.$Message.error(errDesc);
                             _this.addPTaskModal = false;
-                            
+
                             // 清空穿梭框搜索条件
                             _this.$refs.refTransfer.$children[0].query = '';
                             _this.$refs.refTransfer.$children[2].query = '';
