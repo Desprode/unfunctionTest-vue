@@ -103,22 +103,17 @@
                         <div style="float:left;width:150px">
                             <Button color="#1c2438"  @click="moveUp(index)">上移</Button>
                             <Button color="#1c2438"  @click="moveDown(index)">下移</Button>
-                            <!-- <input type="button" value="上移" onclick="mm(this, -1)">
-                            <input type="button" value="下移" onclick="mm(this,  1)"> -->
                         </div>
                         <div style="float:left;width:900px" >
                             <FormItem label="场景名称：" align="left" >
-                                <Input placeholder="Enter something..." style="width:300px" v-model="Item.senario_name" readonly></Input>
+                                <Input placeholder="Enter something..." style="width:300px" v-model="Item.senario_name"></Input>
                             </FormItem>
                             <div v-show="isShowMore">
                                 <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
                                     执行是否成功：
-                                    <Select style="width:80px" v-model="Item.result_is_pass" disabled>
-                                        <Option value="1">是</Option>
-                                        <Option value="0">否</Option>
-                                    </Select>
+                                    <Input  style="width:80px" v-model="Item.result_is_pass" readonly></Input>
                                     测试结果分析描述：
-                                    <Input placeholder="Enter something..." style="width:400px" v-model="Item.result_desc" readonly></Input>
+                                    <Input  style="width:400px" v-model="Item.result_desc" readonly></Input>
                                 </FormItem>
                                 <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
                                     显示性能数据表：
@@ -185,142 +180,115 @@ export default {
             create_time:'',
             metrics_type:'',
             aggregColumns:[
-            {
-                type: 'index',
-                width: 60,
-                align: 'center', 
-            },
-            {
-                title: '需求类型',
-                key: 'metrics_type',
-                width: 150,
-                render : (h, params)=>{
-                    let _this = this;
-                    // console.log("^^^ params.row.metrics_type: ", params.row.metrics_type);
-                    let demandType = _this.$Global.demandTypeList;
-                    // console.log("^^^ demandType: ", demandType);
-                    if (params.row.is_add == true && params.row.$isEdit) {
-                        return h('div', [
-                            h("Select", {
-                                props:{
-                                    value: '01'
-                                }, 
-                                on: {
-                                    'on-change': (event) => {
-                                        // console.log("^^^ event: ", event);
-                                        params.row.metrics_type = event;
-                                    }
-                                },
-                            },
-                            demandType.map(function(item) {
-                                // console.log("^^^ item: ", item);
-                                return [h(
-                                    "Option", 
-                                    {
-                                        props: {
-                                            value: item.value,
-                                            key: item.value
-                                        }
-                                    },
-                                    item.label
-                                )]
-                            }))
-                        ])
-                    } else {
+                {
+                    type: 'index',
+                    width: 60,
+                    align: 'center', 
+                },
+                {
+                    title: '需求类型',
+                    key: 'metrics_type',
+                    width: 150,
+                    render : (h, params)=>{
+                        let _this = this;
+                        let demandType = _this.$Global.demandTypeList;
                         return h('span', _this.$Global.demandTypeMap[params.row.metrics_type]);
                     }
-                }
-            },
-            {
-                title: '需求描述',
-                key: 'metrics_desc',
-                render:(h,params) => {
-                    if(params.row.$isEdit){
-                        return h('input',{
-                            style: {
-                                'text-align':'center',
-                                width: params.column._width+'px',
-                                height: '48px',
-                                border: '0',
-                                outline:'none',
-                                cursor: 'pointer',
-                                // 'background-color':'#f8f8f9'
-                            },
-                            domProps: {
-                                value: params.row.metrics_desc,
-                                autofocus: true
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.metrics_desc = event.target.value
-                                }
-                            }
-                        });
-                    }else{
-                        return h('div',params.row.metrics_desc)
-                    }
-                    
-                } 
-            },
-            {
-                title: '备注描述',
-                key: 'metrics_desc',
-                render:(h,params) => {
-                    if(params.row.$isEdit){
-                        return h('input',{
-                            style: {
-                                'text-align':'center',
-                                width: params.column._width+'px',
-                                height: '48px',
-                                border: '0',
-                                outline:'none',
-                                cursor: 'pointer',
-                                // 'background-color':'#f8f8f9'
-                            },
-                            domProps: {
-                                value: params.row.metrics_desc,
-                                autofocus: true
-                            },
-                            on: {
-                                input: function (event) {
-                                    params.row.metrics_desc = event.target.value
-                                }
-                            }
-                        });
-                    }else{
-                        return h('div',params.row.metrics_desc)
-                    }
-                    
-                } 
-            },
-            {
-                title: '操作',
-                key: 'opration',
-                width:80,
-                render: (h, params) => {
-                    return h('div', [
-                        h('Button', {
-                            props: {
-                                // type: 'primary',
-                                type: params.row.$isEdit ? 'success' : 'primary', 
-                                size: 'small'
-                            },
-                            style: {
-                                marginRight: '5px'
-                            },
-                            on: {
-                                click: () => {
-                                    if (params.row.$isEdit) {
-                                        this.demandEditSave(params.row);
-                                    } else {
-                                        this.handleDemandEdit(params.row);
+                },  
+                {
+                    title: '需求描述',
+                    key: 'metrics_desc',
+                },
+                {
+                    title: '是否通过',
+                    key: 'metrics_type',
+                    width: 100,
+                    render:(h,params) => {
+                        if(params.row.$isEdit){
+                            return h('input',{
+                                style: {
+                                    'text-align':'center',
+                                    width: params.column._width+'px',
+                                    height: '48px',
+                                    border: '0',
+                                    outline:'none',
+                                    cursor: 'pointer',
+                                },
+                                domProps: {
+                                    value: params.row.metrics_type,
+                                    autofocus: true
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.metrics_type = event.target.value
                                     }
                                 }
-                            }
-                        }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
-                    ])
+                            });
+                        }else{
+                            return h('div',params.row.metrics_type)
+                        }
+                        
+                    } 
+                },
+                {
+                    title: '备注描述',
+                    key: 'metrics_desc',
+                    render:(h,params) => {
+                        if(params.row.$isEdit){
+                            return h('input',{
+                                style: {
+                                    'text-align':'center',
+                                    width: params.column._width+'px',
+                                    height: '48px',
+                                    border: '0',
+                                    outline:'none',
+                                    cursor: 'pointer',
+                                    // 'background-color':'#f8f8f9'
+                                },
+                                domProps: {
+                                    value: params.row.metrics_desc,
+                                    autofocus: true
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.metrics_desc = event.target.value
+                                    }
+                                }
+                            });
+                        }else{
+                            return h('div',params.row.metrics_desc)
+                        }
+                        
+                    } 
+                },
+                {
+                    title: '操作',
+                    key: 'opration',
+                    width:80,
+                    render: (h, params) => {
+                        return h('div', [
+                            h('Button', {
+                                props: {
+                                    // type: 'primary',
+                                    type: params.row.$isEdit ? 'success' : 'primary', 
+                                    size: 'small'
+                                },
+                                style: {
+                                    marginRight: '5px'
+                                },
+                                on: {
+                                    click: () => {
+                                        if (params.row.$isEdit) {
+                                            this.demandEditSave(params.row);
+                                        } else {
+                                            this.handleDemandEdit(params.row);
+                                        }
+                                    }
+                                }
+                            }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
+                        ])
+                    }
                 }
-            }
             ],
             aggregTableData:[],
             /**==============================执行结果====================================*/
@@ -483,7 +451,6 @@ export default {
         this.listCase();
     },
     methods: {
-        
         //页面展示
         listCase: function() {
             let _this = this;
@@ -644,7 +611,7 @@ export default {
                     //放入集合中
                     let aggregData ={};  
                     aggregData.result_desc = _this.selectedData[i].result_desc;
-                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass.toString();
+                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass.toString() =="1"?"是":"否";
                     aggregData.senario_name  = _this.selectedData[i].senario_name;
                     aggregData.executor_id = _this.selectedData[i].executor_id;
                     aggregData.data_sgeet = _this.setValidate.data_sgeet = "1";
@@ -693,6 +660,7 @@ export default {
                     _this.spinShow=false;
                 }else{
                     _this.$Message.info('生成失败');
+                    _this.spinShow=false;
                 }
             })
             
@@ -757,6 +725,86 @@ export default {
         /**模态框弹出取消事件 */
         cancel:function () {
             this.showAddModal = false;
+        },
+        /**数据编辑 */
+        handleDemandEdit: function(row) {
+            if (this.metricsEditingNo != 0) {
+                console.log("row: ", row);
+                this.$Message.error("存在尚未保存的测试需求，请先保存后再编辑下一个需求！")
+            } else {
+                this.metricsEditingNo = this.metricsEditingNo + 1;
+                 console.log("row: ", row);
+                this.$set(row, '$isEdit', true);
+                // console.log(row);
+            }
+        },
+        /**数据保存 */
+        demandEditSave: function(row) {
+            if (row.metrics_desc == '') {
+                this.$Message.error("需求描述不能为空");
+            } else {
+                this.$set(row, '$isEdit', false)
+                // console.log('^^^ row:', row);
+
+                let _this = this;
+
+                if ( row['id'] ) {
+                    console.log("^^^ row has id, it is an edit ^^^");
+
+                    // this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/edit',{
+                        header:{},
+                        data:{
+                            id: row.id, 
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                            // console.log("^^^ metricsTblDataCopy: ", _this.metricsTblDataCopy);
+                            _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc); // 临时性的
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        } else if (response.data.result == "ok") {
+                            _this.$set(_this.metricsTableData, row._index, row);    // 真实的修改
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        }
+                    })
+                } else {
+                    console.log("^^^ row has not id, it is an add ^^^");
+                    // console.log("^^^ _this: ", _this);
+
+                    // this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/add',{
+                        header:{},
+                        data:{
+                            perftask_id: _this.selectedData[0].id, 
+                            metrics_type: row.metrics_type,
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                            _this.metricsTableData.splice(row._index, 1);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        } else if (response.data.result == "ok") {
+                            let newDemandMtrc = {
+                                'id': response.data.resultMap.id, 
+                                'metrics_type': row.metrics_type, 
+                                'metrics_desc': row.metrics_desc, 
+                                'is_add': false, 
+                                '$isEdit': false
+                            };
+                            _this.$set(_this.metricsTableData, row._index, newDemandMtrc);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                            // console.log("^^^ _this.metricsTableData: ", _this.metricsTableData);
+                        }
+                    })
+                }
+            }
         },
         /**清除搜索条件 */
         handleReset:function (name) {
