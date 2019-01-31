@@ -452,9 +452,8 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        //this.detailCase(params.row.id);
-                                            console.log("第一个页面传递的ID",params.row.id);
-                                             this.$router.push({
+                                            // console.log("第一个页面传递的ID",params.row.id);
+                                            this.$router.push({
                                                 path:'/merge',
                                                 query:{id:params.row.id}
                                             })
