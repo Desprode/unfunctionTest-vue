@@ -157,6 +157,7 @@
                                         :titles="['可选人员列表', '已选人员列表']"
                                         filterable
                                         :filter-method="filterMethod"
+                                        ref="refTransfer"
                                         @on-change="handleChange2"
                                         style="text-align: -webkit-left;">
                                         <!-- :target-keys="targetKeys2" -->
@@ -919,6 +920,7 @@ export default {
             this.addPTaskModal = true;
 
             this.getTestMngrsData();
+            console.log("*** addPTask this ***", this);
         },
         handleSubmit (name) {
             let _this = this;
@@ -947,16 +949,40 @@ export default {
 
                             _this.$Message.error(errDesc);
                             _this.addPTaskModal = false;
+                            
+                            // 清空穿梭框搜索条件
+                            _this.$refs.refTransfer.$children[0].query = '';
+                            _this.$refs.refTransfer.$children[2].query = '';
+                            // 清空穿梭框复选框
+                            _this.$refs.refTransfer.$children[0].toggleSelectAll();
+                            _this.$refs.refTransfer.$children[2].toggleSelectAll();
                         } else if (response.data.result == "ok") {
                             // console.log("**********************addValidate: ", _this.addValidate);
                             // _this.addValidate.component_name = _this.formSendCmpP.com_name;
-                            _this.addValidate.perftask_name = _this.addValidate.task_name;
-                            _this.addValidate.id = response.data.resultMap.id;
-                            _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
-                            _this.addValidate.ptask_source = '2';
+                            // _this.addValidate.perftask_name = _this.addValidate.task_name;
+                            // _this.addValidate.id = response.data.resultMap.id;
+                            // _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
+                            // _this.addValidate.ptask_source = '2';
                             _this.$Message.success('提交成功!');
+                            // console.log("^^^ refTransfer ^^^", this.)
+                            // console.log("^^^ _this.addPTaskModal ^^^ ", _this.addPTaskModal);
                             _this.addPTaskModal = false;
-                            _this.tableData.push(_this.addValidate);
+                            // console.log("^^^ this ^^^ ", _this);
+                            // console.log("^^^ name ^^^ ", name);
+
+                            // 清空新建任务模态框数据
+                            _this.$refs[name].resetFields();
+
+                            // 清空穿梭框搜索条件
+                            _this.$refs.refTransfer.$children[0].query = '';
+                            _this.$refs.refTransfer.$children[2].query = '';
+                            // 清空穿梭框复选框
+                            _this.$refs.refTransfer.$children[0].toggleSelectAll();
+                            _this.$refs.refTransfer.$children[2].toggleSelectAll();
+
+                            _this.listPTask();
+                            // _this.tableData.unshift(_this.addValidate);
+                            // _this.tableData.push(_this.addValidate);
                             // console.log('tableData after: ', _this.tableData);
                         }
                     })
