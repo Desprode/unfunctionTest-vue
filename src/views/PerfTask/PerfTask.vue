@@ -131,6 +131,9 @@
                         <Form-item label="任务名称" prop="task_name">
                             <i-input v-model="addValidate.task_name"></i-input>
                         </Form-item>
+                        <Form-item label="任务描述" prop="ptask_desc">
+                            <i-input v-model="addValidate.ptask_desc" type="textarea" placeholder="描述任务的迭代轮次等信息..." style="font-size: 12px"></i-input>
+                        </Form-item>
                         <Row>
                             <i-col span="8">
                                 <Form-item label="任务开始日期" prop="perftask_begin_date">
@@ -187,6 +190,9 @@
                     </FormItem>
                     <FormItem label="任务名称:" prop="perftask_name">
                         <Input  v-model="editPTaskValidate.perftask_name"></Input>
+                    </FormItem>
+                    <FormItem label="任务描述:" prop="ptask_desc">
+                        <Input  v-model="editPTaskValidate.ptask_desc" type="textarea" placeholder="描述任务的迭代轮次等信息..." style="font-size: 12px"></Input>
                     </FormItem>
                     <Row>
                         <Col span="8">
@@ -421,6 +427,28 @@ export default {
                     }
                 },
                 {
+                    title: '任务描述',
+                    width: 100,
+                    key: 'ptask_desc', 
+                    // ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.ptask_desc
+                                }
+                            }, params.row.ptask_desc)
+                        ]);
+                    }
+                },
+                {
                     title: '操作',
                     key: 'opration',
                     align: 'center',
@@ -476,6 +504,7 @@ export default {
             addValidate: {
                 component_name: '',         // 物理子系统
                 task_name: '',              // 任务名称
+                ptask_desc: '',             // 任务描述
                 perftask_begin_date: '',    // 任务开始日期
                 perftask_end_date: '',      // 任务结束日期
                 online_date: '',            // 投产日期
@@ -498,9 +527,7 @@ export default {
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
             },
-            // nfunTestMngrs: this.getMockData(),
-            nfunTestMngrs: [],
-            // targetKeys2: this.getTargetKeys(), 
+            nfunTestMngrs: [], 
             selectedTestMngrs: [], 
 
             /**==================== 任务编辑弹出框数据 ====================*/
@@ -510,6 +537,7 @@ export default {
                 id: '',                     // 任务编号
                 component_name: '',         // 物理子系统
                 perftask_name: '',          // 任务名称——可编辑
+                ptask_desc: '',             // 任务描述——可编辑
                 perftask_begin_date: '',    // 任务开始日期——可编辑
                 perftask_end_date: '',      // 任务结束日期——可编辑
                 online_date: '',            // 投产日期——可编辑
@@ -960,7 +988,7 @@ export default {
             this.addPTaskModal = true;
 
             this.getTestMngrsData();
-            console.log("*** addPTask this ***", this);
+            // console.log("*** addPTask this ***", this);
         },
         handleSubmit (name) {
             let _this = this;
@@ -977,6 +1005,7 @@ export default {
                             ref_itm_id: _this.formSendCmpP.id,                  // ITM的物理子系统id
                             cloud_id: _this.formSendCmpP.cloud_id,              // ITM同步云的时候的id
                             task_name: _this.addValidate.task_name,             // 任务名称
+                            ptask_desc: _this.addValidate.ptask_desc,           // 任务描述
                             perftask_begin_date: _this.addValidate.perftask_begin_date,   // 任务开始日期
                             perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
                             online_date: _this.addValidate.online_date,
@@ -1103,6 +1132,7 @@ export default {
             this.editPTaskValidate.id = ptaskTRowData.id;
             this.editPTaskValidate.component_name = ptaskTRowData.component_name;
             this.editPTaskValidate.perftask_name = ptaskTRowData.perftask_name;
+            this.editPTaskValidate.ptask_desc = ptaskTRowData.ptask_desc;
             this.editPTaskValidate.perftask_begin_date = ptaskTRowData.perftask_begin_date;
             this.editPTaskValidate.perftask_end_date = ptaskTRowData.perftask_end_date;
             this.editPTaskValidate.online_date = ptaskTRowData.online_date;
@@ -1189,6 +1219,7 @@ export default {
                         data: {
                             id: _this.editPTaskValidate.id, 
                             perftask_name: _this.editPTaskValidate.perftask_name,
+                            ptask_desc: _this.editPTaskValidate.ptask_desc, 
                             perftask_begin_date: _this.editPTaskValidate.perftask_begin_date,
                             perftask_end_date: _this.editPTaskValidate.perftask_end_date,
                             online_date: _this.editPTaskValidate.online_date,
@@ -1645,6 +1676,7 @@ export default {
     font-size: 12px;
     font-weight: bold;
 }
+
 
 /* add by xin */
 /*三个操作按钮样式*/
