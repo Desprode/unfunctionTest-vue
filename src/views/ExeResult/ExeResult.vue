@@ -77,8 +77,7 @@
                 <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
-                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" 
-                @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
+                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectCancel" show-header></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
@@ -220,12 +219,12 @@ export default {
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.metrics_typex = event.target.value
+                                        params.row.metrics_type = event.target.value
                                     }
                                 }
                             });
                         }else{
-                            return h('div',params.row.metrics_typex)
+                            return h('div',params.row.metrics_type)
                         }
                         
                     } 
@@ -689,19 +688,15 @@ export default {
             this.listCase();
         },
          /**选中的数据发生改变 */
-        onSelect: function(row,selection) {
-            this.selectedData.push(selection);
-            console.log("选中要删除的数据",row,selection)
-        },
+        // onSelect: function(row,selection,data) {
+        //      this.selectedData = selection;
+        //      console.log("选中要删除的数据12121",data)
+        //     console.log("选中要删除的数据",selection)
+        // },
          /**选中的数据发生改变 */
-        onSelectCancel:function(row,selection){
-            let _this = this;
-            for(var i=0;i<_this.selectedData.length;i++){
-                if(_this.selectedData[i].senario_id == selection.senario_id){
-                    _this.selectedData.splice(i,1);
-                }
-            }
-            console.log("取消选中要删除的数据",row,selection)
+        onSelectCancel:function(data){
+            this.selectedData = data;
+            console.log("取消选中要删除的数据",data)
         },
         /**详情信息展示跳转 */
         detailCase:function(index){
