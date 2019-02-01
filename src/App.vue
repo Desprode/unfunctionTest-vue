@@ -44,4 +44,8 @@
   .ivu-message{
     top:100px !important;
   }
+
+  textarea.ivu-input {
+    font-size: 12px;
+  }
 </style>
