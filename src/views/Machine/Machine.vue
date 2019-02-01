@@ -283,14 +283,14 @@ export default {
                 },
                 {
                     title: '执行开始时间',
-                    key: 'startTime',
+                    key: 'execTime',
                     width: 160,
                     align: 'center',
                     sortable: true
                 },
                 {
                     title: '启用时间',
-                    key: 'execTime',
+                    key: 'startTime',
                     width: 160,
                     align: 'center',
                     sortable: true

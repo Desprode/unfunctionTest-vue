@@ -453,10 +453,11 @@ export default {
                                 on: {
                                     click: () => {
                                             // console.log("第一个页面传递的ID",params.row.id);
-                                            this.$router.push({
-                                                path:'/merge',
-                                                query:{id:params.row.id}
-                                            })
+                                            this.detailCase(params.index);
+                                            // this.$router.push({
+                                            //     path:'/merge',
+                                            //     query:{id:params.row.id}
+                                            // })
                                     }
                                 }
                             }, '聚合报告')
@@ -947,7 +948,7 @@ export default {
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            //console.log(data)
+            console.log("date12121212",data)
         },
 
         // onRowDblClick: function(row) {
@@ -1451,7 +1452,29 @@ export default {
             //console.log(this.$refs)
             this.$refs[name].resetFields();
         }, 
-
+        //聚合报告
+        detailCase:function(index){
+            let _this = this;
+            let tableData = _this.tableData;
+            console.log("perftask_id",tableData[index].id);
+            this.$http.post('/myapi/testresult/isMergeReportExist', {
+                header: {},
+                data: {
+                    perftask_id: tableData[index].id, 
+                }
+                }).then(function (response) {
+                    console.log("_this.aggregTableData",response.data);
+                    if(response.data.result =="fail"){
+                        _this.$Message.error("该任务还未生成报告！");
+                    }else if(response.data.result =="ok"){
+                        this.$router.push({
+                            path:'/merge',
+                            query:{perftask_id:tableData[index].id}
+                        })
+                    }
+                    
+                })
+        },
         /**错误信息处理函数 */
         handleErrCode (resp) {
             let errDesc = "";

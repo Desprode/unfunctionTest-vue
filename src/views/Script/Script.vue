@@ -17,11 +17,11 @@
                                     clearable
                                     filterable
                                     remote
-                                    :remote-method="srchComponent"
+                                    :remote-method="searchAppname"
                                     :loading="srchCmploading"
-                                    @on-open-change="srchName" 
+                                    @on-open-change="searchName" 
                                     @keyup.enter.native= listCase()>
-                                    <Option v-for="(optio, index) in cmpOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
+                                    <Option v-for="(option, index) in appNameOpts" :value="option.label" :key="index">{{option.label}}</Option>
                                 </Select>
                             </Col>
                             <Col span="2" class="searchLable">脚本名称:</Col>
@@ -110,11 +110,11 @@
                                         clearable
                                         filterable 
                                         remote 
-                                        :remote-method="srchComponent" 
+                                        :remote-method="searchAppname" 
                                         :loading="srchCmploading"
-                                        @on-open-change="srchName" 
+                                        @on-open-change="searchName" 
                                         @keyup.enter.native= listCase()>
-                                        <Option v-for="(optio, index) in cmpOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
+                                        <Option v-for="(optio, index) in appNameOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -530,12 +530,6 @@ export default {
                         ])  
                     }
                 }
-                // http://localhost:8080/uploads/report/1548849173201/image/jmeter_summary.png
-
-                // http://localhost:8080/uploads/Scripts/S201800283/系统-OCSVAND3DAT_1.zip
-
-
-                //http://128.195.0.13:8080/uploads/report/1548896864752/image/jmeter_tps.png
             ],
             tableData: [],
             tableDataTotal:0,
@@ -726,6 +720,7 @@ export default {
             this.addValidate.app_id = obj.value;
             this.addValidate.app_name = obj.label;
         }, 
+        //物理子系统查询
         searchName:function(){
             let _this = this
             this.$http.post('/myapi/component/searchFromITM', {
@@ -735,6 +730,7 @@ export default {
                     limit: 10, 
                 },                        
             }).then(function (response) {
+                console.log("物理子系统",response.data);
                 _this.appNameOpts  = response.data.resultList.map(item => {
                     return {
                         value: item.id,
@@ -743,6 +739,7 @@ export default {
                 });
             })
         },
+        //物理子系统输入查询
         searchAppname: function(query){
             let _this = this
             this.$http.post('/myapi/component/searchFromITM', {
@@ -760,48 +757,6 @@ export default {
                         label: item.com_name
                     }
                 })
-            })
-        },
-        //物理子系统查询
-        srchComponent:function(query){
-            let _this = this;
-            this.$http.post('/myapi/component/searchFromITM',{
-                headers:{},
-                data:{
-                    kw: query,
-                    page: 1, 
-                    limit: 10, 
-                },
-            }).then(function(response){
-                console.log("response.data.resultList1",response.data.resultList);
-                _this.cmpOpts = response.data.resultList.map(item =>{
-                    return {
-                        id: item.id,
-                        cloud_id: item.cloud_id, 
-                        label: item.com_name
-                    }
-                });
-            })
-        },
-        //物理子系统下拉查询
-        srchName:function(){
-            let _this = this;
-            this.$http.post('/myapi/component/searchFromITM',{
-                headers:{},
-                data:{
-                    kw: '',
-                    page: 1, 
-                    limit: 10, 
-                },
-            }).then(function(response){
-                console.log("response.data.resultList2",response.data.resultList);
-                _this.cmpOpts = response.data.resultList.map(item =>{
-                    return {
-                        id: item.id,
-                        cloud_id: item.cloud_id, 
-                        label: item.com_name
-                    }
-                });
             })
         },
         //创建人查询
