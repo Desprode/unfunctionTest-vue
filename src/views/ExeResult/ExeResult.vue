@@ -201,7 +201,7 @@ export default {
                 },
                 {
                     title: '是否通过',
-                    key: 'metrics_type',
+                    key: 'metrics_typex',
                     width: 100,
                     render:(h,params) => {
                         if(params.row.$isEdit){
@@ -215,24 +215,24 @@ export default {
                                     cursor: 'pointer',
                                 },
                                 domProps: {
-                                    value: params.row.metrics_type,
+                                    value: params.row.metrics_typex,
                                     autofocus: true
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.metrics_type = event.target.value
+                                        params.row.metrics_typex = event.target.value
                                     }
                                 }
                             });
                         }else{
-                            return h('div',params.row.metrics_type)
+                            return h('div',params.row.metrics_typex)
                         }
                         
                     } 
                 },
                 {
                     title: '备注描述',
-                    key: 'metrics_desc',
+                    key: 'metrics_descx',
                     render:(h,params) => {
                         if(params.row.$isEdit){
                             return h('input',{
@@ -246,17 +246,17 @@ export default {
                                     // 'background-color':'#f8f8f9'
                                 },
                                 domProps: {
-                                    value: params.row.metrics_desc,
+                                    value: params.row.metrics_descx,
                                     autofocus: true
                                 },
                                 on: {
                                     input: function (event) {
-                                        params.row.metrics_desc = event.target.value
+                                        params.row.metrics_descx = event.target.value
                                     }
                                 }
                             });
                         }else{
-                            return h('div',params.row.metrics_desc)
+                            return h('div',params.row.metrics_descx)
                         }
                         
                     } 
@@ -728,7 +728,7 @@ export default {
         },
         /**数据编辑 */
         handleDemandEdit: function(row) {
-            if (this.metricsEditingNo != 0) {
+            if (this.metricsEditingNo == 0) {
                 console.log("row: ", row);
                 this.$Message.error("存在尚未保存的测试需求，请先保存后再编辑下一个需求！")
             } else {
