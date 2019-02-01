@@ -21,7 +21,7 @@
                                     :loading="srchCmploading"
                                     @on-open-change="srchName" 
                                     @keyup.enter.native= listCase()>
-                                    <Option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index">{{option.com_name}}</Option>
+                                    <Option v-for="(optio, index) in cmpOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
                                 </Select>
                             </Col>
                             <Col span="2" class="searchLable">脚本名称:</Col>
@@ -110,12 +110,11 @@
                                         clearable
                                         filterable 
                                         remote 
-                                        :remote-method="searchAppname" 
+                                        :remote-method="srchComponent" 
                                         :loading="srchCmploading"
-                                        @on-open-change="searchName" 
-                                        @keyup.enter.native= listCase()
-                                        >
-                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" >{{ option.label }}</Option>
+                                        @on-open-change="srchName" 
+                                        @keyup.enter.native= listCase()>
+                                        <Option v-for="(optio, index) in cmpOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -521,8 +520,9 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        // this.handleDownload(item.row.id,item.row.script_filename);
-                                        window.location.href(item.row.script_filepath)
+                                        this.handleDownload(item.row.id,item.row.script_filepath);
+                                        //console.log("item.row.script_filepath",item.row.script_filepath);
+                                        //window.location.href(item.row.script_filepath)
                                     }
                                     // href:item.row.script_filepath
                                 }
@@ -530,6 +530,12 @@ export default {
                         ])  
                     }
                 }
+                // http://localhost:8080/uploads/report/1548849173201/image/jmeter_summary.png
+
+                // http://localhost:8080/uploads/Scripts/S201800283/系统-OCSVAND3DAT_1.zip
+
+
+                //http://128.195.0.13:8080/uploads/report/1548896864752/image/jmeter_tps.png
             ],
             tableData: [],
             tableDataTotal:0,
@@ -601,7 +607,7 @@ export default {
                 },
                 data: {
                     script_name: _this.script_name,
-                    app_name:_this.com_name,
+                    app_name:_this.app_name,
                     script_manager_id:_this.creater,
                     pageNo: _this.pageNo==''?1:_this.pageNo,
                     pageSize: 10                    
@@ -617,34 +623,39 @@ export default {
             })
         },
         //下载
-        handleDownload:function(rowid,fileName){
+        handleDownload:function(rowid,script_filepath){
             let _this = this;
-            this.$http.post('/myapi/scripts/download',{
-                data:{
-                    id:rowid,
-                }
-            }).then(function(response){
-                //服务端文件不存在的情况判断
-                if("fail" == response.data.result){
-                    _this.$Message.error(response.data.err_desc);
-                    return;
-                }
-                console.log("script编辑接口response.data",response.data);
-                var blob = new Blob([response.data])
-                if (window.navigator.msSaveOrOpenBlob) {
-                    // 兼容IE10
-                    navigator.msSaveBlob(blob, fileName)
-                } else {
-                    let url = window.URL.createObjectURL(blob);
-                    let link = document.createElement('a');
-                    link.style.display = 'none';
-                    link.href = url;
-                    link.setAttribute('download', fileName);
-                    document.body.appendChild(link);
-                    link.click();
-                    URL.revokeObjectURL(link.href)
-                }
-            })
+            console.log("script_filepath",script_filepath);
+            let a = document.createElement('a')
+            a.href = script_filepath;
+            a.click();
+            // this.$http.post('/myapi/scripts/download',{
+            //     data:{
+            //         id:rowid,
+            //     }
+            // }).then(function(response){
+            //     //服务端文件不存在的情况判断
+            //     if("fail" == response.data.result){
+            //         _this.$Message.error(response.data.err_desc);
+            //         return;
+            //     }
+            //     console.log("script编辑接口response.data",response.data);
+            //     var blob = new Blob([response.data])
+            //     if (window.navigator.msSaveOrOpenBlob) {
+            //         // 兼容IE10
+            //         navigator.msSaveBlob(blob, fileName)
+            //     } else {
+            //         let url = window.URL.createObjectURL(blob);
+            //         let link = document.createElement('a');
+            //         link.style.display = 'none';
+            //         link.href = url;
+            //         link.setAttribute('download', fileName);
+            //         document.body.appendChild(link);
+            //         link.click();
+            //         URL.revokeObjectURL(link.href)
+            //     }
+            // })
+
         },
         uploadPro:function(file){
             console.log("file",file.name);
@@ -745,6 +756,7 @@ export default {
                 _this.appNameOpts = response.data.resultList.map(item => {
                     return {
                         value: item.id,
+                        cloud_id: item.cloud_id, 
                         label: item.com_name
                     }
                 })
@@ -766,7 +778,7 @@ export default {
                     return {
                         id: item.id,
                         cloud_id: item.cloud_id, 
-                        com_name: item.com_name
+                        label: item.com_name
                     }
                 });
             })
@@ -787,7 +799,7 @@ export default {
                     return {
                         id: item.id,
                         cloud_id: item.cloud_id, 
-                        com_name: item.com_name
+                        label: item.com_name
                     }
                 });
             })
@@ -1112,7 +1124,7 @@ export default {
         /**清除搜索条件 */
         handleReset () {
             let _this = this;
-            _this.$refs.cre.clearSingleSelect();
+            // _this.$refs.cre.clearSingleSelect();
             _this.app_name='';
             _this.script_name='';
             _this.creater='';
