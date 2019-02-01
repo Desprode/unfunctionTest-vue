@@ -1502,6 +1502,8 @@ export default {
                             path:'/merge',
                             query:{perftask_id:tableData[index].id}
                         })
+
+                        
                     }
                     
                 })
