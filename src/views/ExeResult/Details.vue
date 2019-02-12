@@ -244,8 +244,9 @@
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;
                     _this.content   =  response.data.resultList[0].content;
+                    _this.file_path   =  response.data.resultList[0].file_path;
                 })
-                console.log("测试报告");
+                console.log("测试报告",_this.file_path);
                 _this.pressCase();
             },
             //加载压力机日志
@@ -262,7 +263,6 @@
                     }
                 }).then(function (response) {
                     _this.tableData =  response.data.resultList;
-                    
                 })
                 console.log("压力机日志");
                 // _this.platfCase();
@@ -358,58 +358,20 @@
                 this.showDialog=false;
             },
             /**日志下载*/
-            downloadLog:function(jmeterlog){
+            downloadLog:function(){
                 let _this = this;
-                console.log("jmeterlog",jmeterlog);
-                var executor_id = this.$route.query.executor_id;
-                this.$http.post('/myapi/testresult/downloadjmterlog',{
-                    data:{
-                        executor_id:executor_id,
-                    }
-                }).then(function(response){
-                    var blob = new Blob([response.data]);
-                    if (window.navigator.msSaveOrOpenBlob) {
-                        // 兼容IE10
-                        navigator.msSaveBlob(blob,jmeterlog)
-                    } else {
-                        let url = window.URL.createObjectURL(blob);
-                        let link = document.createElement('a');
-                        link.style.display = 'none';
-                        link.href = url;
-                        link.setAttribute('download',jmeterlog);
-                        document.body.appendChild(link);
-                        link.click();
-                    }
-                })
+                console.log("jmeter_log_url",_this.jmeter_log_url);
+                let a = document.createElement('a')
+                a.href = _this.jmeter_log_url;
+                a.click();
             },
             /**报告下载*/
             downloadCase:function(){
                 let _this = this;
-                var executor_id = this.$route.query.executor_id;
-                //this.$http.defaults.withCredentials = false;
-                this.$http.post('/myapi/testresult/download',{
-                    data:{
-                        executor_id:executor_id,
-                    }
-                }).then(function(response){
-                    //console.log("script编辑接口response.data",response.data);
-                    //_this.tableData =  response.data.resultList.file_path;
-                    console.log("111222",response.data);
-                    var blob = new Blob([response.data]);
-                    if (window.navigator.msSaveOrOpenBlob) {
-                        // 兼容IE10
-                        navigator.msSaveBlob(blob,'report.xlsx')
-                    } else {
-                        let url = window.URL.createObjectURL(blob);
-                        let link = document.createElement('a');
-                        link.style.display = 'none';
-                        link.href = url;
-                        link.setAttribute('download','report.xlsx');
-                        document.body.appendChild(link);
-                        link.click();
-                    }
-                })
-                
+                console.log("script_filepath",_this.file_path);
+                let a = document.createElement('a')
+                a.href = _this.file_path;
+                a.click();
             }
     }
     }
