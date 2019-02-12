@@ -1471,10 +1471,7 @@ export default {
                             path:'/merge',
                             query:{perftask_id:tableData[index].id}
                         })
-
-                        
                     }
-                    
                 })
         },
         /**错误信息处理函数 */

@@ -201,32 +201,31 @@ export default {
                 {
                     title: '是否通过',
                     key: 'metrics_typex',
-                    width: 100,
+                    width: 90,
                     render:(h,params) => {
-                        if(params.row.$isEdit){
-                            return h('input',{
-                                style: {
-                                    'text-align':'center',
-                                    width: params.column._width+'px',
-                                    height: '48px',
-                                    border: '0',
-                                    outline:'none',
-                                    cursor: 'pointer',
-                                },
-                                domProps: {
-                                    value: params.row.metrics_typex,
-                                    autofocus: true
-                                },
-                                on: {
-                                    input: function (event) {
-                                        params.row.metrics_type = event.target.value
+                        return h('div',[
+                            h(
+                                "Select",{
+                                    props:{
+                                        value:'divideTwo'
                                     }
-                                }
-                            });
-                        }else{
-                            return h('div',params.row.metrics_type)
-                        }
-                        
+                                },
+                                date.map(function(item){
+                                    if(item.value !== 'three'){
+                                        return [h(
+                                            "Option",
+                                            {
+                                                props:{
+                                                    value:item.value,
+                                                    key:item.value
+                                                }
+                                            },item.lable)]
+                                    }else{
+                                        
+                                    }
+                                })
+                            )
+                        ])
                     } 
                 },
                 {
@@ -286,6 +285,7 @@ export default {
                                 }
                             }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
                         ])
+                        
                     }
                 }
             ],

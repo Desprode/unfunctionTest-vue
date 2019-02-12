@@ -623,33 +623,7 @@ export default {
             let a = document.createElement('a')
             a.href = script_filepath;
             a.click();
-            // this.$http.post('/myapi/scripts/download',{
-            //     data:{
-            //         id:rowid,
-            //     }
-            // }).then(function(response){
-            //     //服务端文件不存在的情况判断
-            //     if("fail" == response.data.result){
-            //         _this.$Message.error(response.data.err_desc);
-            //         return;
-            //     }
-            //     console.log("script编辑接口response.data",response.data);
-            //     var blob = new Blob([response.data])
-            //     if (window.navigator.msSaveOrOpenBlob) {
-            //         // 兼容IE10
-            //         navigator.msSaveBlob(blob, fileName)
-            //     } else {
-            //         let url = window.URL.createObjectURL(blob);
-            //         let link = document.createElement('a');
-            //         link.style.display = 'none';
-            //         link.href = url;
-            //         link.setAttribute('download', fileName);
-            //         document.body.appendChild(link);
-            //         link.click();
-            //         URL.revokeObjectURL(link.href)
-            //     }
-            // })
-
+            
         },
         uploadPro:function(file){
             console.log("file",file.name);
