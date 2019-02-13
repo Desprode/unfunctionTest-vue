@@ -679,7 +679,7 @@ export default {
             _this.addValidate.id=file.id;
             _this.setValidate.script_filename=file.name;
         },
-        uploadSuccess:function(res,file) {
+        uploadSuccess:function(res,file) { 
             console.log("返回信息",file);
             if(res.result == "success"){
                 this.$Spin.hide();

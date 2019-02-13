@@ -5,12 +5,15 @@ import App from './App'
 import iView from 'iview';
 import 'iview/dist/styles/iview.css';
 import axios from 'axios';
-import store from './store/index.js';
+//import store from './store/index.js';
 import router from './router';
 //引入图标echarts
 import echarts from 'echarts';
 //添加主题
 import 'echarts/theme/infographic.js';
+import Vuex from 'Vuex';
+
+Vue.use(Vuex);
 
 
 Vue.use(iView);
@@ -53,6 +56,33 @@ Vue.prototype.$http = axios;
 //配置echarts
 Vue.prototype.$echarts = echarts
 
+
+const store = new Vuex.Store({
+  state:{
+    senarioSelected:[],
+    selection:'',
+    checkedId:[],
+  },
+  mutations: {
+    senarioIncrement (state) {
+      state.senarioSelected.push(state.selection);
+    },
+    senarioDecrement (state){
+      for(var i=0;i<state.senarioSelected.length;i++){
+        if(state.senarioSelected[i].senario_id == state.selection.senario_id){
+          state.senarioSelected.splice(i,1);
+        }
+      }
+    },
+    senarioCheckedIdIncrement (state){
+      state.checkedId  = [];
+      state.senarioSelected.map(item=>{
+        state.checkedId.push(item.senario_id);
+      });
+      console.log(state.checkedId);
+    }
+  }
+})
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

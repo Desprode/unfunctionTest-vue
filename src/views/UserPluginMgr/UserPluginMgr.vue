@@ -17,10 +17,7 @@
                     </div>
                 </div>
             </div>
-
-
-            <!-- /* add by xin */ -->
-            <!--===================================新建任务时弹出的对话框===============-->
+            <!--===================================上传插件时弹出的模态框===============-->
             <Modal v-model="showDialog" width="800">
                 <p slot="header" style="text-align:center" >
                     <Icon type="ios-information-circle"></Icon>
@@ -41,6 +38,7 @@
                                         :before-upload="handleUpload"
                                         :format="['jar']" 
                                         :on-success="uploadSuccess"
+                                        :on-error="uploadError"
                                         :on-format-error="handleFormatError"
                                         v-model="addValidate.plugin_name"
                                         :show-upload-list="false">
@@ -164,18 +162,21 @@ export default {
             this.$Message.error(file.name + '文件格式不正确,请上传jar格式的文件!');
         },
         uploadSuccess:function(res,file) {
-            console.log(res)
-            if(res.result == "success"){
-                this.filesize = res.resultList[0].filesize;
-                this.plugin_name = res.resultList[0].plugin_name;
-                this.script_filepath = res.resultList[0].script_filepath;
-                this.id = res.resultList[0].id;
-                this.is_sys = res.resultList[0].is_sys;
-                console.log(this.filesize)
-                console.log(this.plugin_name)
-                console.log(this.script_filepath)
-                console.log(this.id)
+            console.log("上传成功",res,file)
+            // if(res.result == "success"){
+            //     this.filesize = res.resultList[0].filesize;
+            //     this.plugin_name = res.resultList[0].plugin_name;
+            //     this.script_filepath = res.resultList[0].script_filepath;
+            //     this.id = res.resultList[0].id;
+            //     this.is_sys = res.resultList[0].is_sys;
+            //     this.$Message.info('新增成功');
+            // }
+            if(res.result == "fail"){
+                this.$Message.info("该用户下已存在同名插件");
             }
+        },
+        uploadError:function(res,file){
+            console.log("上传失败",res,file);
         },
         deleteCase: function () {
             //console.log("删除多条按钮");
@@ -305,11 +306,10 @@ export default {
         },
         /**模态框弹出取消事件 */
         cancel () {
-            this.$Message.info('点击了取消');
             this.showDialog = false;
         },
         submitScript () {
-            this.$Message.info('新增成功');
+            
             this.showDialog = false;
             this.listCase();
         },

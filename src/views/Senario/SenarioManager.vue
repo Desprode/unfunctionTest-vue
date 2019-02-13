@@ -75,7 +75,7 @@
             </div>
 
         <!--============================================删除任务模态框==================================-->
-            <Modal v-model="delSenarioModal" width="800" :closable="false" :mask-closable="false">
+            <Modal v-model="delSenarioModal" width="800" :closable="true" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>请确认是否删除以下任务</span>
                 </p>
@@ -95,7 +95,7 @@
                 </div>
             </Modal>
             <!--=========================未删除成功模态框======================================-->
-             <Modal v-model="noDeleteModal" width="800" :closable="false" :mask-closable="false">
+             <Modal v-model="noDeleteModal" width="800" :closable="true" :mask-closable="false">
                 <p slot="header" style="text-align:center" >
                     <span>以下任务在进行中，未删除成功</span>
                 </p>
@@ -109,7 +109,7 @@
                     </Row>
             </Modal>
         <!--========================================创建场景模态框：=================================-->
-            <Modal v-model="showAddModal" width="800" :closable="false" :mask-closable="false">
+            <Modal v-model="showAddModal" width="800" :closable="true" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>新增</span>
                 </p>
@@ -149,7 +149,7 @@
             </Modal>
 
         <!--=======================================执行操作模态框：===================================-->
-            <Modal v-model="showExeModal" width="800" :closable="false" :mask-closable="false">
+            <Modal v-model="showExeModal" width="800" :closable="true" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>执行时间设置</span>
                 </p>
@@ -171,7 +171,7 @@
             </Modal>
 
         <!--======================================场景设置模态框======================================-->
-            <Modal v-model="showSetModal" width="800" :closable="false" :mask-closable="false">
+            <Modal v-model="showSetModal" width="800" :closable="true" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>编辑场景</span>
                 </p>
@@ -249,7 +249,7 @@
                 </div>
             </Modal>
         <!--=================================监控配置模态框============================================-->
-            <Modal v-model="showMoniterModal" width="830" :closable="false" :mask-closable="false">
+            <Modal v-model="showMoniterModal" width="830" :closable="true" :mask-closable="false">
                 <p slot="header" style="color:#f60" >
                     <span>监控配置</span>
                 </p>
@@ -965,13 +965,21 @@ export default {
                         scriptName:item.script_name,
                     }
                 })
-                _this.selectedData.map(item=>{
-                    _this.checkedId.push(item.senario_id);
-                });
+                // _this.selectedData = _this.$store.state.senarioSelected;
+                // console.log(_this.selectedData,_this.$store.state.senarioSelected);
+                // _this.$store.state.senarioSelected.map(item=>{
+                //     _this.checkedId.push(item.senario_id);
+                // });
+                _this.$store.commit("senarioCheckedIdIncrement");
+                _this.checkedId = _this.$store.state.checkedId;
                 for(var i=0;i<_this.tableData.length;i++){
                     if(_this.checkedId.includes(_this.tableData[i].senario_id)){
                         _this.tableData[i]['_checked'] = true;
-                    }
+                        console.log(true);
+                    }else{
+                        _this.tableData[i]['_checked'] = false;
+                        console.log(false);
+                    };
                 }
                 _this.timer = setTimeout(() => {
                     _this.isLoadingList = false;
@@ -981,6 +989,8 @@ export default {
         },
         searchReset:function(name){
             this.$refs[name].resetFields();
+            this.$store.commit('increment');
+            console.log(this.$store.state.count);
         },
         /**切换页码 */
         pageChange:function(pageNo){
@@ -1105,7 +1115,8 @@ export default {
         /**============================删除多条数据========================= */
         deleteCase: function () {
             //console.log("删除多条按钮");
-            this.deleteDataList = this.selectedData;      //选中要删除的数据
+             this.selectedData = this.$store.state.senarioSelected
+            this.deleteDataList = this.selectedData;      //选中要删除的数
             let deleteId = [];                       //选中数据的id
             if (this.selectedData.length > 0) {               //如果有选中的数据
                 this.delSenarioModal = true;
@@ -1186,29 +1197,34 @@ export default {
         //,
             /**选中的数据发生改变 */
         onSelect: function(row,selection) {
-            this.selectedData.push(selection);
+            //this.selectedData.push(selection);
             // for(var i=0;i<this.tableData.length;i++){
             //     if(this.tableData[i].senario_id == selection.senario_id){
             //         this.tableData[i]['_checked'] = true;
             //         console.log(this.tableData[i]);
             //     }
             // }
-            console.log("选中要删除的数据",this.selectedData)
+            this.$store.state.selection = selection;
+            this.$store.commit("senarioIncrement");
+            console.log("选中要删除的数据",this.$store.state.senarioSelected)
             //console.log(data)
         },
         onSelectCancel:function(row,selection){
-            let _this = this;
-            for(var i=0;i<_this.selectedData.length;i++){
-                if(_this.selectedData[i].senario_id == selection.senario_id){
-                    _this.selectedData.splice(i,1);
-                }
-            }
+            // let _this = this;
+            // for(var i=0;i<_this.selectedData.length;i++){
+            //     if(_this.selectedData[i].senario_id == selection.senario_id){
+            //         _this.selectedData.splice(i,1);
+            //     }
+            // }
             // _this.selectedData.forEach((item,index) => {
             //     if(_this.selectedData.includes(item)){
             //         _this.selectedData.splice(index, 1);        //即删除该数据上
             //     }
             // });
-            console.log("取消选中要删除的数据",_this.selectedData)
+            this.$store.state.selection = selection;
+            console.log('开始调用');
+            this.$store.commit("senarioDecrement");
+            console.log("取消选中要删除的数据",this.$store.state.senarioSelected)
         },
        
         /**添加新数据弹出模态框 */
@@ -1941,7 +1957,7 @@ export default {
                 }
                     _this.monitorListPage.splice(i,1);
             }
-            //console.log("选中的数据",this.moniterTableData);
+            console.log("选中的数据",this.moniterTableData);
         },
         /**全选 */
         moniterOnSelectionAll:function(){
