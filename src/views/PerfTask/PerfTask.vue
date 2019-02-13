@@ -18,7 +18,8 @@
                                     filterable
                                     remote
                                     :remote-method="srchComponent"
-                                    :loading="srchCmploading">
+                                    :loading="srchCmploading"
+                                    @on-open-change="srchCompNone">
                                     <Option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index">{{option.com_name}}</Option>
                                 </Select>
                             </Col>
@@ -121,6 +122,7 @@
                                 remote 
                                 :remote-method="srchComponent" 
                                 :loading="srchCmploading" 
+                                @on-open-change="srchCompNone"
                                 :transfer=false
                                 >
                                 <i-option v-for="(option, index) in cmpOpts" :value="option.com_name" :key="index" @click.native="getMoreCmpParams(option)">{{option.com_name}}</i-option>
@@ -128,6 +130,9 @@
                         </Form-item>
                         <Form-item label="任务名称" prop="task_name">
                             <i-input v-model="addValidate.task_name"></i-input>
+                        </Form-item>
+                        <Form-item label="任务描述" prop="ptask_desc">
+                            <i-input v-model="addValidate.ptask_desc" type="textarea" placeholder="描述任务的迭代轮次等信息..." style="font-size: 12px"></i-input>
                         </Form-item>
                         <Row>
                             <i-col span="8">
@@ -157,6 +162,7 @@
                                         :titles="['可选人员列表', '已选人员列表']"
                                         filterable
                                         :filter-method="filterMethod"
+                                        ref="refTransfer"
                                         @on-change="handleChange2"
                                         style="text-align: -webkit-left;">
                                         <!-- :target-keys="targetKeys2" -->
@@ -184,6 +190,9 @@
                     </FormItem>
                     <FormItem label="任务名称:" prop="perftask_name">
                         <Input  v-model="editPTaskValidate.perftask_name"></Input>
+                    </FormItem>
+                    <FormItem label="任务描述:" prop="ptask_desc">
+                        <Input  v-model="editPTaskValidate.ptask_desc" type="textarea" placeholder="描述任务的迭代轮次等信息..." style="font-size: 12px"></Input>
                     </FormItem>
                     <Row>
                         <Col span="8">
@@ -418,6 +427,28 @@ export default {
                     }
                 },
                 {
+                    title: '任务描述',
+                    width: 100,
+                    key: 'ptask_desc', 
+                    // ellipsis: true, 
+                    render: (h, params) => {
+                        return h('div', [
+                            h('span', {
+                                style: {
+                                    display: 'inline-block',
+                                    width: '100%', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis', 
+                                    whiteSpace: 'nowrap'
+                                }, 
+                                domProps: {
+                                    title: params.row.ptask_desc
+                                }
+                            }, params.row.ptask_desc)
+                        ]);
+                    }
+                },
+                {
                     title: '操作',
                     key: 'opration',
                     align: 'center',
@@ -449,12 +480,12 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        //this.detailCase(params.row.id);
-                                            console.log("第一个页面传递的ID",params.row.id);
-                                             this.$router.push({
-                                                path:'/merge',
-                                                query:{id:params.row.id}
-                                            })
+                                            // console.log("第一个页面传递的ID",params.row.id);
+                                            this.detailCase(params.index);
+                                            // this.$router.push({
+                                            //     path:'/merge',
+                                            //     query:{id:params.row.id}
+                                            // })
                                     }
                                 }
                             }, '聚合报告')
@@ -474,6 +505,7 @@ export default {
             addValidate: {
                 component_name: '',         // 物理子系统
                 task_name: '',              // 任务名称
+                ptask_desc: '',             // 任务描述
                 perftask_begin_date: '',    // 任务开始日期
                 perftask_end_date: '',      // 任务结束日期
                 online_date: '',            // 投产日期
@@ -496,9 +528,7 @@ export default {
                     { required: true, type: 'date', message: '此项为必填项', trigger: 'change' }
                 ],
             },
-            // nfunTestMngrs: this.getMockData(),
-            nfunTestMngrs: [],
-            // targetKeys2: this.getTargetKeys(), 
+            nfunTestMngrs: [], 
             selectedTestMngrs: [], 
 
             /**==================== 任务编辑弹出框数据 ====================*/
@@ -508,6 +538,7 @@ export default {
                 id: '',                     // 任务编号
                 component_name: '',         // 物理子系统
                 perftask_name: '',          // 任务名称——可编辑
+                ptask_desc: '',             // 任务描述——可编辑
                 perftask_begin_date: '',    // 任务开始日期——可编辑
                 perftask_end_date: '',      // 任务结束日期——可编辑
                 online_date: '',            // 投产日期——可编辑
@@ -782,6 +813,45 @@ export default {
         // }, 
 
         /**==================== 物理子系统检索 ====================*/
+        srchCompNone: function(){
+            this.cmpOpts = [];
+            this.srchCmploading = true;
+
+            setTimeout(()=>{
+                this.srchCmploading = false;
+                let _this = this;
+                // this.$http.defaults.withCredentials = false;
+                this.$http.post('/myapi/component/searchFromITM',{
+                    headers:{},
+                    data:{
+                        kw: '',
+                        page: 1, 
+                        limit: 10, 
+                    },
+                }).then(function(response){
+                    if (response.data.result == "fail") {
+                        let errDesc = _this.handleErrCode(response);
+
+                        _this.$Message.error(errDesc);
+                    } else if (response.data.result == "ok") {
+                        //console.log('下拉框请求的响应',response);
+                        if (response.data['resultList']) {
+                            _this.list = response.data.resultList;
+                            _this.cmpOpts = _this.list.map(item =>{
+                                return {
+                                    id: item.id,
+                                    cloud_id: item.cloud_id, 
+                                    com_name: item.com_name
+                                }
+                            });
+                        } else {
+                            _this.$Message.error("返回结果无resultList");
+                        }
+                    }
+                })
+            },200)
+        }, 
+
         srchComponent: function(query){
             // console.log("now in srchComponent, this is ", this);
             this.cmpOpts = [];
@@ -906,7 +976,7 @@ export default {
 
         onSelectionChanged: function(data) {
             this.selectedData = data;
-            //console.log(data)
+            console.log("date12121212",data)
         },
 
         // onRowDblClick: function(row) {
@@ -919,6 +989,7 @@ export default {
             this.addPTaskModal = true;
 
             this.getTestMngrsData();
+            // console.log("*** addPTask this ***", this);
         },
         handleSubmit (name) {
             let _this = this;
@@ -935,6 +1006,7 @@ export default {
                             ref_itm_id: _this.formSendCmpP.id,                  // ITM的物理子系统id
                             cloud_id: _this.formSendCmpP.cloud_id,              // ITM同步云的时候的id
                             task_name: _this.addValidate.task_name,             // 任务名称
+                            ptask_desc: _this.addValidate.ptask_desc,           // 任务描述
                             perftask_begin_date: _this.addValidate.perftask_begin_date,   // 任务开始日期
                             perftask_end_date: _this.addValidate.perftask_end_date,    // 任务结束日期
                             online_date: _this.addValidate.online_date,
@@ -947,16 +1019,40 @@ export default {
 
                             _this.$Message.error(errDesc);
                             _this.addPTaskModal = false;
+
+                            // 清空穿梭框搜索条件
+                            _this.$refs.refTransfer.$children[0].query = '';
+                            _this.$refs.refTransfer.$children[2].query = '';
+                            // 清空穿梭框复选框
+                            _this.$refs.refTransfer.$children[0].toggleSelectAll();
+                            _this.$refs.refTransfer.$children[2].toggleSelectAll();
                         } else if (response.data.result == "ok") {
                             // console.log("**********************addValidate: ", _this.addValidate);
                             // _this.addValidate.component_name = _this.formSendCmpP.com_name;
-                            _this.addValidate.perftask_name = _this.addValidate.task_name;
-                            _this.addValidate.id = response.data.resultMap.id;
-                            _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
-                            _this.addValidate.ptask_source = '2';
+                            // _this.addValidate.perftask_name = _this.addValidate.task_name;
+                            // _this.addValidate.id = response.data.resultMap.id;
+                            // _this.addValidate.perftask_status = response.data.resultMap.perftask_status;
+                            // _this.addValidate.ptask_source = '2';
                             _this.$Message.success('提交成功!');
+                            // console.log("^^^ refTransfer ^^^", this.)
+                            // console.log("^^^ _this.addPTaskModal ^^^ ", _this.addPTaskModal);
                             _this.addPTaskModal = false;
-                            _this.tableData.push(_this.addValidate);
+                            // console.log("^^^ this ^^^ ", _this);
+                            // console.log("^^^ name ^^^ ", name);
+
+                            // 清空新建任务模态框数据
+                            _this.$refs[name].resetFields();
+
+                            // 清空穿梭框搜索条件
+                            _this.$refs.refTransfer.$children[0].query = '';
+                            _this.$refs.refTransfer.$children[2].query = '';
+                            // 清空穿梭框复选框
+                            _this.$refs.refTransfer.$children[0].toggleSelectAll();
+                            _this.$refs.refTransfer.$children[2].toggleSelectAll();
+
+                            _this.listPTask();
+                            // _this.tableData.unshift(_this.addValidate);
+                            // _this.tableData.push(_this.addValidate);
                             // console.log('tableData after: ', _this.tableData);
                         }
                     })
@@ -1037,6 +1133,7 @@ export default {
             this.editPTaskValidate.id = ptaskTRowData.id;
             this.editPTaskValidate.component_name = ptaskTRowData.component_name;
             this.editPTaskValidate.perftask_name = ptaskTRowData.perftask_name;
+            this.editPTaskValidate.ptask_desc = ptaskTRowData.ptask_desc;
             this.editPTaskValidate.perftask_begin_date = ptaskTRowData.perftask_begin_date;
             this.editPTaskValidate.perftask_end_date = ptaskTRowData.perftask_end_date;
             this.editPTaskValidate.online_date = ptaskTRowData.online_date;
@@ -1123,6 +1220,7 @@ export default {
                         data: {
                             id: _this.editPTaskValidate.id, 
                             perftask_name: _this.editPTaskValidate.perftask_name,
+                            ptask_desc: _this.editPTaskValidate.ptask_desc, 
                             perftask_begin_date: _this.editPTaskValidate.perftask_begin_date,
                             perftask_end_date: _this.editPTaskValidate.perftask_end_date,
                             online_date: _this.editPTaskValidate.online_date,
@@ -1385,7 +1483,28 @@ export default {
             //console.log(this.$refs)
             this.$refs[name].resetFields();
         }, 
-
+        //聚合报告
+        detailCase:function(index){
+            let _this = this;
+            let tableData = _this.tableData;
+            console.log("perftask_id",tableData[index].id);
+            this.$http.post('/myapi/testresult/isMergeReportExist', {
+                header: {},
+                data: {
+                    perftask_id: tableData[index].id, 
+                }
+                }).then(function (response) {
+                    console.log("_this.aggregTableData",response.data);
+                    if(response.data.result =="fail"){
+                        _this.$Message.error("该任务还未生成报告！");
+                    }else if(response.data.result =="ok"){
+                        this.$router.push({
+                            path:'/merge',
+                            query:{perftask_id:tableData[index].id}
+                        })
+                    }
+                })
+        },
         /**错误信息处理函数 */
         handleErrCode (resp) {
             let errDesc = "";
@@ -1579,6 +1698,7 @@ export default {
     font-size: 12px;
     font-weight: bold;
 }
+
 
 /* add by xin */
 /*三个操作按钮样式*/

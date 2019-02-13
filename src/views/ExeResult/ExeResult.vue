@@ -17,7 +17,7 @@
                         </Col>
                         <Col span="2" class="searchLable">场景类型:</Col>
                         <Col span="4">
-                            <Select v-model="formValidate.type_name" >
+                            <Select v-model="formValidate.type_name" clearable>
                                 <Option value="混合交易" >混合交易</Option>
                                 <Option value="单交易基准" >单交易基准</Option>
                                 <Option value="单交易负载" >单交易负载</Option>
@@ -31,7 +31,7 @@
                     <Row :gutter="16" v-show="isShowMoreShow">
                         <Col span="2" class="searchLable">执行状态:</Col>
                         <Col span="4">
-                            <Select v-model="formValidate.exe_status" >
+                            <Select v-model="formValidate.exe_status" clearable>
                                 <Option v-for="item in exeStatusList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </Col>
@@ -39,7 +39,7 @@
                         <Col span="4">
                             <!-- <Input clearable v-model="execution_name" placeholder="请输入执行人"></Input> -->
                             <Select 
-                                v-model="formValidate.member_name"
+                                v-model="formValidate.execution_name"
                                 placeholder="请输入执行人" 
                                 clearable
                                 filterable
@@ -48,7 +48,7 @@
                                 :loading="execution"
                                 @on-open-change="executioName" 
                                 @keyup.enter.native= listCase()>
-                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.member_name" :key="index">{{opts.member_name}}</Option>
+                                <Option v-for="(opts,index) in searchCreatorOpts"  :value="opts.id" :key="index">{{opts.member_name}}</Option>
                             </Select>
                         </Col>
                     </Row>
@@ -72,13 +72,12 @@
                 </div>
             </Form>
             <div align="left">
-                <Button @click="aggregCase" type="success"  >聚合</Button>
+                <Button @click="aggregCase" type="success">聚合报告</Button>
                 <Button @click="deleteCase" type="error">删除结果</Button>
                 <!-- <Button @click="aggregCasess" type="success"  >测试报告</Button> -->
             </div>
             <div class="tableBox">
-                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" 
-                @on-select="onSelect" @on-select-cancel="onSelectCancel" show-header></Table>
+                <Table border :loading="isLoading" ref="selection" :columns="columns" :data="tableData" class="myTable" @on-selection-change="onSelectCancel" show-header></Table>
                 <div class="pageBox" v-if="tableData.length">
                     <Page :total="parseInt(totalCount)" show-elevator show-total show-sizer @on-change="pageChange" @on-page-size-change="pageSizeChange"></Page>
                     <p>总共{{totalPage}}页</p>
@@ -103,22 +102,17 @@
                         <div style="float:left;width:150px">
                             <Button color="#1c2438"  @click="moveUp(index)">上移</Button>
                             <Button color="#1c2438"  @click="moveDown(index)">下移</Button>
-                            <!-- <input type="button" value="上移" onclick="mm(this, -1)">
-                            <input type="button" value="下移" onclick="mm(this,  1)"> -->
                         </div>
                         <div style="float:left;width:900px" >
                             <FormItem label="场景名称：" align="left" >
-                                <Input placeholder="Enter something..." style="width:300px" v-model="Item.senario_name" readonly></Input>
+                                <Input placeholder="Enter something..." style="width:300px" v-model="Item.senario_name"></Input>
                             </FormItem>
                             <div v-show="isShowMore">
                                 <FormItem label="执行结果" align="left" style="color:rgb(245, 4, 16)">
                                     执行是否成功：
-                                    <Select style="width:80px" v-model="Item.result_is_pass" disabled>
-                                        <Option value="1">是</Option>
-                                        <Option value="0">否</Option>
-                                    </Select>
+                                    <Input  style="width:80px" v-model="Item.result_is_pass" readonly></Input>
                                     测试结果分析描述：
-                                    <Input placeholder="Enter something..." style="width:400px" v-model="Item.result_desc" readonly></Input>
+                                    <Input  style="width:400px" v-model="Item.result_desc" readonly></Input>
                                 </FormItem>
                                 <FormItem label="报告显示内容" align="left" style="color:rgb(223, 73, 14)">
                                     显示性能数据表：
@@ -186,31 +180,84 @@ export default {
             metrics_type:'',
             aggregColumns:[
                 {
-                    title: '#',
                     type: 'index',
-                    align: 'center',
-                    width: 50,
+                    width: 60,
+                    align: 'center', 
                 },
                 {
                     title: '需求类型',
                     key: 'metrics_type',
-                    align: 'center',
-                },
+                    width: 150,
+                    render : (h, params)=>{
+                        let _this = this;
+                        let demandType = _this.$Global.demandTypeList;
+                        return h('span', _this.$Global.demandTypeMap[params.row.metrics_type]);
+                    }
+                },  
                 {
-                    title: '测试需求描述',
+                    title: '需求描述',
                     key: 'metrics_desc',
-                    align: 'center',
                 },
                 {
-                    title: '是否满足需求',
-                    key: 'metrics_type',
-                    align: 'center',
+                    title: '是否通过',
+                    key: 'metrics_typex',
+                    width: 90,
+                    render:(h,params) => {
+                        return h('div',[
+                            h(
+                                "Select",{
+                                    props:{
+                                        value:'divideTwo'
+                                    }
+                                },
+                                date.map(function(item){
+                                    if(item.value !== 'three'){
+                                        return [h(
+                                            "Option",
+                                            {
+                                                props:{
+                                                    value:item.value,
+                                                    key:item.value
+                                                }
+                                            },item.lable)]
+                                    }else{
+                                        
+                                    }
+                                })
+                            )
+                        ])
+                    } 
                 },
                 {
                     title: '备注描述',
-                    key: 'create_time',
-                    align: 'center',
-                    ellipsis: true
+                    key: 'metrics_descx',
+                    render:(h,params) => {
+                        if(params.row.$isEdit){
+                            return h('input',{
+                                style: {
+                                    'text-align':'center',
+                                    width: params.column._width+'px',
+                                    height: '48px',
+                                    border: '0',
+                                    outline:'none',
+                                    cursor: 'pointer',
+                                    // 'background-color':'#f8f8f9'
+                                },
+                                domProps: {
+                                    value: params.row.metrics_descx,
+                                    autofocus: true
+                                },
+                                on: {
+                                    input: function (event) {
+                                        params.row.metrics_descx = event.target.value
+                                    }
+                                }
+                            });
+                        }else{
+                            return h('div',params.row.metrics_descx)
+                        }
+                        
+                    } 
                 },
                 {
                     title: '操作',
@@ -220,6 +267,7 @@ export default {
                         return h('div', [
                             h('Button', {
                                 props: {
+                                    // type: 'primary',
                                     type: params.row.$isEdit ? 'success' : 'primary', 
                                     size: 'small'
                                 },
@@ -237,6 +285,7 @@ export default {
                                 }
                             }, params.row.$isEdit ? '保存' : '编辑'),   // '保存'
                         ])
+                        
                     }
                 }
             ],
@@ -356,7 +405,7 @@ export default {
                 },
                 {
                     title: '开始日期',
-                    key: 'start_time',
+                    key: 'exe_time',
                     sortable: true
                 },
                 {
@@ -401,7 +450,6 @@ export default {
         this.listCase();
     },
     methods: {
-        
         //页面展示
         listCase: function() {
             let _this = this;
@@ -411,10 +459,10 @@ export default {
                 data: {
                     task_name:_this.formValidate.task_name,
                     senario_name:_this.formValidate.senario_name,
-                    execution_name:_this.formValidate.member_name,
+                    user_id:_this.formValidate.execution_name,
                     exe_status:_this.formValidate.exe_status,
                     type_name:_this.formValidate.type_name,
-                    start_time:_this.formValidate.start_time,
+                    exe_time:_this.formValidate.start_time,
                     end_time:_this.formValidate.end_time,
                     pageno:_this.pageNo,
                     pagesize:_this.pageSize,
@@ -562,7 +610,7 @@ export default {
                     //放入集合中
                     let aggregData ={};  
                     aggregData.result_desc = _this.selectedData[i].result_desc;
-                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass.toString();
+                    aggregData.result_is_pass  = _this.selectedData[i].result_is_pass.toString() =="1"?"是":"否";
                     aggregData.senario_name  = _this.selectedData[i].senario_name;
                     aggregData.executor_id = _this.selectedData[i].executor_id;
                     aggregData.data_sgeet = _this.setValidate.data_sgeet = "1";
@@ -611,6 +659,7 @@ export default {
                     _this.spinShow=false;
                 }else{
                     _this.$Message.info('生成失败');
+                    _this.spinShow=false;
                 }
             })
             
@@ -639,19 +688,15 @@ export default {
             this.listCase();
         },
          /**选中的数据发生改变 */
-        onSelect: function(row,selection) {
-            this.selectedData.push(selection);
-            console.log("选中要删除的数据",row,selection)
-        },
+        // onSelect: function(row,selection,data) {
+        //      this.selectedData = selection;
+        //      console.log("选中要删除的数据12121",data)
+        //     console.log("选中要删除的数据",selection)
+        // },
          /**选中的数据发生改变 */
-        onSelectCancel:function(row,selection){
-            let _this = this;
-            for(var i=0;i<_this.selectedData.length;i++){
-                if(_this.selectedData[i].senario_id == selection.senario_id){
-                    _this.selectedData.splice(i,1);
-                }
-            }
-            console.log("取消选中要删除的数据",row,selection)
+        onSelectCancel:function(data){
+            this.selectedData = data;
+            console.log("取消选中要删除的数据",data)
         },
         /**详情信息展示跳转 */
         detailCase:function(index){
@@ -675,6 +720,86 @@ export default {
         /**模态框弹出取消事件 */
         cancel:function () {
             this.showAddModal = false;
+        },
+        /**数据编辑 */
+        handleDemandEdit: function(row) {
+            if (this.metricsEditingNo == 0) {
+                console.log("row: ", row);
+                this.$Message.error("存在尚未保存的测试需求，请先保存后再编辑下一个需求！")
+            } else {
+                this.metricsEditingNo = this.metricsEditingNo + 1;
+                 console.log("row: ", row);
+                this.$set(row, '$isEdit', true);
+                // console.log(row);
+            }
+        },
+        /**数据保存 */
+        demandEditSave: function(row) {
+            if (row.metrics_desc == '') {
+                this.$Message.error("需求描述不能为空");
+            } else {
+                this.$set(row, '$isEdit', false)
+                // console.log('^^^ row:', row);
+
+                let _this = this;
+
+                if ( row['id'] ) {
+                    console.log("^^^ row has id, it is an edit ^^^");
+
+                    // this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/edit',{
+                        header:{},
+                        data:{
+                            id: row.id, 
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                            // console.log("^^^ metricsTblDataCopy: ", _this.metricsTblDataCopy);
+                            _this.$set(row, 'metrics_desc', _this.metricsTblDataCopy[row._index].metrics_desc); // 临时性的
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        } else if (response.data.result == "ok") {
+                            _this.$set(_this.metricsTableData, row._index, row);    // 真实的修改
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        }
+                    })
+                } else {
+                    console.log("^^^ row has not id, it is an add ^^^");
+                    // console.log("^^^ _this: ", _this);
+
+                    // this.$http.defaults.withCredentials = false;
+                    this.$http.post('/myapi/metrics/add',{
+                        header:{},
+                        data:{
+                            perftask_id: _this.selectedData[0].id, 
+                            metrics_type: row.metrics_type,
+                            metrics_desc: row.metrics_desc,
+                        }
+                    }).then(function(response){
+                        if (response.data.result == "fail") {
+                            let errDesc = _this.handleErrCode(response);
+
+                            _this.$Message.error(errDesc);
+                            _this.metricsTableData.splice(row._index, 1);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                        } else if (response.data.result == "ok") {
+                            let newDemandMtrc = {
+                                'id': response.data.resultMap.id, 
+                                'metrics_type': row.metrics_type, 
+                                'metrics_desc': row.metrics_desc, 
+                                'is_add': false, 
+                                '$isEdit': false
+                            };
+                            _this.$set(_this.metricsTableData, row._index, newDemandMtrc);
+                            _this.metricsEditingNo = _this.metricsEditingNo - 1;
+                            // console.log("^^^ _this.metricsTableData: ", _this.metricsTableData);
+                        }
+                    })
+                }
+            }
         },
         /**清除搜索条件 */
         handleReset:function (name) {

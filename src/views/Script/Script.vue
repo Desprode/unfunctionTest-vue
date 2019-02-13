@@ -8,18 +8,37 @@
                 <Form ref="formValidate"   class="formValidate" >
                     <div class="rowbox">
                         <Row :gutter="16">
+                            <Col span="2" class="searchLable">物理子系统:</Col>
+                            <Col span="4">
+                                <!-- <Input clearable v-model="app_name" placeholder="请输入物理子系统"></Input> -->
+                                <Select
+                                    v-model="app_name"
+                                    placeholder="输入物理子系统中文名称或英文简称"
+                                    clearable
+                                    filterable
+                                    remote
+                                    :remote-method="searchAppname"
+                                    :loading="srchCmploading"
+                                    @on-open-change="searchName" 
+                                    @keyup.enter.native= listCase()>
+                                    <Option v-for="(option, index) in appNameOpts" :value="option.label" :key="index">{{option.label}}</Option>
+                                </Select>
+                            </Col>
                             <Col span="2" class="searchLable">脚本名称:</Col>
                             <Col span="4">
                                 <Input clearable v-model="script_name" placeholder="请输入脚本名称"></Input>                                
                             </Col>
-                            <Col span="2" class="searchLable">物理子系统:</Col>
-                            <Col span="4">
-                                <Input clearable v-model="app_name" placeholder="请输入物理子系统"></Input>
-                            </Col>
                             <Col span="2" class="searchLable">创建人:</Col>
                             <Col span="4">
-                                <Select  clearable v-model="creater" placeholder="请输入创建人" filterable remote 
-                                        :remote-method="searchCreater" :loading="srchCmploading" ref="cre">
+                                <Select
+                                    v-model="creater" 
+                                    placeholder="请输入创建人" 
+                                    clearable 
+                                    filterable remote 
+                                    :remote-method="searchCreater" 
+                                    :loading="srchCmploading" 
+                                    @on-open-change="executioName" 
+                                    @keyup.enter.native= listCase()>
                                     <Option v-for="(option,index) in cmpOpts" :value="option.value" :key="index">{{ option.label }}</Option>
                                 </Select>
                             </Col>
@@ -91,13 +110,11 @@
                                         clearable
                                         filterable 
                                         remote 
-                                        
                                         :remote-method="searchAppname" 
                                         :loading="srchCmploading"
                                         @on-open-change="searchName" 
-                                        @keyup.enter.native= listCase()
-                                        >
-                                        <Option v-for="(option,index) in appNameOpts" :value="option.label" :key="index" >{{ option.label }}</Option>
+                                        @keyup.enter.native= listCase()>
+                                        <Option v-for="(optio, index) in appNameOpts" :value="optio.label" :key="index">{{optio.label}}</Option>
                                     </Select>
                                 </Form-item>
                             </i-col>
@@ -440,10 +457,11 @@ export default {
                                             console.log("script编辑接口",response.data);
                                             if(response.data.err_desc ==="脚本关联场景正在运行，不可以修改"){
                                                 _this.showSetScript = false;
-                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍后再试！")
+                                                _this.$Message.error("脚本关联场景正在运行，暂时无法编辑，请稍侯再试！")
                                                 return;
-                                            }else{
+                                            }else {
                                                 _this.showSetScript = true;
+                                                _this.spinShow = false;
                                                 _this.setValidate.script_name= response.data.resultList[0].script_name;
                                                 _this.setValidate.script_id= response.data.resultList[0].script_id;
                                                 _this.setValidate.app_name= response.data.resultList[0].app_name;
@@ -495,42 +513,6 @@ export default {
                                     }
                                 }
                             },'参数设置'),
-                            // h('Button', {
-                            //     props: {
-                            //         type: 'primary',
-                            //         size: 'small'
-                            //     },
-                            //     style: {
-                            //         marginRight: '5px'
-                            //     },
-                            //     on: {
-                            //         click: () => {
-                            //             let _this = this;
-                            //             _this.$router.push({path:'/script_detail',query:{script_id:item.row.id}});
-                            //             // this.showDetail = true;
-                            //             // console.log(item.row);
-                            //             // let _this = this;
-                            //             // this.$http.post('/myapi/scripts/view',{
-                            //             //     data:{
-                            //             //         id:item.row.id,
-                            //             //     }
-                            //             // }).then(function(response){
-                            //             //     console.log("script编辑接口response.data",response.data);
-                            //             //     _this.setValidate.script_name= response.data.resultList[0].script_name;
-                            //             //     _this.setValidate.script_id= response.data.resultList[0].script_id;
-                            //             //     _this.setValidate.app_name= response.data.resultList[0].app_name;
-                            //             //     _this.setValidate.memo= response.data.resultList[0].memo;
-                            //             //     _this.setValidate.create_time= response.data.resultList[0].created_time;
-                            //             //     _this.setValidate.script_filename= response.data.resultList[0].script_filename;
-                            //             //     _this.setValidate.update_time= response.data.resultList[0].modified_time;
-                            //             //     _this.setValidate.filesize= response.data.resultList[0].script_filesize;
-                            //             //     _this.setValidate.script_manager_id=response.data.resultList[0].script_manager_name;
-                            //             //     // _this.setValidate.update_time= response.data.resultList[0].updated_time;
-                                            
-                            //             // })
-                            //         }
-                            //     }
-                            // },'详情'),
                             h('Button', {
                                 props: {
                                     type: 'default',
@@ -538,8 +520,11 @@ export default {
                                 },
                                 on: {
                                     click: () => {
-                                        this.handleDownload(item.row.id,item.row.script_filename);
+                                        this.handleDownload(item.row.id,item.row.script_filepath);
+                                        //console.log("item.row.script_filepath",item.row.script_filepath);
+                                        //window.location.href(item.row.script_filepath)
                                     }
+                                    // href:item.row.script_filepath
                                 }
                             }, '下载')
                         ])  
@@ -606,37 +591,39 @@ export default {
         this.listCase();
     },
     methods: {
-        //下载
-        handleDownload:function(rowid,fileName){
+        
+        listCase: function() {
             let _this = this;
+            _this.isLoading=true;
             // this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/scripts/download',{
-                data:{
-                    id:rowid,
+            this.$http.post('/myapi/scripts/list', {
+                header: {
+                },
+                data: {
+                    script_name: _this.script_name,
+                    app_name:_this.app_name,
+                    script_manager_id:_this.creater,
+                    pageNo: _this.pageNo==''?1:_this.pageNo,
+                    pageSize: 10                    
                 }
-            }).then(function(response){
-                //服务端文件不存在的情况判断
-                if("fail" == response.data.result){
-                    _this.$Message.error(response.data.err_desc);
-                    return;
-                }
-                console.log("script编辑接口response.data",response.data);
-               // let fileName = item.row.script_filename // 文件地址
-                var blob = new Blob([response.data])
-                if (window.navigator.msSaveOrOpenBlob) {
-                    // 兼容IE10
-                    navigator.msSaveBlob(blob, fileName)
-                } else {
-                    let url = window.URL.createObjectURL(blob);
-                    let link = document.createElement('a');
-                    link.style.display = 'none';
-                    link.href = url;
-                    link.setAttribute('download', fileName);
-                    document.body.appendChild(link);
-                    link.click();
-                    URL.revokeObjectURL(link.href)
-                }
+            }).then(function (response) {
+                console.log('response:');
+                //console.log(response);
+                console.log('response.data: ', response.data);
+                _this.tableData = response.data.resultList;
+                _this.tableDataTotal = response.data.pagination.totalCount;
+                _this.tableDataPageLine = response.data.pagination.pageSize
+                _this.isLoading=false;
             })
+        },
+        //下载
+        handleDownload:function(rowid,script_filepath){
+            let _this = this;
+            console.log("script_filepath",script_filepath);
+            let a = document.createElement('a')
+            a.href = script_filepath;
+            a.click();
+            
         },
         uploadPro:function(file){
             console.log("file",file.name);
@@ -661,7 +648,7 @@ export default {
                                 size: 26
                             }
                         }),
-                        h('div', '脚本正在上传解析中，请稍后...')
+                        h('div', '脚本正在上传解析中，请稍侯...')
                     ])
                 }
             });
@@ -707,6 +694,7 @@ export default {
             this.addValidate.app_id = obj.value;
             this.addValidate.app_name = obj.label;
         }, 
+        //物理子系统查询
         searchName:function(){
             let _this = this
             this.$http.post('/myapi/component/searchFromITM', {
@@ -716,6 +704,7 @@ export default {
                     limit: 10, 
                 },                        
             }).then(function (response) {
+                console.log("物理子系统",response.data);
                 _this.appNameOpts  = response.data.resultList.map(item => {
                     return {
                         value: item.id,
@@ -724,6 +713,7 @@ export default {
                 });
             })
         },
+        //物理子系统输入查询
         searchAppname: function(query){
             let _this = this
             this.$http.post('/myapi/component/searchFromITM', {
@@ -737,41 +727,48 @@ export default {
                 _this.appNameOpts = response.data.resultList.map(item => {
                     return {
                         value: item.id,
+                        cloud_id: item.cloud_id, 
                         label: item.com_name
                     }
                 })
             })
         },
+        //创建人查询
         searchCreater: function(query) {
-            this.cmpOpts = [];
-            if (query !== '') {
-                this.srchCmploading = true;
-                setTimeout(() => {
-                    this.srchCmploading = false;
-                    let _this = this
-                    // this.$http.defaults.withCredentials = false;
-                    this.$http.post('/myapi/user/searchByUser', 
-                    {
-                        data: {
-                            name: _this.creater,                            
-                        },                        
-                    }
-                    ).then(function (response) {
-                        _this.list = response.data.resultList;
-                        console.log('list-after: ', _this.list);
-                        const list = _this.list.map(item => {
-                            return {
-                                value: item.id,
-                                label: item.member_name
-                            };
-                        });
-                        _this.cmpOpts = list
-                        console.log('this.cmpOpts:', _this.cmpOpts);
-                    })
-                }, 200);
-            } else {
-                this.cmpOpts = [];
+            let _this = this;
+            this.$http.post('/myapi/user/search', {
+                header:{},
+                data: {
+                    member_name: query                            
+                },                        
             }
+            ).then(function (response) {
+                console.log("response",response.data);
+                _this.cmpOpts = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.member_name
+                    };
+                });
+            })
+        },
+        //创建人下拉查询
+        executioName:function(){
+            let _this = this;
+            this.$http.post('/myapi/user/search', {
+                header:{},
+                data: {
+                    member_name: ''                            
+                },                        
+            }
+            ).then(function (response) {
+                _this.cmpOpts = response.data.resultList.map(item => {
+                    return {
+                        value: item.id,
+                        label: item.member_name
+                    };
+                });
+            })
         },
         /*删除校验*/
         deleteScript: function() {
@@ -794,11 +791,10 @@ export default {
                             _this.doDelete();
                         },
                         onCancel: () => {
-                            _this.$Message.info('删除失败');
                         }
                     }); 
                 }else{
-                    _this.$Message.info("该脚本关联的场景正在执行中，脚本不可删除，请稍后再试。");
+                    _this.$Message.info("该脚本关联的场景正在执行中，脚本不可删除，请稍侯再试。");
                 }
             })
         }, 
@@ -822,30 +818,7 @@ export default {
                 _this.listCase(); 
             })
         },
-        listCase: function() {
-            let _this = this;
-            _this.isLoading=true;
-            // this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/scripts/list', {
-                header: {
-                },
-                data: {
-                    script_name: _this.script_name,
-                    app_name:_this.app_name,
-                    script_manager_id:_this.creater,
-                    pageNo: _this.pageNo==''?1:_this.pageNo,
-                    pageSize: 10                    
-                }
-            }).then(function (response) {
-                console.log('response:');
-                //console.log(response);
-                console.log('response.data: ', response.data);
-                _this.tableData = response.data.resultList;
-                _this.tableDataTotal = response.data.pagination.totalCount;
-                _this.tableDataPageLine = response.data.pagination.pageSize
-                _this.isLoading=false;
-            })
-        },
+        
         handlePage:function(val){
             let _this = this;
             _this.pageNo = val;
@@ -1080,7 +1053,7 @@ export default {
         /**清除搜索条件 */
         handleReset () {
             let _this = this;
-            _this.$refs.cre.clearSingleSelect();
+            // _this.$refs.cre.clearSingleSelect();
             _this.app_name='';
             _this.script_name='';
             _this.creater='';
