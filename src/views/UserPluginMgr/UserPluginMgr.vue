@@ -121,7 +121,7 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                    this.handleDownload(item.row.id,item.row.plugin_name);
+                                    this.handleDownload(item.row.id,item.row.plugin_filepath);
                                 }
                             }
                         }, '下载')
@@ -212,6 +212,7 @@ export default {
                             }).then(function(){
                                 tableData.splice(index, 1);        //即删除该数据上
                                 _this.$Message.info('删除成功');
+                                _this.listCase()
                             })
                         },
                         onCancel: () => {
@@ -269,36 +270,39 @@ export default {
         this.listCase();
     },
         /**添加新数据弹出模态框 */   
-        handleDownload:function(rowid,fileName){
-            console.log("这个是什么",fileName);
+        handleDownload:function(rowid,plugin_filepath){
             let _this = this;
+            let a = document.createElement('a')
+            a.href = plugin_filepath;
+            a.click();
+            console.log("plugin_filepath",plugin_filepath);
             // this.$http.defaults.withCredentials = false;
-            this.$http.post('/myapi/userPluginMgr/download',{
-                data:{
-                    id:rowid,
-                }
-            }).then(function(response){
-                //服务端文件不存在的情况判断
-                if("fail" == response.data.result){
-                    _this.$Message.error(response.data.err_desc);
-                    return;
-                }
+            // this.$http.post('/myapi/userPluginMgr/download',{
+            //     data:{
+            //         id:rowid,
+            //     }
+            // }).then(function(response){
+            //     //服务端文件不存在的情况判断
+            //     if("fail" == response.data.result){
+            //         _this.$Message.error(response.data.err_desc);
+            //         return;
+            //     }
                 //console.log("script编辑接口response.data",response.data);
                // let fileName = item.row.script_filename // 文件地址
-                var blob = new Blob([response.data])
-                if (window.navigator.msSaveOrOpenBlob) {
-                    // 兼容IE10
-                    navigator.msSaveBlob(blob, fileName)
-                } else {
-                    let url = window.URL.createObjectURL(blob);
-                    let link = document.createElement('a');
-                    link.style.display = 'none';
-                    link.href = url;
-                    link.setAttribute('download', fileName);
-                    document.body.appendChild(link);
-                    link.click();
-                }
-            })
+                // var blob = new Blob([response.data])
+                // if (window.navigator.msSaveOrOpenBlob) {
+                //     // 兼容IE10
+                //     navigator.msSaveBlob(blob, fileName)
+                // } else {
+                //     let url = window.URL.createObjectURL(blob);
+                //     let link = document.createElement('a');
+                //     link.style.display = 'none';
+                //     link.href = url;
+                //     link.setAttribute('download', fileName);
+                //     document.body.appendChild(link);
+                //     link.click();
+                // }
+            //})
         },
         addScript:function(){
             this.showDialog = true;

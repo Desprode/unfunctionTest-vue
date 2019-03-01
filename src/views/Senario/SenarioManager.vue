@@ -1950,13 +1950,16 @@ export default {
             console.log("选中的数据",this.moniterTableData);
         },
         onMonitorSelectCancel:function(row,selection){
+            console.log(selection);
             let _this = this;
             for(var i=0;i<_this.moniterTableData.length;i++){
                 if(_this.moniterTableData[i].servPartId == selection.servPartId){
+                    
                     _this.moniterTableData[i]._checked = false;
+                    
                 }
-                    _this.monitorListPage.splice(i,1);
             }
+           
             console.log("选中的数据",this.moniterTableData);
         },
         /**全选 */

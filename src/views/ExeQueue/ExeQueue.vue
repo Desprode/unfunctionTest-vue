@@ -20,7 +20,7 @@
                             <Col span="6">
                                 <Button @click="listCase" type="primary" icon="ios-search">搜索</Button>
                                 <Button @click="handleReset('formValidate')" type="error" class="actionBtn"  ghost>重置</Button>
-                            </Col>
+                            </Col>~
                         </Row>
                         <Row :gutter="16" v-if="isShowMoreShow">
                                 <Col span="2" class="searchLable">执行人</Col>
